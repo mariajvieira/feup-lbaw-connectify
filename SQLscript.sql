@@ -21,6 +21,7 @@ DROP TYPE IF EXISTS statusGroup_request CASCADE;
 DROP TYPE IF EXISTS statusFriendship_request CASCADE;
 DROP TYPE IF EXISTS reactionType CASCADE;
 
+
 -- Types
 
 CREATE TYPE statusGroup_request AS ENUM ('pending', 'accepted', 'denied');
@@ -83,7 +84,7 @@ CREATE TABLE reaction (
     reaction_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE,
-    reactionType reactionType NOT NULL,
+    reaction_type reactionType NOT NULL,
     reaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -156,24 +157,25 @@ CREATE TABLE group_post_notification (
 
 -- Perfomance Indices
 
-CREATE INDEX idx_user_posts ON Post(user_id);
-CREATE INDEX idx_post_postdate ON post(postDate);
-CREATE INDEX idx_notification_user_date ON notification (userId, notificationDate);
+CREATE INDEX idx_user_posts ON post(user_id);
+CREATE INDEX idx_post_postdate ON post(post_date);
+CREATE INDEX idx_notification_user_date ON notification (user_id, notification_date);
 
 -- Full-text Search Indices
 
 -- User FTS index
+DROP FUNCTION IF EXISTS user_search_update() CASCADE;
 ALTER TABLE user_
 ADD COLUMN tsvectors TSVECTOR;
 
 CREATE FUNCTION user_search_update() RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN 
-        NEW.tsvectors = to_tsvector('portuguese', NEW.username);
+        NEW.tsvectors := to_tsvector('portuguese', NEW.username);
     END IF;
     IF TG_OP = 'UPDATE' THEN 
         IF (NEW.username <> OLD.username) THEN
-            NEW.tsvectors = to_tsvector('portuguese', NEW.username); 
+            NEW.tsvectors := to_tsvector('portuguese', NEW.username); 
         END IF;
     END IF;
  RETURN NEW;
@@ -188,49 +190,52 @@ EXECUTE PROCEDURE user_search_update();
 CREATE INDEX idx_user_search ON user_ USING GIN (tsvectors);
 
 -- Post FTS index
+DROP FUNCTION IF EXISTS post_search_update() CASCADE;
+
 ALTER TABLE post
-ADD COLUMN tsvectors TSVECTOR;
+ADD COLUMN IF NOT EXISTS tsvectors TSVECTOR;
 
 CREATE FUNCTION post_search_update() RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN 
-    NEW.tsvectors = to_tsvector('portuguese', NEW.content);
-  END IF
-  IF TG_OP = 'UPDATE' THEN 
-    IF (NEW.content <> OLD.content) THEN
-      NEW.tsvectors = to_tsvector('portuguese', NEW.content); 
+    NEW.tsvectors := to_tsvector('portuguese', NEW.content);
+  ELSIF TG_OP = 'UPDATE' THEN 
+    IF NEW.content <> OLD.content THEN
+      NEW.tsvectors := to_tsvector('portuguese', NEW.content); 
     END IF;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER post_search_update
+CREATE TRIGGER update_post_tsvectors
 BEFORE INSERT OR UPDATE ON post
 FOR EACH ROW
-EXECUTE PROCEDURE post_search_update();
+EXECUTE FUNCTION post_search_update();
 
 CREATE INDEX idx_post_content ON post USING GIN (tsvectors);
 
+
 -- Group FTS index
+DROP FUNCTION IF EXISTS group_search_update() CASCADE;
+
 ALTER TABLE group_
-ADD COLUMN tsvectors TSVECTOR;
+ADD COLUMN IF NOT EXISTS tsvectors TSVECTOR;
 
 CREATE FUNCTION group_search_update() RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN 
-      NEW.tsvectors = (
-        setweight(to_tsvector('portuguese', NEW.groupName), 'A') ||
-        setweight(to_tsvector('portuguese', NEW.description), 'B')
-      );
-    END IF
-    IF TG_OP = 'UPDATE' THEN
-      IF (NEW.groupName <> OLD.groupName OR NEW.description <> OLD.description) THEN
-        NEW.tsvectors = (
-          setweight(to_tsvector('portuguese', NEW.groupName), 'A') ||
-          setweight(to_tsvector('portuguese', NEW.description), 'B')
+        NEW.tsvectors := (
+            setweight(to_tsvector('portuguese', NEW.group_name), 'A') ||
+            setweight(to_tsvector('portuguese', NEW.description), 'B')
         );
-      END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF NEW.group_name <> OLD.group_name OR NEW.description <> OLD.description THEN
+            NEW.tsvectors := (
+                setweight(to_tsvector('portuguese', NEW.group_name), 'A') ||
+                setweight(to_tsvector('portuguese', NEW.description), 'B')
+            );
+        END IF;
     END IF;
     RETURN NEW;
 END;
@@ -239,34 +244,34 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER group_search_update
 BEFORE INSERT OR UPDATE ON group_
 FOR EACH ROW
-EXECUTE PROCEDURE group_search_update();
+EXECUTE FUNCTION group_search_update();
 
 CREATE INDEX idx_group_description ON group_ USING GIN (tsvectors);
 
 -- Triggers 
 
 -- TRIGGER01: Enforces that only approved friends can view private profiles (BR01, BR07)
-CREATE OR REPLACE FUNCTION enforce_profile_visibility()
+CREATE OR REPLACE FUNCTION enforce_profile_visibility_update()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.isPublic = FALSE THEN
+    IF NEW.is_public = FALSE THEN
         IF NOT EXISTS (
             SELECT 1 FROM friendship
-            WHERE (userId1 = NEW.id AND userId2 = current_user)
-               OR (userId2 = NEW.id AND userId1 = current_user)
+            WHERE (user_id1 = NEW.user_id AND user_id2 = current_user) OR
+                  (user_id2 = NEW.user_id AND user_id1 = current_user)
         ) THEN
-            RAISE EXCEPTION 'Private profile. Access denied.';
+            RAISE EXCEPTION 'Perfil privado. Acesso negado.';
         END IF;
     END IF;
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_enforce_profile_visibility
-BEFORE SELECT ON user
+BEFORE UPDATE ON user_
 FOR EACH ROW
-EXECUTE FUNCTION enforce_profile_visibility();
-
+EXECUTE FUNCTION enforce_profile_visibility_update();
 
 -- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
 CREATE OR REPLACE FUNCTION enforce_friend_request_limit()
@@ -332,15 +337,16 @@ EXECUTE FUNCTION enforce_post_content();
 CREATE OR REPLACE FUNCTION anonymize_user_data()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE comment SET userId = NULL WHERE userId = OLD.id;
-    UPDATE reaction SET userId = NULL WHERE userId = OLD.id;
-    UPDATE post SET userId = NULL WHERE userId = OLD.id;
+    UPDATE comment_ SET user_id = NULL WHERE user_id = OLD.user_id;
+    UPDATE reaction SET user_id = NULL WHERE user_id = OLD.user_id;
+    UPDATE post SET user_id = NULL WHERE user_id = OLD.user_id; 
+    
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_anonymize_user_data
-AFTER DELETE ON user
+AFTER DELETE ON user_
 FOR EACH ROW
 EXECUTE FUNCTION anonymize_user_data();
 
@@ -369,7 +375,7 @@ EXECUTE FUNCTION enforce_group_posting();
 CREATE OR REPLACE FUNCTION enforce_group_membership_control()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF (SELECT isPublic FROM group WHERE id = NEW.groupId) = FALSE THEN
+    IF (SELECT isPublic FROM group_ WHERE id = NEW.groupId) = FALSE THEN
         IF NEW.requestStatus = 'Pending' THEN
             RAISE EXCEPTION 'Group membership requires owner approval.';
         END IF;
@@ -384,203 +390,294 @@ FOR EACH ROW
 EXECUTE FUNCTION enforce_group_membership_control();
 
 -- Transactions
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
---Tran01
-BEGIN TRANSACTION;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO post (content, image1, image2, image3, postDate, isPublic, groupId, userId)
-VALUES ($content, NOW(), $visibility, NULL, NULL, NULL, COALESCE($group_id, NULL), $id_user);
-END TRANSACTION;
 
---Tran02
-BEGIN;SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DO $$
-DECLARE
-     postOwnerId INT;
-     commentId INT;
+-- Tran01
+CREATE OR REPLACE FUNCTION inserir_post(content TEXT, visibility BOOLEAN) 
+RETURNS VOID AS $$
 BEGIN
-     SELECT user_id INTO postOwnerId
-     FROM post
-     WHERE post_id=?;
-     INSERT INTO comment_ (post_id, user_id, comment_content, commentDate) VALUES (?, ?, ?, NOW())
-     RETURNING id INTO commentId;
-     INSERT INTO notification (content, is_read, notification_date, user_id)
-     VALUES ('User ' || ? || ' commented on your post.', FALSE, NOW(), postOwnerId);
-     INSERT INTO comment_notification (notification_id, comment_id)
-     VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), commentId);
-END $$
-COMMIT;
+    INSERT INTO post (content, is_public, user_id)  
+    VALUES ($1, $2, COALESCE(current_user_id, 1));  
+END;
+$$ LANGUAGE plpgsql;
+
+-- Tran02
+CREATE OR REPLACE FUNCTION add_comment(
+    postId INT,
+    userId INT,
+    commentContent TEXT
+) RETURNS VOID AS $$
+DECLARE
+    postOwnerId INT;
+    commentId INT;
+BEGIN
+    SELECT user_id INTO postOwnerId
+    FROM post
+    WHERE post_id = postId;
+
+    IF postOwnerId IS NULL THEN
+        RAISE EXCEPTION 'No valid post found.';
+    END IF;
+
+    INSERT INTO comment_ (post_id, user_id, comment_content, commentDate)
+    VALUES (postId, userId, commentContent, NOW())
+    RETURNING id INTO commentId;
+
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || userId || ' commented on your post.', FALSE, NOW(), postOwnerId);
+
+    INSERT INTO comment_notification (notification_id, comment_id)
+    VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), commentId);
+END;
+$$ LANGUAGE plpgsql;
+
 
 --Tran03
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DO $$
+CREATE OR REPLACE FUNCTION add_reaction(postId INT, userId INT, reactionType TEXT) 
+RETURNS VOID AS $$
 DECLARE
-   postOwnerId INT;
+    postOwnerId INT;
     reactionId INT;
 BEGIN
     SELECT user_id INTO postOwnerId
     FROM post
-    WHERE post_id = $postId;
-    INSERT INTO reaction (reactionType, reaction_date, post_id, user_id) VALUES ($reactionType, NOW(), $postId, $userId)
+    WHERE post_id = postId;
+
+    INSERT INTO reaction (reactionType, reaction_date, post_id, user_id) 
+    VALUES (reactionType, NOW(), postId, userId)
     RETURNING reaction_id INTO reactionId;
+
     INSERT INTO notification (content, is_read, notification_date, user_id)
-    VALUES ('User ' || $userId || ' reacted to your post with ' || $reactionType, FALSE, NOW(), postOwnerId);
+    VALUES ('User ' || userId || ' reacted to your post with ' || reactionType, FALSE, NOW(), postOwnerId);
+    
     INSERT INTO reaction_notification (notification_id, reaction_id)
     VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), reactionId);
-END $$;
-COMMIT;
-
---Tran04
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-UPDATE users SET name = ?, email = ?, profilePicture = ? WHERE id = ?;
-COMMIT;
-
---Tran05
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DELETE FROM comment WHERE post_id = ?;
-DELETE FROM reaction WHERE post_id = ?;
-DELETE FROM post WHERE id = ?;
-COMMIT;
-
---Tran06
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-   INSERT INTO friend_request (request_date, request_status, sender_id, receiver_id)
-   VALUES (NOW(), 'pending', $sender_id, $receiver_id);
-   INSERT INTO notification (content, is_read, notification_date, user_id)
-    VALUES ('User ' || $sender_id || ' sent you a friend request.', FALSE, NOW(), $receiver_id);
-   DECLARE notification_id INT;
-   SET notification_id = LASTVAL();
-   INSERT INTO friend_request_notification (notification_id, friend_request_id)
-   VALUES (notification_id, (SELECT MAX(request_id) FROM friend_request));
-COMMIT;
+END; $$ LANGUAGE plpgsql;
 
 
---Tran07
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-UPDATE friend_request SET requestStatus = 'accepted' WHERE id = $friend_request_id;
-INSERT INTO friendship (userId1, userId2) VALUES ($sender_id, $receiver_id);
-END TRANSACTION;
+CREATE OR REPLACE FUNCTION update_user_info(userId INT, newName TEXT, newEmail TEXT, newProfilePicture TEXT) 
+RETURNS VOID AS $$
+BEGIN
+    UPDATE user_ 
+    SET username = newName, email = newEmail, profile_picture = newProfilePicture 
+    WHERE user_id = userId;
+END; $$ LANGUAGE plpgsql;
 
 
---Tran08
-BEGIN TRANSACTION;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO group (groupName, description, isPublic, ownerId)
-VALUES ($groupName, $description, $isPublic, $ownerId);
-COMMIT;
+-- Tran05
+CREATE OR REPLACE FUNCTION delete_post(postId INT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM comment_ WHERE post_id = postId;
+    DELETE FROM reaction WHERE post_id = postId;
+    DELETE FROM post WHERE post_id = postId;
+END;
+$$ LANGUAGE plpgsql;
 
 
---Tran09
-BEGIN TRANSACTION;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-UPDATE comment SET userId = NULL, content = CONCAT('Deleted User: ', content) WHERE userId = $userId;
-UPDATE post SET userId = NULL, content = CONCAT('Deleted User Post: ', content) WHERE userId = $userId;
-UPDATE saved_post SET userId = NULL WHERE userId = $userId;
-UPDATE friend_request SET senderId = NULL WHERE senderId = $userId;
-UPDATE friend_request SET receiverId = NULL WHERE receiverId = $userId;
-UPDATE group_member SET userId = NULL WHERE userId = $userId;
-UPDATE group_owner SET userId = NULL WHERE userId = $userId;
-DELETE FROM user WHERE id = $userId;
-COMMIT TRANSACTION;
+-- Tran06
+CREATE OR REPLACE FUNCTION send_friend_request(sender_id INT, receiver_id INT) 
+RETURNS VOID AS $$
+DECLARE
+    notification_id INT;
+BEGIN
+    INSERT INTO friend_request (request_date, request_status, sender_id, receiver_id)
+    VALUES (NOW(), 'pending', sender_id, receiver_id);
+    
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || sender_id || ' sent you a friend request.', FALSE, NOW(), receiver_id);
+
+    notification_id := currval(pg_get_serial_sequence('notification', 'notification_id'));
+
+    INSERT INTO friend_request_notification (notification_id, friend_request_id)
+    VALUES (notification_id, (SELECT MAX(request_id) FROM friend_request WHERE sender_id = sender_id AND receiver_id = receiver_id));
+END; 
+$$ LANGUAGE plpgsql;
 
 
---Tran10
-BEGIN TRANSACTION;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO saved_post (userId, postId) VALUES ($userId, $postId);
-COMMIT;
+-- Tran07
+CREATE OR REPLACE FUNCTION accept_friend_request(request_id INT, user_id1 INT, user_id2 INT) 
+RETURNS VOID AS $$
+BEGIN
+    UPDATE friend_request
+    SET request_status = 'accepted'
+    WHERE id = request_id; 
+
+    INSERT INTO friendship (userId1, userId2)
+    VALUES (user_id1, user_id2); 
+END; 
+$$ LANGUAGE plpgsql;
+
+-- Tran08
+CREATE OR REPLACE FUNCTION create_group(group_name TEXT, description TEXT, is_public BOOLEAN, owner_id INT) 
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO "group" (groupName, description, isPublic, ownerId)
+    VALUES (group_name, description, is_public, owner_id);
+END; 
+$$ LANGUAGE plpgsql;
 
 
---Tran11
-BEGIN TRANSACTION;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DELETE FROM saved_post WHERE userId = $userId AND postId = $postId;
-COMMIT;
+-- Tran09
+CREATE OR REPLACE FUNCTION delete_user(user_id INT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE comment 
+    SET userId = NULL, 
+        content = CONCAT('Deleted User: ', content) 
+    WHERE userId = user_id; 
+
+    UPDATE post 
+    SET userId = NULL, 
+        content = CONCAT('Deleted User Post: ', content) 
+    WHERE userId = user_id;
+
+    UPDATE saved_post 
+    SET userId = NULL 
+    WHERE userId = user_id;
+
+    UPDATE friend_request 
+    SET senderId = NULL 
+    WHERE senderId = user_id;
+
+    UPDATE friend_request 
+    SET receiverId = NULL 
+    WHERE receiverId = user_id;
+
+    UPDATE group_member 
+    SET user_id = NULL 
+    WHERE user_id = user_id;
+
+    UPDATE group_owner 
+    SET user_id = NULL 
+    WHERE user_id = user_id;
+
+    DELETE FROM "user" 
+    WHERE id = user_id;
+END; 
+$$ LANGUAGE plpgsql;
 
 
---Tran12
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO join_group_request (group_id, user_id, request_status, requested_at)
-VALUES ($group_id, $user_id, 'pending', NOW());
-DECLARE groupOwnerId INT;
-SELECT owner_id INTO groupOwnerId
-FROM group_
-WHERE group_id = $group_id;
-INSERT INTO notification (content, is_read, notification_date, user_id)
-VALUES ('User ' || $user_id || ' has requested to join your group.', FALSE, NOW(), groupOwnerId);
-DECLARE notification_id INT; SET notification_id = LASTVAL(); -- Get the last inserted notification ID
-INSERT INTO group_request_notification (notification_id, group_request_id)
-VALUES (notification_id, (SELECT MAX(request_id) FROM join_group_request));
-COMMIT;
+-- Tran10
+CREATE OR REPLACE FUNCTION save_post(user_id INT, post_id INT)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO saved_post (user_id, postId) 
+    VALUES (user_id, post_id);
+END; 
+$$ LANGUAGE plpgsql;
 
 
---Tran13
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DO $$
+-- Tran11
+CREATE OR REPLACE FUNCTION remove_saved_post(user_id INT, post_id INT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM saved_post 
+    WHERE user_id = user_id AND postId = post_id;  
+END; 
+$$ LANGUAGE plpgsql;
+
+
+-- Tran12
+CREATE OR REPLACE FUNCTION request_to_join_group(group_id INT, user_id INT)
+RETURNS VOID AS $$
+DECLARE 
+    groupOwnerId INT;
+    notification_id INT;
+BEGIN
+    INSERT INTO join_group_request (group_id, user_id, request_status, requested_at)
+    VALUES (group_id, user_id, 'pending', NOW());
+
+    SELECT owner_id INTO groupOwnerId
+    FROM group_
+    WHERE group_id = group_id;
+
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || user_id || ' has requested to join your group.', FALSE, NOW(), groupOwnerId);
+
+    notification_id := LASTVAL();
+
+    INSERT INTO group_request_notification (notification_id, group_request_id)
+    VALUES (notification_id, (SELECT MAX(request_id) FROM join_group_request WHERE group_id = group_id AND user_id = user_id));
+END; 
+$$ LANGUAGE plpgsql;
+
+
+
+-- Tran13
+CREATE OR REPLACE FUNCTION add_post(
+    p_user_id INT,
+    p_group_id INT,
+    p_content TEXT
+)
+RETURNS VOID AS $$
 DECLARE
     groupOwnerId INT;
     groupMemberIds INT[];
     new_post_id INT;
+    member_id INT; 
 BEGIN
-    -- Insert the new post
     INSERT INTO post (user_id, group_id, content, post_date)
-    VALUES ($user_id, $group_id, $content, NOW())
+    VALUES (p_user_id, p_group_id, p_content, NOW())
     RETURNING post_id INTO new_post_id;
 
-    -- Get group owner ID
     SELECT owner_id INTO groupOwnerId
     FROM group_
-    WHERE group_id = $group_id;
+    WHERE group_id = p_group_id;
 
-    -- Get IDs of all group members
     SELECT ARRAY_AGG(user_id) INTO groupMemberIds
     FROM group_member
-    WHERE group_id = $group_id;
+    WHERE group_id = p_group_id;
 
-    -- Notification for the group owner
     INSERT INTO notification (content, is_read, notification_date, user_id)
-    VALUES ('User ' || $user_id || ' has posted in your group.', FALSE, NOW(), groupOwnerId);
+    VALUES ('User ' || p_user_id || ' has posted in your group.', FALSE, NOW(), groupOwnerId);
     
-    -- Notifications for group members
     FOREACH member_id IN ARRAY groupMemberIds LOOP
         INSERT INTO notification (content, is_read, notification_date, user_id)
-        VALUES ('User ' || $user_id || ' has posted in the group.', FALSE, NOW(), member_id);
+        VALUES ('User ' || p_user_id || ' has posted in the group.', FALSE, NOW(), member_id);
         
-        -- Insert into group_post_notification
         INSERT INTO group_post_notification (notification_id, post_id)
         VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), new_post_id);
     END LOOP;
-END $$;
-COMMIT;
+END $$ LANGUAGE plpgsql;
 
 
---Tran14
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-DECLARE requesterId INT;
-SELECT user_id, group_id INTO requesterId, group_id
-FROM join_group_request
-WHERE request_id = $request_id;
-UPDATE join_group_request
-SET request_status = 'accepted'
-WHERE request_id = $request_id;
-INSERT INTO group_member (user_id, group_id) VALUES (requesterId, group_id);
-SELECT owner_id INTO groupOwnerId
-FROM group_
-WHERE group_id = group_id;
-INSERT INTO notification (content, is_read, notification_date, user_id)
-VALUES ('Your request to join the group has been accepted.', FALSE, NOW(), requesterId);
-INSERT INTO notification (content, is_read, notification_date, user_id)
-VALUES ('User ' || requesterId || ' has joined your group.', FALSE, NOW(), groupOwnerId);
-DECLARE notification_id INT;
-SET notification_id = LASTVAL();
-INSERT INTO group_request_notification (notification_id, request_id)
-VALUES (notification_id, $request_id);
-COMMIT;
+-- Tran14
+CREATE OR REPLACE FUNCTION accept_join_group_request(
+    p_request_id INT 
+)
+RETURNS VOID AS $$
+DECLARE
+    requesterId INT;
+    groupId INT; 
+    groupOwnerId INT;  
+    notification_id INT; 
+BEGIN
+    SELECT user_id, group_id INTO requesterId, groupId
+    FROM join_group_request
+    WHERE request_id = p_request_id;
+
+    UPDATE join_group_request
+    SET request_status = 'accepted'
+    WHERE request_id = p_request_id; 
+
+    INSERT INTO group_member (user_id, group_id) 
+    VALUES (requesterId, groupId);
+
+    SELECT owner_id INTO groupOwnerId
+    FROM group_
+    WHERE group_id = groupId;
+
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('Your request to join the group has been accepted.', FALSE, NOW(), requesterId);
+
+    -- Create a notification for the group owner
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || requesterId || ' has joined your group.', FALSE, NOW(), groupOwnerId);
+
+    notification_id := currval(pg_get_serial_sequence('notification', 'notification_id'));
+
+    INSERT INTO group_request_notification (notification_id, request_id)
+    VALUES (notification_id, p_request_id); 
+END $$ LANGUAGE plpgsql;
