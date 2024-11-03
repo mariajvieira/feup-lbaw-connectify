@@ -154,6 +154,12 @@ CREATE TABLE group_post_notification (
     post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE
 );
 
+-- Perfomance Indices
+
+CREATE INDEX idx_user_posts ON Post(user_id);
+CREATE INDEX idx_post_postdate ON post(postDate);
+CREATE INDEX idx_notification_user_date ON notification (userId, notificationDate);
+
 -- Full-text Search Indices
 
 -- User FTS index
