@@ -23,8 +23,8 @@ DROP TYPE IF EXISTS reactionType CASCADE;
 
 -- Types
 
-CREATE TYPE statusGroup_request AS ENUM ('requested', 'accepted', 'denied');
-CREATE TYPE statusFriendship_request AS ENUM ('requested', 'accepted', 'denied');
+CREATE TYPE statusGroup_request AS ENUM ('pending', 'accepted', 'denied');
+CREATE TYPE statusFriendship_request AS ENUM ('pending', 'accepted', 'denied');
 CREATE TYPE reactionType AS ENUM ('like', 'laugh', 'cry', 'applause', 'shocked');
 
 -- Tables
@@ -276,7 +276,7 @@ BEGIN
         SELECT 1 FROM friend_request
         WHERE senderId = NEW.senderId
           AND receiverId = NEW.receiverId
-          AND requestStatus NOT IN ('Declined', 'Canceled')
+          AND requestStatus NOT IN ('denied')
     ) THEN
         RAISE EXCEPTION 'Not successful: cannot send more than one friend request to the same user.';
     END IF;
@@ -388,20 +388,48 @@ EXECUTE FUNCTION enforce_group_membership_control();
 --Tran01
 BEGIN TRANSACTION;
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO post (content, postDate, isPublic, groupId, userId) VALUES ($content, NOW(), $visibility, $group_id, $id_user); 
+INSERT INTO post (content, image1, image2, image3, postDate, isPublic, groupId, userId)
+VALUES ($content, NOW(), $visibility, NULL, NULL, NULL, COALESCE($group_id, NULL), $id_user);
 END TRANSACTION;
 
 --Tran02
-BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO comment (post_id, user_id, content, commentDate) VALUES (?, ?, ?, NOW());
+BEGIN;SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+DO $$
+DECLARE
+     postOwnerId INT;
+     commentId INT;
+BEGIN
+     SELECT user_id INTO postOwnerId
+     FROM post
+     WHERE post_id=?;
+     INSERT INTO comment_ (post_id, user_id, comment_content, commentDate) VALUES (?, ?, ?, NOW())
+     RETURNING id INTO commentId;
+     INSERT INTO notification (content, is_read, notification_date, user_id)
+     VALUES ('User ' || ? || ' commented on your post.', FALSE, NOW(), postOwnerId);
+     INSERT INTO comment_notification (notification_id, comment_id)
+     VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), commentId);
+END $$
 COMMIT;
 
 --Tran03
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-INSERT INTO reaction (id, reactionType, reactionDate, postId, userId) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?);
-UPDATE post SET likes_count = likes_count + 1 WHERE id = ?;COMMIT;
+DO $$
+DECLARE
+   postOwnerId INT;
+    reactionId INT;
+BEGIN
+    SELECT user_id INTO postOwnerId
+    FROM post
+    WHERE post_id = $postId;
+    INSERT INTO reaction (reactionType, reaction_date, post_id, user_id) VALUES ($reactionType, NOW(), $postId, $userId)
+    RETURNING reaction_id INTO reactionId;
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || $userId || ' reacted to your post with ' || $reactionType, FALSE, NOW(), postOwnerId);
+    INSERT INTO reaction_notification (notification_id, reaction_id)
+    VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), reactionId);
+END $$;
+COMMIT;
 
 --Tran04
 BEGIN;
@@ -415,4 +443,144 @@ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 DELETE FROM comment WHERE post_id = ?;
 DELETE FROM reaction WHERE post_id = ?;
 DELETE FROM post WHERE id = ?;
+COMMIT;
+
+--Tran06
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+   INSERT INTO friend_request (request_date, request_status, sender_id, receiver_id)
+   VALUES (NOW(), 'pending', $sender_id, $receiver_id);
+   INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || $sender_id || ' sent you a friend request.', FALSE, NOW(), $receiver_id);
+   DECLARE notification_id INT;
+   SET notification_id = LASTVAL();
+   INSERT INTO friend_request_notification (notification_id, friend_request_id)
+   VALUES (notification_id, (SELECT MAX(request_id) FROM friend_request));
+COMMIT;
+
+
+--Tran07
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+UPDATE friend_request SET requestStatus = 'accepted' WHERE id = $friend_request_id;
+INSERT INTO friendship (userId1, userId2) VALUES ($sender_id, $receiver_id);
+END TRANSACTION;
+
+
+--Tran08
+BEGIN TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO group (groupName, description, isPublic, ownerId)
+VALUES ($groupName, $description, $isPublic, $ownerId);
+COMMIT;
+
+
+--Tran09
+BEGIN TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+UPDATE comment SET userId = NULL, content = CONCAT('Deleted User: ', content) WHERE userId = $userId;
+UPDATE post SET userId = NULL, content = CONCAT('Deleted User Post: ', content) WHERE userId = $userId;
+UPDATE saved_post SET userId = NULL WHERE userId = $userId;
+UPDATE friend_request SET senderId = NULL WHERE senderId = $userId;
+UPDATE friend_request SET receiverId = NULL WHERE receiverId = $userId;
+UPDATE group_member SET userId = NULL WHERE userId = $userId;
+UPDATE group_owner SET userId = NULL WHERE userId = $userId;
+DELETE FROM user WHERE id = $userId;
+COMMIT TRANSACTION;
+
+
+--Tran10
+BEGIN TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO saved_post (userId, postId) VALUES ($userId, $postId);
+COMMIT;
+
+
+--Tran11
+BEGIN TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+DELETE FROM saved_post WHERE userId = $userId AND postId = $postId;
+COMMIT;
+
+
+--Tran12
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO join_group_request (group_id, user_id, request_status, requested_at)
+VALUES ($group_id, $user_id, 'pending', NOW());
+DECLARE groupOwnerId INT;
+SELECT owner_id INTO groupOwnerId
+FROM group_
+WHERE group_id = $group_id;
+INSERT INTO notification (content, is_read, notification_date, user_id)
+VALUES ('User ' || $user_id || ' has requested to join your group.', FALSE, NOW(), groupOwnerId);
+DECLARE notification_id INT; SET notification_id = LASTVAL(); -- Get the last inserted notification ID
+INSERT INTO group_request_notification (notification_id, group_request_id)
+VALUES (notification_id, (SELECT MAX(request_id) FROM join_group_request));
+COMMIT;
+
+
+--Tran13
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+DO $$
+DECLARE
+    groupOwnerId INT;
+    groupMemberIds INT[];
+    new_post_id INT;
+BEGIN
+    -- Insert the new post
+    INSERT INTO post (user_id, group_id, content, post_date)
+    VALUES ($user_id, $group_id, $content, NOW())
+    RETURNING post_id INTO new_post_id;
+
+    -- Get group owner ID
+    SELECT owner_id INTO groupOwnerId
+    FROM group_
+    WHERE group_id = $group_id;
+
+    -- Get IDs of all group members
+    SELECT ARRAY_AGG(user_id) INTO groupMemberIds
+    FROM group_member
+    WHERE group_id = $group_id;
+
+    -- Notification for the group owner
+    INSERT INTO notification (content, is_read, notification_date, user_id)
+    VALUES ('User ' || $user_id || ' has posted in your group.', FALSE, NOW(), groupOwnerId);
+    
+    -- Notifications for group members
+    FOREACH member_id IN ARRAY groupMemberIds LOOP
+        INSERT INTO notification (content, is_read, notification_date, user_id)
+        VALUES ('User ' || $user_id || ' has posted in the group.', FALSE, NOW(), member_id);
+        
+        -- Insert into group_post_notification
+        INSERT INTO group_post_notification (notification_id, post_id)
+        VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), new_post_id);
+    END LOOP;
+END $$;
+COMMIT;
+
+
+--Tran14
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+DECLARE requesterId INT;
+SELECT user_id, group_id INTO requesterId, group_id
+FROM join_group_request
+WHERE request_id = $request_id;
+UPDATE join_group_request
+SET request_status = 'accepted'
+WHERE request_id = $request_id;
+INSERT INTO group_member (user_id, group_id) VALUES (requesterId, group_id);
+SELECT owner_id INTO groupOwnerId
+FROM group_
+WHERE group_id = group_id;
+INSERT INTO notification (content, is_read, notification_date, user_id)
+VALUES ('Your request to join the group has been accepted.', FALSE, NOW(), requesterId);
+INSERT INTO notification (content, is_read, notification_date, user_id)
+VALUES ('User ' || requesterId || ' has joined your group.', FALSE, NOW(), groupOwnerId);
+DECLARE notification_id INT;
+SET notification_id = LASTVAL();
+INSERT INTO group_request_notification (notification_id, request_id)
+VALUES (notification_id, $request_id);
 COMMIT;
