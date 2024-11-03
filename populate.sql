@@ -1,3 +1,4 @@
+
 INSERT INTO user_ (username, email, profile_picture, user_password, is_public)
 VALUES
     ('alice_wonder', 'alice@example.com', 'alice.jpg', 'securepassword1', TRUE),
@@ -70,35 +71,35 @@ VALUES
 
 INSERT INTO post (user_id, group_id, content, IMAGE1, IMAGE2, IMAGE3, is_public, post_date)
 VALUES
-    (1, 1, 'Just finished reading a fantastic book!', NULL, 'book1.jpg', NULL, TRUE, DEFAULT),
-    (2, 2, 'Building a new project, check it out!', 'construction.jpg', NULL, NULL, TRUE, DEFAULT),
-    (3, 3, 'Check out my latest painting!', NULL, 'artwork1.jpg', 'artwork2.jpg', TRUE, DEFAULT),
-    (4, 4, 'Excited about the new tech innovations!', NULL, 'tech1.jpg', NULL, TRUE, DEFAULT),
-    (5, 5, 'Lets solve some mysteries together!', NULL, NULL, NULL, TRUE, DEFAULT),
-    (6, 6, 'Adopting a new puppy today!', NULL, 'puppy.jpg', NULL, TRUE, DEFAULT),
-    (7, 7, 'Just got back from my trip to Italy!', NULL, NULL, 'italy.jpg', TRUE, DEFAULT),
-    (8, 8, 'Tried a new recipe today, it was delicious!', 'recipe.jpg', NULL, NULL, TRUE, DEFAULT),
-    (9, 9, 'Just finished a 5k run, feeling great!', NULL, 'run.jpg', NULL, TRUE, DEFAULT),
-    (10, 10, 'Discovering new music every day!', NULL, NULL, 'music.jpg', TRUE, DEFAULT),
-    (1, 1, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (2, 2, 'New construction materials available!', 'materials.jpg', NULL, NULL, TRUE, DEFAULT),
-    (3, 3, 'Art competition coming up!', NULL, 'competition.jpg', NULL, TRUE, DEFAULT),
-    (4, 4, 'Latest gadget review is out!', NULL, NULL, 'gadget.jpg', TRUE, DEFAULT),
-    (5, 5, 'Share your best mystery story!', NULL, NULL, NULL, TRUE, DEFAULT),
-    (6, 6, 'What is your favorite pet?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (7, 7, 'Looking for travel buddies!', NULL, NULL, NULL, TRUE, DEFAULT),
-    (8, 8, 'Food festival this weekend!', NULL, NULL, 'festival.jpg', TRUE, DEFAULT),
-    (9, 9, 'Join my fitness challenge!', NULL, NULL, NULL, TRUE, DEFAULT),
-    (10, 10, 'Music festival coming soon!', NULL, 'festival.jpg', NULL, TRUE, DEFAULT),
-    (1, 2, 'What construction project are you working on?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (2, 3, 'Have you seen my latest drawing?', NULL, 'drawing.jpg', NULL, TRUE, DEFAULT),
-    (3, 4, 'What are your thoughts on AI?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (4, 5, 'Anyone solved a mystery recently?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (5, 6, 'Adopt, dont shop!', NULL, NULL, NULL, TRUE, DEFAULT),
-    (6, 7, 'Whats your favorite travel destination?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (7, 8, 'What dish should I try next?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (8, 9, 'Who wants to join me for a workout?', NULL, NULL, NULL, TRUE, DEFAULT),
-    (9, 10, 'Whats your go-to song for motivation?', NULL, NULL, NULL, TRUE, DEFAULT);
+    (1, NULL, 'Just finished reading a fantastic book!', NULL, 'book1.jpg', NULL, TRUE, DEFAULT),
+    (2, NULL, 'Building a new project, check it out!', 'construction.jpg', NULL, NULL, TRUE, DEFAULT),
+    (3, NULL, 'Check out my latest painting!', NULL, 'artwork1.jpg', 'artwork2.jpg', TRUE, DEFAULT),
+    (4, NULL, 'Excited about the new tech innovations!', NULL, 'tech1.jpg', NULL, TRUE, DEFAULT),
+    (5, NULL, 'Lets solve some mysteries together!', NULL, NULL, NULL, TRUE, DEFAULT),
+    (6, NULL, 'Adopting a new puppy today!', NULL, 'puppy.jpg', NULL, TRUE, DEFAULT),
+    (7, NULL, 'Just got back from my trip to Italy!', NULL, NULL, 'italy.jpg', TRUE, DEFAULT),
+    (8, NULL, 'Tried a new recipe today, it was delicious!', 'recipe.jpg', NULL, NULL, TRUE, DEFAULT),
+    (9, NULL, 'Just finished a 5k run, feeling great!', NULL, 'run.jpg', NULL, TRUE, DEFAULT),
+    (10, NULL, 'Discovering new music every day!', NULL, NULL, 'music.jpg', TRUE, DEFAULT),
+    (1, NULL, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (2, NULL, 'New construction materials available!', 'materials.jpg', NULL, NULL, TRUE, DEFAULT),
+    (3, NULL, 'Art competition coming up!', NULL, 'competition.jpg', NULL, TRUE, DEFAULT),
+    (4, NULL, 'Latest gadget review is out!', NULL, NULL, 'gadget.jpg', TRUE, DEFAULT),
+    (5, NULL, 'Share your best mystery story!', NULL, NULL, NULL, TRUE, DEFAULT),
+    (6, NULL, 'What is your favorite pet?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (7, NULL, 'Looking for travel buddies!', NULL, NULL, NULL, TRUE, DEFAULT),
+    (8, NULL, 'Food festival this weekend!', NULL, NULL, 'festival.jpg', TRUE, DEFAULT),
+    (9, NULL, 'Join my fitness challenge!', NULL, NULL, NULL, TRUE, DEFAULT),
+    (10, NULL, 'Music festival coming soon!', NULL, 'festival.jpg', NULL, TRUE, DEFAULT),
+    (1, NULL, 'What construction project are you working on?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (2, NULL, 'Have you seen my latest drawing?', NULL, 'drawing.jpg', NULL, TRUE, DEFAULT),
+    (3, NULL, 'What are your thoughts on AI?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (4, NULL, 'Anyone solved a mystery recently?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (5, NULL, 'Adopt, dont shop!', NULL, NULL, NULL, TRUE, DEFAULT),
+    (6, NULL, 'Whats your favorite travel destination?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (7, NULL, 'What dish should I try next?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (8, NULL, 'Who wants to join me for a workout?', NULL, NULL, NULL, TRUE, DEFAULT),
+    (9, NULL, 'Whats your go-to song for motivation?', NULL, NULL, NULL, TRUE, DEFAULT);
 
 INSERT INTO saved_post (user_id, post_id)
 VALUES
@@ -147,7 +148,7 @@ VALUES
     (9, 2, 'Fitness is a journey, not a destination!'),
     (10, 3, 'I love discovering new music!');
 
-INSERT INTO reaction (user_id, post_id, reactionType)
+INSERT INTO reaction (user_id, post_id, reaction_type)
 VALUES
     (1, 1, 'like'),
     (2, 2, 'laugh'),
@@ -172,20 +173,18 @@ VALUES
 
 INSERT INTO friend_request (sender_id, receiver_id, request_status)
 VALUES
-    (1, 2, 'requested'),
     (3, 4, 'accepted'),
     (2, 5, 'denied'),
-    (4, 6, 'requested'),
+    (4, 6, 'pending'),
     (6, 7, 'accepted'),
     (8, 9, 'denied'),
-    (10, 1, 'requested'),
+    (10, 1, 'pending'),
     (5, 2, 'accepted'),
-    (7, 1, 'requested'),
+    (7, 1, 'pending'),
     (2, 8, 'accepted');
 
 INSERT INTO friendship (user_id1, user_id2)
 VALUES
-    (1, 2),
     (3, 4),
     (5, 6),
     (7, 8),
@@ -213,18 +212,18 @@ VALUES
 
 INSERT INTO join_group_request (group_id, user_id, request_status)
 VALUES
-    (1, 3, 'requested'),
+    (1, 3, 'pending'),
     (2, 1, 'accepted'),
     (3, 4, 'denied'),
-    (4, 5, 'requested'),
+    (4, 5, 'pending'),
     (5, 6, 'accepted'),
     (6, 7, 'denied'),
-    (7, 8, 'requested'),
+    (7, 8, 'pending'),
     (8, 9, 'accepted'),
     (9, 10, 'denied'),
-    (10, 1, 'requested'),
+    (10, 1, 'pending'),
     (1, 2, 'accepted'),
-    (2, 3, 'requested'),
+    (2, 3, 'pending'),
     (3, 4, 'denied');
 
 INSERT INTO group_member (user_id, group_id)
