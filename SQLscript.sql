@@ -383,3 +383,36 @@ BEFORE INSERT OR UPDATE ON join_group_request
 FOR EACH ROW
 EXECUTE FUNCTION enforce_group_membership_control();
 
+-- Transactions
+
+--Tran01
+BEGIN TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO post (content, postDate, isPublic, groupId, userId) VALUES ($content, NOW(), $visibility, $group_id, $id_user); 
+END TRANSACTION;
+
+--Tran02
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO comment (post_id, user_id, content, commentDate) VALUES (?, ?, ?, NOW());
+COMMIT;
+
+--Tran03
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO reaction (id, reactionType, reactionDate, postId, userId) VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?);
+UPDATE post SET likes_count = likes_count + 1 WHERE id = ?;COMMIT;
+
+--Tran04
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+UPDATE users SET name = ?, email = ?, profilePicture = ? WHERE id = ?;
+COMMIT;
+
+--Tran05
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+DELETE FROM comment WHERE post_id = ?;
+DELETE FROM reaction WHERE post_id = ?;
+DELETE FROM post WHERE id = ?;
+COMMIT;
