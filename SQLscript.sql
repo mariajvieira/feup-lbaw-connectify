@@ -153,3 +153,144 @@ CREATE TABLE group_post_notification (
     notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE
 );
+
+-- Triggers 
+
+-- TRIGGER01: Enforces that only approved friends can view private profiles (BR01, BR07)
+CREATE OR REPLACE FUNCTION enforce_profile_visibility()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.isPublic = FALSE THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM friendship
+            WHERE (userId1 = NEW.id AND userId2 = current_user)
+               OR (userId2 = NEW.id AND userId1 = current_user)
+        ) THEN
+            RAISE EXCEPTION 'Private profile. Access denied.';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_profile_visibility
+BEFORE SELECT ON user
+FOR EACH ROW
+EXECUTE FUNCTION enforce_profile_visibility();
+
+
+-- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
+CREATE OR REPLACE FUNCTION enforce_friend_request_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM friend_request
+        WHERE senderId = NEW.senderId
+          AND receiverId = NEW.receiverId
+          AND requestStatus NOT IN ('Declined', 'Canceled')
+    ) THEN
+        RAISE EXCEPTION 'Not successful: cannot send more than one friend request to the same user.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_friend_request_limit
+BEFORE INSERT ON friend_request
+FOR EACH ROW
+EXECUTE FUNCTION enforce_friend_request_limit();
+
+
+-- TRIGGER03: Prevents multiple reactions from the same user on a single post (BR04)
+CREATE OR REPLACE FUNCTION enforce_reaction_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM reaction
+        WHERE postId = NEW.postId
+          AND userId = NEW.userId
+    ) THEN
+        RAISE EXCEPTION 'User already reacted to this post.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_reaction_limit
+BEFORE INSERT ON reaction
+FOR EACH ROW
+EXECUTE FUNCTION enforce_reaction_limit();
+
+
+-- TRIGGER04: Ensures each post has content (text or media) (BR08)
+CREATE OR REPLACE FUNCTION enforce_post_content()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.content IS NULL AND NEW.image1 IS NULL AND NEW.image2 IS NULL AND NEW.image3 IS NULL THEN
+        RAISE EXCEPTION 'A post must contain text or at least one image.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_post_content
+BEFORE INSERT OR UPDATE ON post
+FOR EACH ROW
+EXECUTE FUNCTION enforce_post_content();
+
+
+-- TRIGGER05: Anonymizes user data upon account deletion, retaining content (BR05)
+CREATE OR REPLACE FUNCTION anonymize_user_data()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE comment SET userId = NULL WHERE userId = OLD.id;
+    UPDATE reaction SET userId = NULL WHERE userId = OLD.id;
+    UPDATE post SET userId = NULL WHERE userId = OLD.id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_anonymize_user_data
+AFTER DELETE ON user
+FOR EACH ROW
+EXECUTE FUNCTION anonymize_user_data();
+
+
+-- TRIGGER06: Ensures users can only post in groups they belong to (BR11)
+CREATE OR REPLACE FUNCTION enforce_group_posting()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM group_member
+        WHERE groupId = NEW.groupId AND userId = NEW.userId
+    ) THEN
+        RAISE EXCEPTION 'User must be a member of the group to post.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_group_posting
+BEFORE INSERT ON post
+FOR EACH ROW
+EXECUTE FUNCTION enforce_group_posting();
+
+
+-- TRIGGER07: Requires group owner's approval for joining private groups (BR03)
+CREATE OR REPLACE FUNCTION enforce_group_membership_control()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (SELECT isPublic FROM group WHERE id = NEW.groupId) = FALSE THEN
+        IF NEW.requestStatus = 'Pending' THEN
+            RAISE EXCEPTION 'Group membership requires owner approval.';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_group_membership_control
+BEFORE INSERT OR UPDATE ON join_group_request
+FOR EACH ROW
+EXECUTE FUNCTION enforce_group_membership_control();
+
