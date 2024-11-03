@@ -154,6 +154,89 @@ CREATE TABLE group_post_notification (
     post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE
 );
 
+-- Full-text Search Indices
+
+-- User FTS index
+ALTER TABLE user_
+ADD COLUMN tsvectors TSVECTOR;
+
+CREATE FUNCTION user_search_update() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN 
+        NEW.tsvectors = to_tsvector('portuguese', NEW.username);
+    END IF;
+    IF TG_OP = 'UPDATE' THEN 
+        IF (NEW.username <> OLD.username) THEN
+            NEW.tsvectors = to_tsvector('portuguese', NEW.username); 
+        END IF;
+    END IF;
+ RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_search_update
+BEFORE INSERT OR UPDATE ON user_
+FOR EACH ROW
+EXECUTE PROCEDURE user_search_update();
+
+CREATE INDEX idx_user_search ON user_ USING GIN (tsvectors);
+
+-- Post FTS index
+ALTER TABLE post
+ADD COLUMN tsvectors TSVECTOR;
+
+CREATE FUNCTION post_search_update() RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN 
+    NEW.tsvectors = to_tsvector('portuguese', NEW.content);
+  END IF
+  IF TG_OP = 'UPDATE' THEN 
+    IF (NEW.content <> OLD.content) THEN
+      NEW.tsvectors = to_tsvector('portuguese', NEW.content); 
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER post_search_update
+BEFORE INSERT OR UPDATE ON post
+FOR EACH ROW
+EXECUTE PROCEDURE post_search_update();
+
+CREATE INDEX idx_post_content ON post USING GIN (tsvectors);
+
+-- Group FTS index
+ALTER TABLE group_
+ADD COLUMN tsvectors TSVECTOR;
+
+CREATE FUNCTION group_search_update() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN 
+      NEW.tsvectors = (
+        setweight(to_tsvector('portuguese', NEW.groupName), 'A') ||
+        setweight(to_tsvector('portuguese', NEW.description), 'B')
+      );
+    END IF
+    IF TG_OP = 'UPDATE' THEN
+      IF (NEW.groupName <> OLD.groupName OR NEW.description <> OLD.description) THEN
+        NEW.tsvectors = (
+          setweight(to_tsvector('portuguese', NEW.groupName), 'A') ||
+          setweight(to_tsvector('portuguese', NEW.description), 'B')
+        );
+      END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER group_search_update
+BEFORE INSERT OR UPDATE ON group_
+FOR EACH ROW
+EXECUTE PROCEDURE group_search_update();
+
+CREATE INDEX idx_group_description ON group_ USING GIN (tsvectors);
+
 -- Triggers 
 
 -- TRIGGER01: Enforces that only approved friends can view private profiles (BR01, BR07)
