@@ -63,7 +63,7 @@ CREATE TABLE post (
     IMAGE3 TEXT,
     is_public BOOLEAN DEFAULT TRUE NOT NULL,
     post_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (content IS NOT NULL OR IMAGE1 IS NOT NULL)
+    CHECK ((content IS NOT NULL OR IMAGE1 IS NOT NULL) OR group_id IS NULL)
 );
 
 CREATE TABLE saved_post (
@@ -158,6 +158,8 @@ CREATE TABLE group_post_notification (
 -- Perfomance Indices
 
 CREATE INDEX idx_user_posts ON post(user_id);
+CLUSTER Post USING idx_user_posts;
+
 CREATE INDEX idx_post_postdate ON post(post_date);
 CREATE INDEX idx_notification_user_date ON notification (user_id, notification_date);
 
@@ -279,9 +281,9 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM friend_request
-        WHERE senderId = NEW.senderId
-          AND receiverId = NEW.receiverId
-          AND requestStatus NOT IN ('denied')
+        WHERE sender_id = NEW.sender_id
+          AND receiver_id = NEW.receiver_id
+          AND request_status NOT IN ('denied')
     ) THEN
         RAISE EXCEPTION 'Not successful: cannot send more than one friend request to the same user.';
     END IF;
@@ -301,8 +303,8 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM reaction
-        WHERE postId = NEW.postId
-          AND userId = NEW.userId
+        WHERE post_id = NEW.post_id
+          AND user_id = NEW.user_id
     ) THEN
         RAISE EXCEPTION 'User already reacted to this post.';
     END IF;
@@ -355,12 +357,14 @@ EXECUTE FUNCTION anonymize_user_data();
 CREATE OR REPLACE FUNCTION enforce_group_posting()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM group_member
-        WHERE groupId = NEW.groupId AND userId = NEW.userId
-    ) THEN
-        RAISE EXCEPTION 'User must be a member of the group to post.';
-    END IF;
+    IF NEW.group_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM group_member
+            WHERE group_id = NEW.group_id AND user_id = NEW.user_id
+        ) THEN
+            RAISE EXCEPTION 'User must be a member of the group to post.';
+        END IF;
+    END IF; 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -371,12 +375,13 @@ FOR EACH ROW
 EXECUTE FUNCTION enforce_group_posting();
 
 
+
 -- TRIGGER07: Requires group owner's approval for joining private groups (BR03)
 CREATE OR REPLACE FUNCTION enforce_group_membership_control()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF (SELECT isPublic FROM group_ WHERE id = NEW.groupId) = FALSE THEN
-        IF NEW.requestStatus = 'Pending' THEN
+    IF (SELECT is_public FROM group_ WHERE group_id = NEW.group_id) = FALSE THEN
+        IF NEW.request_status = 'Pending' THEN
             RAISE EXCEPTION 'Group membership requires owner approval.';
         END IF;
     END IF;
@@ -455,7 +460,7 @@ BEGIN
     VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), reactionId);
 END; $$ LANGUAGE plpgsql;
 
-
+--Tran04
 CREATE OR REPLACE FUNCTION update_user_info(userId INT, newName TEXT, newEmail TEXT, newProfilePicture TEXT) 
 RETURNS VOID AS $$
 BEGIN
@@ -513,7 +518,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION create_group(group_name TEXT, description TEXT, is_public BOOLEAN, owner_id INT) 
 RETURNS VOID AS $$
 BEGIN
-    INSERT INTO "group" (groupName, description, isPublic, ownerId)
+    INSERT INTO "group" (groupName, description, is_public, ownerId)
     VALUES (group_name, description, is_public, owner_id);
 END; 
 $$ LANGUAGE plpgsql;
@@ -616,7 +621,7 @@ DECLARE
     groupOwnerId INT;
     groupMemberIds INT[];
     new_post_id INT;
-    member_id INT; 
+    member_id INT;  -- Declare member_id here
 BEGIN
     INSERT INTO post (user_id, group_id, content, post_date)
     VALUES (p_user_id, p_group_id, p_content, NOW())
@@ -645,7 +650,7 @@ END $$ LANGUAGE plpgsql;
 
 -- Tran14
 CREATE OR REPLACE FUNCTION accept_join_group_request(
-    p_request_id INT 
+    p_request_id INT  -- Declare request_id as a parameter
 )
 RETURNS VOID AS $$
 DECLARE
@@ -654,17 +659,21 @@ DECLARE
     groupOwnerId INT;  
     notification_id INT; 
 BEGIN
+    -- Select user_id and group_id from the join_group_request table
     SELECT user_id, group_id INTO requesterId, groupId
     FROM join_group_request
-    WHERE request_id = p_request_id;
+    WHERE request_id = p_request_id;  -- Use the parameter instead
 
+    -- Update the request status to accepted
     UPDATE join_group_request
     SET request_status = 'accepted'
-    WHERE request_id = p_request_id; 
+    WHERE request_id = p_request_id;  -- Use the parameter instead
 
+    -- Insert the new group member
     INSERT INTO group_member (user_id, group_id) 
     VALUES (requesterId, groupId);
 
+    -- Get the group owner's ID
     SELECT owner_id INTO groupOwnerId
     FROM group_
     WHERE group_id = groupId;
@@ -672,12 +681,12 @@ BEGIN
     INSERT INTO notification (content, is_read, notification_date, user_id)
     VALUES ('Your request to join the group has been accepted.', FALSE, NOW(), requesterId);
 
-    -- Create a notification for the group owner
     INSERT INTO notification (content, is_read, notification_date, user_id)
     VALUES ('User ' || requesterId || ' has joined your group.', FALSE, NOW(), groupOwnerId);
 
     notification_id := currval(pg_get_serial_sequence('notification', 'notification_id'));
 
+ 
     INSERT INTO group_request_notification (notification_id, request_id)
-    VALUES (notification_id, p_request_id); 
+    VALUES (notification_id, p_request_id);
 END $$ LANGUAGE plpgsql;
