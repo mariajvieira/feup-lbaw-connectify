@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: Connectify API
+  version: 1.0.0
+  description: Web Resoureces Specification for Connectify API
+  
+servers:
+  - url: https://lbaw2453.lbaw.fe,up.pt
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Operations related to user authentication
+  - name: Users
+    description: Operations related to users
+  - name: Posts
+    description: Operations related to posts
+  - name: Comments
+    description: Operations related to comments
+  - name: Groups
+    description: Operations related to Groups
+  - name: Friendship Requests
+    description: Operations related to Friendship Requests
+  - name: Group Requests
+    description: Operations related to Group Requests
+
+paths:
+
+#################################### Authentication ####################################
+# Register a new user
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                confirmPassword:
+                  type: string
+              required:
+                - username
+                - email
+                - password
+                - confirmPassword
+      responses:
+        '201':
+          description: User successfully registered
+        '400':
+          description: Invalid input
+
+# Login a user
+  /auth/login:
+    post:
+      summary: Login a user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Unauthorized, invalid credentials
+
+# Logout a user
+  /auth/logout:
+    post:
+      summary: Logout a user
+      description: Logs out the currently authenticated user
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized, user not logged in
+
+## ###########################################Users############################################ 
+# Profile
+  /users/{userId}:
+    get:
+      summary: Get user profile by ID
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  isPublic:
+                    type: boolean
+        '404':
+          description: User not found
+
+# Get user home page
+/home:
+  get:
+    summary: Get user home page
+    tags:
+      - Users
+    responses:
+      '200':
+        description: User home page retrieved
+      '302':
+        description: Redirect to login page
+
+#Edit user profile
+/user/editProfile:
+  post:
+    summary: Edit user profile
+    tags:
+      - Users
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+              email:
+                type: string
+                format: email
+              profilePicture:
+                type: string
+                format: uri
+              isPublic:
+                type: boolean
+            required:
+              - username
+              - email
+              - isPublic
+    responses:
+      '200':
+        description: Profile edited successfully
+      '403':
+        description: Forbidden, user not allowed to edit profile
+
+#Delete user profile
+/user/deleteProfile:
+  post:
+    summary: Delete user profile
+    tags:
+      - Users
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: integer
+            required:
+              - userId
+      responses:
+        '302':
+          description: 'Redirect after deleting user information.'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful delete. Redirect to login page.'
+        '403':
+          description: 'Forbidden, user not allowed to delete profile.'
+
+
+
+#################Friendship Requests######################
+
+/user/sendRequest:
+  post:
+    summary: Send a friendship request
+    tags:
+      - Friendship Requests
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: integer
+            required:
+              - userId
+    responses:
+      '200':
+        description: Request sent successfully
+      '403':
+        description: Forbidden, user not allowed to send request
+
+/user/acceptRequest:
+  post:
+    summary: Accept a friendship request
+    tags:
+      - Friendship Requests
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: integer
+            required:
+              - userId
+    responses:
+      '200':
+        description: Request accepted successfully
+      '403':
+        description: Forbidden, user not allowed to accept request
+
+/user/rejectRequest:
+  post:
+    summary: Reject a friendship request
+    tags:
+      - Friendship Requests
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              userId:
+                type: integer
+            required:
+              - userId
+    responses:
+      '200':
+        description: Request rejected successfully
+      '403':
+        description: Forbidden, user not allowed to reject request
+########################POSTS######################
+
+##Create a new post
+  /post/create:
+    post:
+      summary: Create a new post
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                imageUrls:
+                  type: array
+                  items:
+                    type: string
+                  description: List of image URLs
+                isPublic:
+                  type: boolean
+              required:
+                - content
+      responses:
+        '302':
+          description: 'Redirect after processing new post'          
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful post create. Redirect back.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
+
+  /post/{postId}:
+    get:
+      summary: Get post by post ID
+      tags:
+        - Posts
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  content:
+                    type: string
+                  imageUrls:
+                    type: array
+                    items:
+                      type: string
+                  postDate:
+                    type: string
+                    format: date-time
+                  isPublic:
+                    type: boolean
+                  userId:
+                    type: string
+        '404':
+          description: Post not found
+
+# Delete a post
+  /post/delete:
+    post:
+      summary: Delete a post
+      tags:
+        - Posts
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+              required:
+                - postId
+      responses:
+      '200':
+        description: Post deleted successfully
+      '403':
+        description: Forbidden, user not allowed to delete post  
+
+#Edit a post
+  /post/edit:
+    post:
+      summary: Edit a post
+      tags:
+        - Posts
+      
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                content:
+                  type: string
+                imageUrls:
+                  type: array
+                  items:
+                    type: string
+                  description: List of image URLs
+                isPublic:
+                  type: boolean
+              required:
+                - postId
+                - content
+      responses:
+      '200':
+        description: Post edited successfully
+      '403':
+        description: Forbidden, user not allowed to edit post
+
+#Comment
+  /posts/{postId}/comments:
+    post:
+      summary: Add a comment to a post
+      tags:
+        - Comments
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+      responses:
+        '201':
+          description: Comment added successfully
+        '404':
+          description: Post not found
+
+      get:
+        summary: Get comments of a post
+        tags:
+          - Comments
+        parameters:
+          - name: postId
+            in: path
+            required: true
+            description: The ID of the post
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Comments retrieved
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      content:
+                        type: string
+                      commentDate:
+                        type: string
+                        format: date-time
+                      userId:
+                        type: string
+          '404':
+            description: Post not found
+
+  /notifications:
+    get:  
+      summary: Get user notifications
+      tags:
+        - Notifications
+      responses:
+        '200':
+          description: Notifications retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    isRead:
+                      type: boolean
+                    notificationDate:
+                      type: string
+                      format: date-time
+
+  /notifications/{notificationId}/read:
+    patch:
+      summary: Mark a notification as read
+      tags:
+        - Notifications
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The ID of the notification
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification marked as read
+        '404':
+          description: Notification not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        profilePicture:
+          type: string
+          format: uri
+        isPublic:
+          type: boolean
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        postDate:
+          type: string
+          format: date-time
+        isPublic:
+          type: boolean
+        userId:
+          type: string
