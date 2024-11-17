@@ -102,7 +102,7 @@ paths:
 
 ## ###########################################Users############################################ 
 # Profile
-  /users/{userId}:
+  /user/{userId}:
     get:
       summary: Get user profile by ID
       tags:
@@ -134,7 +134,7 @@ paths:
           description: User not found
 
 # Get user home page
-/home:
+user/home:
   get:
     summary: Get user home page
     tags:
