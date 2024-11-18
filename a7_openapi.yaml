@@ -1,45 +1,123 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Connectify API
-  version: 1.0.0
-  description: Web Resoureces Specification for Connectify API
+  version : 1.0
+  title: 'Connectify Web API'
+  description: 'Web Resources Specification for Connectify API'
   
 servers:
-  - url: https://lbaw2453.lbaw.fe,up.pt
+  - url: https://lbaw2453.lbaw.fe.up.pt
     description: Production server
 
+externalDocs:
+  description: Find more info here.
+  url: https://gitlab.up.pt/lbaw/lbaw2223/lbaw2453/-/wikis/eap
+
 tags:
-  - name: Authentication
-    description: Operations related to user authentication
-  - name: Users
-    description: Operations related to users
-  - name: Posts
-    description: Operations related to posts
-  - name: Comments
-    description: Operations related to comments
-  - name: Groups
-    description: Operations related to Groups
-  - name: Friendship Requests
-    description: Operations related to Friendship Requests
-  - name: Group Requests
-    description: Operations related to Group Requests
+  - name: 'M01: Authentication'
+  - name: 'M02: Users'
+  - name: 'M03: Posts'
+  - name: 'M04: Friendship Requests'
+  - name: 'M05: Comments'
+  - name: 'M06: Reactions'
+  - name: 'M07: Groups'
+  - name: 'M08: Notifications'
+  - name: 'M09: Administration'
 
 paths:
 
 #################################### Authentication ####################################
-# Register a new user
-  /auth/register:
-    post:
-      summary: Register a new user
+
+  /login:
+   get:
+      operationId: R101
+      summary: 'R101: Login Form'
+      description: 'Provide login form. Access: GST'
       tags:
-        - Authentication
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show log-in UI'
+    post:
+      operationId: R102
+      summary: 'R102: Login Action'
+      description: 'Processes the login form submission. Access: GST'
+      tags:
+        - 'M01: Authentication'
       requestBody:
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
               properties:
+                email:         
+                  type: string
+                password:   
+                  type: string
+              required:
+                - email
+                - password
+
+      responses:
+        '302':
+          description: 'Redirect after processing the login credentials.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user profile.'
+                  value: '/users/{id}'
+                302Error:
+                  description: 'Failed authentication. Redirect to login form.'
+                  value: '/login'
+
+
+  /logout:
+    post:
+      operationId: R103
+      summary: 'R103: Logout Action'
+      description: 'Logout the current authenticated used. Access: USR, ADM'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '302':
+          description: 'Redirect after processing logout.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful logout. Redirect to login form.'
+                  value: '/login'
+
+
+  /register:
+    get:
+      operationId: R104
+      summary: 'R104: Register Form'
+      description: 'Provide new user registration form. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show sign-up UI'
+
+    post:
+      operationId: R105
+      summary: 'R105: Register Action'
+      description: 'Processes the new user registration form submission. Access: GST'
+      tags:
+        - 'M01: Authentication'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
                 username:
                   type: string
                 email:
@@ -54,59 +132,115 @@ paths:
                 - email
                 - password
                 - confirmPassword
-      responses:
-        '201':
-          description: User successfully registered
-        '400':
-          description: Invalid input
 
-# Login a user
-  /auth/login:
+      responses:
+        '302':
+          description: 'Redirect after processing the new user information.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user profile.'
+                  value: '/users/{id}'
+                302Failure:
+                  description: 'Failed authentication. Redirect to login form.'
+                  value: '/login'
+
+  /sendVerificationCode:
+
     post:
-      summary: Login a user
+      operationId: R106
+      summary: 'R106 : Send Verification Code Action'
+      description: 'Sends email with validation code. Access: GST'
       tags:
-        - Authentication
+        - 'M01: Authentication'
+
       requestBody:
         required: true
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
               properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
+                e-mail:
+                  type: string 
               required:
                 - email
-                - password
+               
       responses:
         '200':
-          description: Login successful
-        '401':
-          description: Unauthorized, invalid credentials
+          description: 'Ok. You received a verification code on your email.'
+        '404':
+          description: 'Error. Email doesnt exists.'
 
-# Logout a user
-  /auth/logout:
+
+
+  /recoverPassword:
     post:
-      summary: Logout a user
-      description: Logs out the currently authenticated user
+      operationId: R107
+      summary: 'R107 : Recover Password Action'
+      description: 'Changes the password with the validation code received on email. Access: GST'
       tags:
-        - Authentication
+        - 'M01: Authentication'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                verify_password:
+                  type: string
+                  format: password
+              required:
+                - code
+                - password
+                - verify_password;
+
       responses:
         '200':
-          description: Logout successful
-        '401':
-          description: Unauthorized, user not logged in
+          description: 'Ok. Your password was changed successfully.'
+        '404':
+          description: 'Error. Invalid code.'
 
-## ###########################################Users############################################ 
-# Profile
-  /user/{userId}:
+
+  /users/{id}:
     get:
-      summary: Get user profile by ID
+      operationId: R108
+      summary: 'R108: View user profile'
+      description: 'Show the individual user profile. Access: USR'
       tags:
-        - Users
+        - 'M01: Authentication'
+
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+
+      responses:
+        '200':
+          description: 'Ok. Show view profile UI'
+
+
+#############################################Users############################################ 
+
+  /users/{userId}:
+    get:
+      operationId: R201
+      summary: 'R201: View user profile'
+      description: 'Show the profile for an individual user, Access: GST, USR, OWN, ADM'
+      tags:
+        - 'M02: Users'
       parameters:
         - name: userId
           in: path
@@ -116,7 +250,7 @@ paths:
             type: string
       responses:
         '200':
-          description: User profile retrieved
+          description: 'OK. Show user profile'
           content:
             application/json:
               schema:
@@ -133,24 +267,14 @@ paths:
         '404':
           description: User not found
 
-# Get user home page
-  /user/home:
-    get:
-      summary: Get user home page
-      tags:
-        - Users
-      responses:
-        '200':
-          description: User home page retrieved
-        '302':
-          description: Redirect to login page
-
-#Edit user profile
+  #Edit user profile
   /user/editProfile:
     post:
-      summary: Edit user profile
+      OperationId: R202
+      summary: 'R202: Edit user profile'
+      description: 'Edit user profile. Access: USR, OWN'
       tags:
-        - Users
+        - 'M02: Users'
       requestBody:
         required: true
         content:
@@ -173,17 +297,27 @@ paths:
                 - email
                 - isPublic
       responses:
-        '200':
-          description: Profile edited successfully
-        '403':
-          description: Forbidden, user not allowed to edit profile
+        '302':
+          description: 'Redirect after editing user information.'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful edit. Redirect to user profile.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
+
 
   #Delete user profile
   /user/deleteProfile:
     post:
-      summary: Delete user profile
+      OperationId: R203
+      summary: 'R203: Delete user profile'
+      description: 'Delete user profile. Access: USR, OWN'
       tags:
-        - Users
+        - 'M02: Users'
       requestBody:
         required: true
         content:
@@ -214,9 +348,11 @@ paths:
 
   /user/sendRequest:
     post:
-      summary: Send a friendship request
+      operationId: R401
+      summary: 'R401: Send a friendship request'
+      description: 'Send a friendship request to another user. Access: USR'
       tags:
-        - Friendship Requests
+        - 'M04: Friendship Requests'
       requestBody:
         required: true
         content:
@@ -236,9 +372,11 @@ paths:
 
   /user/acceptRequest:
     post:
-      summary: Accept a friendship request
+      operationId: R402
+      summary: 'R402: Accept a friendship request'
+      description: 'Accept a friendship request from another user. Access: USR'
       tags:
-        - Friendship Requests
+        - 'M02: Friendship Requests'
       requestBody:
         required: true
         content:
@@ -260,7 +398,7 @@ paths:
     post:
       summary: Reject a friendship request
       tags:
-        - Friendship Requests
+        - 'M02: Friendship Requests'	
       requestBody:
         required: true
         content:
@@ -551,3 +689,6 @@ paths:
             type: boolean
           userId:
             type: string
+
+
+  ...
