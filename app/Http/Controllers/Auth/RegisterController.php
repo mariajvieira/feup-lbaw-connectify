@@ -28,14 +28,24 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:250',
+            'username' => 'required|string|max:250',
             'email' => 'required|email|max:250|unique:users',
-            'password' => 'required|min:8|confirmed'
+            'password' => 'required|min:8|confirmed',
+            'password_confirmation' => 'required',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        
         ]);
+
+        $profile_picture = '../../images/default.png'; 
+
+        if ($request->hasFile('profile_picture')) {
+            $profilePicturePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'profile_picture' => $profile_picture,
             'password' => Hash::make($request->password)
         ]);
 

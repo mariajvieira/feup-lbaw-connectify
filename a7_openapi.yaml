@@ -347,8 +347,17 @@ paths:
   #################Friendship Requests######################
 
   /user/sendRequest:
+    get:
+     operationId: R401
+     summary: 'friendship request form'
+     description: 'Provide friendship request form. Access: USR'
+     tags:
+       - 'M04: Friendship Requests'
+      responses:
+        '200':
+          description: 'Ok. Show friendship request form'
     post:
-      operationId: R401
+      operationId: R402
       summary: 'R401: Send a friendship request'
       description: 'Send a friendship request to another user. Access: USR'
       tags:
@@ -365,18 +374,34 @@ paths:
               required:
                 - userId
       responses:
-        '200':
-          description: Request sent successfully
-        '403':
-          description: Forbidden, user not allowed to send request
+      '302':
+        description: 'Redirect after sending request.'
+        headers:
+          Location:
+            schema:
+              type: string
+            example:
+              302Success:
+                description: 'Successful request sent. Redirect back.'
+              302Failure:
+                description: 'Failed. Redirect back.'
 
   /user/acceptRequest:
+    get:
+      operationId: R403
+      summary: 'friendship request form'
+      description: 'Provide friendship request form. Access: USR'
+      tags:
+        - 'M04: Friendship Requests'
+      responses:
+        '200':
+          description: 'Ok. Show friendship request form'
     post:
-      operationId: R402
-      summary: 'R402: Accept a friendship request'
+      operationId: R405
+      summary: 'R405: Accept a friendship request'
       description: 'Accept a friendship request from another user. Access: USR'
       tags:
-        - 'M02: Friendship Requests'
+        - 'M04: Friendship Requests'
       requestBody:
         required: true
         content:
@@ -389,14 +414,22 @@ paths:
               required:
                 - userId
       responses:
-        '200':
-          description: Request accepted successfully
-        '403':
-          description: Forbidden, user not allowed to accept request
+        '302':
 
   /user/rejectRequest:
+    get:
+      operationId: R405
+      summary: 'friendship request form'
+      description: 'Provide friendship request form. Access: USR'
+      tags:
+        - 'M04: Friendship Requests'
+      responses:
+        '200':
+          description: 'Ok. Show friendship request form'
     post:
-      summary: Reject a friendship request
+      operationId: R406
+      summary: 'R403: Reject a friendship request'
+      description: 'Reject a friendship request from another user. Access: USR'
       tags:
         - 'M02: Friendship Requests'	
       requestBody:
@@ -419,6 +452,15 @@ paths:
 
   ##Create a new post
     /post/create:
+      get:
+        operationId: R501
+        summary: 'R501: Create a new post'
+        description: 'Provide post creation form. Access: USR'
+        tags:
+          - 'M03: Posts'
+        responses:
+          '200':
+            description: 'Ok. Show post creation form'
       post:
         summary: Create a new post
         tags:

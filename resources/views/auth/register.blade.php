@@ -4,6 +4,15 @@
 <form method="POST" action="{{ route('register') }}">
     {{ csrf_field() }}
 
+  
+    <label for="profile_picture">Profile Picture</label>
+    <input id="profile_picture" type="file" name="profile_picture" accept="image/*">
+    @if ($errors->has('profile_picture'))
+      <span class="error">
+          {{ $errors->first('profile_picture') }}
+      </span>
+    @endif
+
     <label for="name">Name</label>
     <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus>
     @if ($errors->has('name'))
