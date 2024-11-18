@@ -24,7 +24,7 @@ class UserController extends Controller
             'username' => $user->username,
             'email' => $user->email,
             'profilePicture' => $user->profilePicture,
-            'isPublic' => $user->isPublic
+            'is_public' => $user->is_public
         ]);
     }
 
@@ -43,7 +43,7 @@ class UserController extends Controller
             'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8|confirmed',
             'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'isPublic' => 'nullable|boolean',
+            'is_public' => 'nullable|boolean',
         ]);
 
     
@@ -66,8 +66,8 @@ class UserController extends Controller
             $user->profilePicture = $request->file('profilePicture')->store('profile_pictures', 'public');
         }
 
-        if ($request->has('isPublic')) {
-            $user->isPublic = $request->isPublic;
+        if ($request->has('is_public')) {
+            $user->is_public = $request->is_public;
         }
 
         $user->save();

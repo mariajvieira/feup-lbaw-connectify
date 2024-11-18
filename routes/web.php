@@ -4,11 +4,10 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\ItemController;
-
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\CommentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,4 +59,10 @@ Route::controller(UserController::class)->group(function () {
     Route::get('/profile/{id}', 'getProfile');
     Route::put('/profile/{id}', 'editProfile');
     Route::delete('/profile/{id}', 'deleteProfile');
+});
+
+//Comment Routes
+Route::controller(CommentController::class)->group(function () {
+    Route::post('/posts/{postId}/comments', 'addComment');
+    Route::get('/posts/{postId}/commnets',  'getComments');
 });

@@ -32,7 +32,8 @@ class RegisterController extends Controller
             'email' => 'required|email|max:250|unique:users',
             'password' => 'required|min:8|confirmed',
             'password_confirmation' => 'required',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'is_public' => 'required|boolean'
         
         ]);
 
@@ -46,6 +47,7 @@ class RegisterController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'profile_picture' => $profile_picture,
+            'is_public' => $request->is_public,
             'password' => Hash::make($request->password)
         ]);
 
