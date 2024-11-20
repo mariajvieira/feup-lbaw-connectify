@@ -21,7 +21,8 @@ tags:
   - name: 'M06: Reactions'
   - name: 'M07: Groups'
   - name: 'M08: Notifications'
-  - name: 'M09: Administration'
+  - name: 'M09: Search'
+  
 
 paths:
 
@@ -1008,6 +1009,7 @@ paths:
                   value: '/group/{groupId}'              	    
 
   /group/delete:
+    post:
       operationId: R705
       summary: 'R705: Delete a group'
       description: 'Delete a group. Access: USR, OWN'
@@ -1030,85 +1032,243 @@ paths:
         '403':
           description: Forbidden, user not allowed to delete group
 ##
+  /group/RequestJoin:
+    post:
+      operationId: R706 
+      summary: 'R706: Join a group'
+      description: 'Join a group. Access: USR'
+      tags:
+        - 'M07: Groups'
 
-
-    /notifications:
-      get:  
-        summary: Get user notifications
-        tags:
-          - Notifications
-        responses:
-          '200':
-            description: Notifications retrieved
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      content:
-                        type: string
-                      isRead:
-                        type: boolean
-                      notificationDate:
-                        type: string
-                        format: date-time
-
-    /notifications/{notificationId}/read:
-      patch:
-        summary: Mark a notification as read
-        tags:
-          - Notifications
-        parameters:
-          - name: notificationId
-            in: path
-            required: true
-            description: The ID of the notification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
             schema:
-              type: string
-        responses:
-          '200':
-            description: Notification marked as read
-          '404':
-            description: Notification not found
-  components:
-    schemas:
-      User:
-        type: object
-        properties:
-          id:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                groupId:
+                  type: integer
+              required:
+                - groupId
+                - userId
+      responses:
+        '302':
+          description: 'Redirect after processing join group'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful group join. Redirect back.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
+
+  /group/leave:
+    post:
+      operationId: R707
+      summary: 'R707: Leave a group'
+      description: 'Leave a group. Access: USR'
+      tags:
+        - 'M07: Groups'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                groupId:
+                  type: integer
+              required:
+                - groupId
+                - userId
+      responses:
+        '302':
+          description: 'Redirect after processing leave group'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful group leave. Redirect back.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
+    
+  /group/acceptJoinRequest:
+    post:
+      operationId: R708
+      summary: 'R708: Accept a join request'
+      description: 'Accept a join request. Access: USR'
+      tags:
+        - 'M07: Groups'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                groupId:
+                  type: integer
+              required:
+                - groupId
+                - userId
+      responses:
+        '202':
+          description: 'Request accepted'
+        '401'
+          description: 'Unauthorized, user not allowed to accept request.'
+
+  /group/rejectJoinRequest:
+    post:
+      operationId: R709
+      summary: 'R709: Reject a join request'
+      description: 'Reject a join request. Access: USR'
+      tags:
+        - 'M07: Groups'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                groupId:
+                  type: integer
+              required:
+                - groupId
+                - userId
+      responses:
+        '202':
+          description: 'Request accepted'
+        '401'
+          description: 'Unauthorized, user not allowed to accept request.'
+
+  /notifications:
+    get:
+      operationId: R801
+      summary: 'R801: Get notifications'
+      description: 'Get notifications page. Access: USR'
+      tags:
+        - 'M08: Notifications'
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
             type: string
-          username:
+        - name: type
+          in: path
+          required: false
+          description: The type of notification
+          schema:
             type: string
-          email:
+
+      responses:
+        '200':
+          description: Notifications retrieved. Show notifications page.
+        '403'
+          description: 'Forbidden, user not allowed to access notifications.'
+
+#############################Search###########################
+
+  /api/serch/exactMatch:
+    get:
+      operationId: R901
+      summary: 'R901: Search for exact match'
+      description: 'Search for exact match. Access: USR'
+      tags:
+        - 'M09: Search'
+      parameters:
+        - name: query
+          in: path
+          required: true
+          description: The exact query to search
+          schema:
             type: string
-            format: email
-          profilePicture:
+        - name: type
+          in: path
+          required: true
+          description: The type of search
+          schema:
             type: string
-            format: uri
-          isPublic:
-            type: boolean
-      Post:
-        type: object
-        properties:
-          id:
-            type: string
+            enum: ['user', 'group', 'post','comment']
+      responses:
+        '200':
+          description: Results retrieved. Show search results page.
           content:
-            type: string
-          imageUrls:
-            type: array
-            items:
-              type: string
-          postDate:
-            type: string
-            format: date-time
-          isPublic:
-            type: boolean
-          userId:
-            type: string
+            application/json:
+             schema:
+              type: object
+              items:
+                type: object
+              properties:
+                id:
+                  type: string
+                type:
+                  type: string
+                name:
+                  type: string
+                snippet:
+                  type: string
+              total:
+                type: integer
+        '400':
+          description: Invalid search parameters.'
 
-
-  ...
+  /api/search/fulltext:
+    get:
+      operationId: R902
+      summary: 'R902: Search for full text'
+      description: 'Search for full text. Access: USR'
+      tags: 
+        - 'M09: Search'
+      parameters:
+        - name: query
+          in: path
+          required: true
+          description: The keywords to search for.
+          schema:
+            type: string
+        - name: type
+          in: path
+          required: false
+          description: The type of search
+          schema:
+            type: string
+            enum: ['user', 'group', 'post','comment']
+      responses:
+        '200':
+          description: Results retrieved. Show results.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        snippet:
+                          type: string
+        '400':
+          description: 'Invalid Parameters.'
