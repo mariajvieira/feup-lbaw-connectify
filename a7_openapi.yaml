@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
-  version : 1.0
+  version: '1.0'
   title: 'Connectify Web API'
   description: 'Web Resources Specification for Connectify API'
-  
+
 servers:
   - url: https://lbaw2453.lbaw.fe.up.pt
-    description: Production server
+    description: 'Production server'
 
 externalDocs:
   description: Find more info here.
@@ -22,14 +22,13 @@ tags:
   - name: 'M07: Groups'
   - name: 'M08: Notifications'
   - name: 'M09: Search'
-  
 
 paths:
 
 #################################### Authentication ####################################
 
   /login:
-   get:
+    get:
       operationId: R101
       summary: 'R101: Login Form'
       description: 'Provide login form. Access: GST'
@@ -119,6 +118,7 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               type: object
+              properties:
                 username:
                   type: string
                 email:
@@ -271,8 +271,8 @@ paths:
                   value: '/users/{userId}'
         
     post:
-      OperationId: R202
-      summary: 'R202: Edit user profile'
+      operationId: R203
+      summary: 'R203: Edit user profile'
       description: 'Edit user profile. Access: USR, OWN'
       tags:
         - 'M02: Users'
@@ -320,8 +320,8 @@ paths:
   #Delete user profile
   /user/deleteProfile:
     post:
-      OperationId: R203
-      summary: 'R203: Delete user profile'
+      operationId: R204
+      summary: 'R204: Delete user profile'
       description: 'Delete user profile. Access: USR, OWN'
       tags:
         - 'M02: Users'
@@ -336,18 +336,18 @@ paths:
                   type: integer
               required:
                 - userId
-        responses:
-          '302':
-            description: 'Redirect after deleting user information.'
-            headers:
-              Location:
-                schema:
-                  type: string
+      responses:
+        '302':
+          description: 'Redirect after deleting user information.'
+          headers:
+            Location:
+              schema:
+                type: string
                 example:
                   302Success:
                     description: 'Successful delete. Redirect to login page.'
-          '403':
-            description: 'Forbidden, user not allowed to delete profile.'
+                  302Failure:
+                    description: 'Failed. Redirect back.'
 
 
 
@@ -360,7 +360,7 @@ paths:
      description: 'Provide friendship request form. Access: USR'
      tags:
        - 'M04: Friendship Requests'
-      responses:
+     responses:
         '200':
           description: 'Ok. Show friendship request form'
     post:
@@ -381,17 +381,17 @@ paths:
               required:
                 - userId
       responses:
-      '302':
-        description: 'Redirect after sending request.'
-        headers:
-          Location:
-            schema:
-              type: string
-            example:
-              302Success:
-                description: 'Successful request sent. Redirect back.'
-              302Failure:
-                description: 'Failed. Redirect back.'
+        '302':
+          description: 'Redirect after sending request.'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful request sent. Redirect back.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
 
   /user/acceptRequest:
     get:
@@ -422,6 +422,16 @@ paths:
                 - userId
       responses:
         '302':
+          description: 'Redirect after processing request.'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                302Success:
+                  description: 'Successful request accepted. Redirect back.'
+                302Failure:
+                  description: 'Failed. Redirect back.'
 
   /user/rejectRequest:
     get:
@@ -438,7 +448,7 @@ paths:
       summary: 'R403: Reject a friendship request'
       description: 'Reject a friendship request from another user. Access: USR'
       tags:
-        - 'M02: Friendship Requests'	
+        - 'M04: Friendship Requests'	
       requestBody:
         required: true
         content:
@@ -461,7 +471,7 @@ paths:
   /about:
 
     get:
-      operationId: R406
+      operationId: R407
       summary: 'R220: Get About Page'
       description: 'Show About Page. Access USR, ADM, VST'
       tags:
@@ -486,27 +496,25 @@ paths:
     post:
       operationId: R502
       summary: 'R502: Create a new post action'
-      summary: Create a new post
       tags:
-        - Posts
+        - 'M03: Posts'
       requestBody:
-        required: true
           content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                content:
-                  type: string
-                imageUrls:
-                  type: array
-                  items:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  content:
                     type: string
-                  description: List of image URLs
-                isPublic:
-                  type: boolean
-              required:
-                - content
+                  imageUrls:
+                    type: array
+                    items:
+                      type: string
+                    description: List of image URLs
+                  isPublic:
+                    type: boolean
+                required:
+                  - content
       responses:
         '302':
           description: 'Redirect after processing new post'          
@@ -557,8 +565,8 @@ paths:
                     type: boolean
                   userId:
                     type: string
-          '404':
-            description: Post not found
+        '404':
+          description: Post not found
 
   # Delete a post
   /post/delete:
@@ -571,16 +579,16 @@ paths:
       responses:
         '200':
           description: 'Ok. Show post deletion form'
-      '401':
-          description: 'Unauthorized, user not allowed to delete post.'
-        headers:
-          Location:
-             schema:
-              type: string
-            example:
-              401Unauthorized:
-                description: 'Unauthorized, redirect to current user profile.'
-                value: '/users/{userId}'
+        '401':
+            description: 'Unauthorized, user not allowed to delete post.'
+            headers:
+              Location:
+                schema:
+                  type: string
+                example:
+                  401Unauthorized:
+                    description: 'Unauthorized, redirect to current user profile.'
+                    value: '/users/{userId}'
     post:
       operationId: R505
       summary: 'R505: Delete a post'
@@ -599,10 +607,10 @@ paths:
               required:
                 - postId
       responses:
-      '200':
-        description: Post deleted successfully
-      '403':
-        description: Forbidden, user not allowed to delete post  
+        '200':
+          description: Post deleted successfully
+        '403':
+          description: Forbidden, user not allowed to delete post  
 
   #Edit a post
   /post/edit:
@@ -616,33 +624,32 @@ paths:
       requestBody:
         required: true
         content:
-        application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                postId:
-                  type: integer
-                content:
-                  type: string
-                imageUrls:
-                  type: array
-                  items:
+          application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  postId:
+                    type: integer
+                  content:
                     type: string
-                  description: List of image URLs
-                isPublic:
-                  type: boolean
-              required:
-                - postId
-                - content
-        
+                  imageUrls:
+                    type: array
+                    items:
+                      type: string
+                    description: List of image URLs
+                  isPublic:
+                    type: boolean
+                required:
+                  - postId
+                  - content  
       responses:
-      '200':
-        description: Post edited successfully
-      '403':
-        description: Forbidden, user not allowed to edit post
+        '200':
+          description: Post edited successfully
+        '403':
+          description: Forbidden, user not allowed to edit post
 
 
-  /post/comments:
+  /post/comments/{postId}:
       get:
         operationId: R507
         summary: 'R507: Get comments of a post'
@@ -656,7 +663,7 @@ paths:
               description: The ID of the post
               schema:
                 type: string
-          responses:
+        responses:
             '200':
               description: Comments retrieved
               content:
@@ -716,10 +723,10 @@ paths:
                 302Failure:
                   description: 'Failed. Redirect back.'
 
-  /post/reactions:
+  /post/reactions/{postId}:
       get:
-        operationId: R508
-        summary: 'R508: Get reactions of a post'
+        operationId: R509
+        summary: 'R509: Get reactions of a post'
         description: 'Get reactions of a post. Access: GST, USR, OWN, ADM'
         tags:
             - 'M03: Posts'
@@ -730,7 +737,7 @@ paths:
               description: The ID of the post
               schema:
                 type: string
-          responses:
+        responses:
             '200':
               description: Reactions retrieved
               content:
@@ -759,7 +766,7 @@ paths:
       summary: 'R601: Create a new comment'
       description: 'Create a new comment. Access: USR'
       tags:
-       - 'M06: Comments'
+       - 'M05: Comments'
       requestBody:
         required: true
         content:
@@ -793,7 +800,7 @@ paths:
       summary: 'R602: Edit a comment'
       description: 'Edit a comment. Access: USR, OWN'
       tags:
-        - 'M06: Comments'
+        - 'M05: Comments'
       requestBody:
         required: true
         content:
@@ -821,7 +828,7 @@ paths:
       summary: 'R603: Delete a comment'
       description: 'Delete a comment. Access: USR, OWN'
       tags:
-        - 'M06: Comments'
+        - 'M05: Comments'
       requestBody:
         required: true
         content:
@@ -1010,7 +1017,7 @@ paths:
 
   /group/delete:
     post:
-      operationId: R705
+      operationId: R706
       summary: 'R705: Delete a group'
       description: 'Delete a group. Access: USR, OWN'
       tags:
@@ -1034,7 +1041,7 @@ paths:
 ##
   /group/RequestJoin:
     post:
-      operationId: R706 
+      operationId: R707
       summary: 'R706: Join a group'
       description: 'Join a group. Access: USR'
       tags:
@@ -1069,7 +1076,7 @@ paths:
 
   /group/leave:
     post:
-      operationId: R707
+      operationId: R708
       summary: 'R707: Leave a group'
       description: 'Leave a group. Access: USR'
       tags:
@@ -1103,7 +1110,7 @@ paths:
     
   /group/acceptJoinRequest:
     post:
-      operationId: R708
+      operationId: R709
       summary: 'R708: Accept a join request'
       description: 'Accept a join request. Access: USR'
       tags:
@@ -1125,12 +1132,12 @@ paths:
       responses:
         '202':
           description: 'Request accepted'
-        '401'
+        '401':
           description: 'Unauthorized, user not allowed to accept request.'
 
   /group/rejectJoinRequest:
     post:
-      operationId: R709
+      operationId: R710
       summary: 'R709: Reject a join request'
       description: 'Reject a join request. Access: USR'
       tags:
@@ -1152,10 +1159,10 @@ paths:
       responses:
         '202':
           description: 'Request accepted'
-        '401'
+        '401':
           description: 'Unauthorized, user not allowed to accept request.'
 
-  /notifications:
+  /api/notifications/{userId}/{type}:
     get:
       operationId: R801
       summary: 'R801: Get notifications'
@@ -1166,69 +1173,73 @@ paths:
         - name: userId
           in: path
           required: true
-          description: The ID of the user
+          description: The ID of the user.
           schema:
             type: string
         - name: type
           in: path
-          required: false
-          description: The type of notification
+          required: true
+          description: The type of notification.
           schema:
             type: string
-
       responses:
         '200':
           description: Notifications retrieved. Show notifications page.
-        '403'
+        '403':
           description: 'Forbidden, user not allowed to access notifications.'
-
-#############################Search###########################
-
-  /api/serch/exactMatch:
+  
+  
+  #############################Search###########################
+  
+  /api/serch/exactMatch/:
     get:
-      operationId: R901
-      summary: 'R901: Search for exact match'
-      description: 'Search for exact match. Access: USR'
+      operationId: R903
+      summary: 'R903: Search for exact match'
+      description: 'Perform an exact match search. Access: USR'
       tags:
         - 'M09: Search'
       parameters:
         - name: query
-          in: path
+          in: query
           required: true
-          description: The exact query to search
+          description: The exact term to search for.
           schema:
             type: string
         - name: type
-          in: path
+          in: query
           required: true
-          description: The type of search
+          description: The type of search.
           schema:
             type: string
-            enum: ['user', 'group', 'post','comment']
+            enum: ['user', 'group', 'post', 'comment']
       responses:
         '200':
-          description: Results retrieved. Show search results page.
+          description: Results retrieved. Show results.
           content:
             application/json:
-             schema:
-              type: object
-              items:
+              schema:
                 type: object
-              properties:
-                id:
-                  type: string
-                type:
-                  type: string
-                name:
-                  type: string
-                snippet:
-                  type: string
-              total:
-                type: integer
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        snippet:
+                          type: string
+                  total:
+                    type: integer
         '400':
-          description: Invalid search parameters.'
-
-  /api/search/fulltext:
+          description: Invalid search parameters.
+  
+  
+  /api/search/fulltext/:
     get:
       operationId: R902
       summary: 'R902: Search for full text'
@@ -1237,18 +1248,18 @@ paths:
         - 'M09: Search'
       parameters:
         - name: query
-          in: path
+          in: query
           required: true
           description: The keywords to search for.
           schema:
             type: string
         - name: type
-          in: path
-          required: false
-          description: The type of search
+          in: query
+          required: true
+          description: The type of search.
           schema:
             type: string
-            enum: ['user', 'group', 'post','comment']
+            enum: ['user', 'group', 'post', 'comment']
       responses:
         '200':
           description: Results retrieved. Show results.
@@ -1272,3 +1283,4 @@ paths:
                           type: string
         '400':
           description: 'Invalid Parameters.'
+  
