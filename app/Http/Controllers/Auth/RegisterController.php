@@ -47,7 +47,7 @@ class RegisterController extends Controller
             'email' => $request->email,
             'profile_picture' => $profilePicturePath,
             'is_public' => $request->has('is_public') ? $request->is_public : true, // Se não enviado, assume público
-            'user_password' => Hash::make($request->password), // Corrigido para `user_password`
+            'user_password' => Hash::make($request->password), // Correção para `user_password`
         ]);
 
         // Autentica o novo usuário

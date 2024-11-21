@@ -1423,5 +1423,4 @@ paths:
                 error: "Invalid query parameter. 'type' must be one of ['user', 'group', 'post', 'comment']."
 
 
-
 ##### Administrator #################

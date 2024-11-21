@@ -1,5 +1,5 @@
 <?php
- 
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -23,12 +23,12 @@ class LoginController extends Controller
     {
         $credentials = $request->validate([
             'login' => ['required'],
-            'password' => ['required'],
+            'user_password' => ['required'], // Correção para `user_password`
         ]);
 
         $loginField = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (Auth::attempt([$loginField => $credentials['login'], 'user_password' => $credentials['password']], $request->filled('remember'))) {
+        if (Auth::attempt([$loginField => $credentials['login'], 'user_password' => $credentials['user_password']], $request->filled('remember'))) { // Corrigido `credentials['password']`
             $request->session()->regenerate();
             return redirect()->intended('/posts'); 
         }

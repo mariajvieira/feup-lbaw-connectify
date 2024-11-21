@@ -26,8 +26,8 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
-        'user_password',
-        'profile_picture',
+        'user_password', // Alterado para corresponder à coluna da tabela
+        'profile_picture', // Alterado para corresponder à coluna da tabela
         'is_public',
     ];
 
@@ -37,17 +37,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'user_password',
+        'user_password', // Alterado para corresponder à coluna da tabela
         'remember_token',
-    ];
-
-    /**
-     * Cast de atributos para tipos específicos.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'user_password' => 'hashed', // Hash automático
     ];
 
     /**

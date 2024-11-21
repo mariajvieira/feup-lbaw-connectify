@@ -20,46 +20,42 @@ use App\Http\Controllers\CommentController;
 */
 
 // Home
-Route::redirect('/', '/login');
+Route::redirect('/', '/auth/login');
 
-
-// Authentication
 Route::controller(LoginController::class)->group(function () {
-    Route::get('/login', 'showLoginForm')->name('login');
-    Route::post('/login', 'authenticate');
-    Route::post('/logout', 'logout')->name('logout'); 
+    Route::get('/auth/login', 'showLoginForm')->name('login');
+    Route::post('/auth/login', 'authenticate');
+    Route::post('/auth/logout', 'logout')->name('logout'); 
 });
 
 Route::controller(RegisterController::class)->group(function () {
-    Route::get('/register', 'showRegistrationForm')->name('register');
-    Route::post('/register', 'register');
+    Route::get('/auth/register', 'showRegistrationForm')->name('register');
+    Route::post('/auth/register', 'register');
 });
-
 
 Route::controller(PasswordController::class)->group(function () {
-    Route::post('/sendVerificationCode', 'sendVerificationCode'); 
-    Route::post('/recoverPassword', 'recoverPassword'); 
+    Route::post('/auth/send-verification-code', 'sendVerificationCode'); 
+    Route::post('/auth/recover-password', 'recoverPassword'); 
 });
 
 
-//Users
+// Users
 Route::controller(UserController::class)->group(function () {
-    Route::get('/profile/{id}', 'getProfile');
-    Route::put('/profile/{id}', 'editProfile');
-    Route::delete('/profile/{id}', 'deleteProfile');
+    Route::get('/users/{id}', 'getProfile');
+    Route::put('/users/{id}/edit-profile', 'editProfile');
+    Route::delete('/users/{id}/delete-profile', 'deleteProfile');
 });
-
 
 // Friendship Request 
 Route::controller(FriendshipController::class)->group(function () {
-    Route::get('/user/sendRequest', 'showSendRequestForm')->name('showSendRequestForm');
-    Route::post('/user/sendRequest', 'sendRequest')->name('sendRequest');
+    Route::get('/friendship-requests/send', 'showSendRequestForm')->name('showSendRequestForm');
+    Route::post('/friendship-requests/send', 'sendRequest')->name('sendRequest');
 
-    Route::get('/user/acceptRequest', 'showAcceptRequestForm')->name('showAcceptRequestForm');
-    Route::post('/user/acceptRequest', 'acceptRequest')->name('acceptRequest');
+    Route::get('/friendship-requests/{requestId}/accept', 'showAcceptRequestForm')->name('showAcceptRequestForm');
+    Route::post('/friendship-requests/{requestId}/accept', 'acceptRequest')->name('acceptRequest');
 
-    Route::get('/user/rejectRequest', 'showRejectRequestForm')->name('showRejectRequestForm');
-    Route::post('/user/rejectRequest', 'rejectRequest')->name('rejectRequest');
+    Route::get('/friendship-requests/{requestId}/reject', 'showRejectRequestForm')->name('showRejectRequestForm');
+    Route::post('/friendship-requests/{requestId}/reject', 'rejectRequest')->name('rejectRequest');
 });
 
 // About Page
@@ -67,12 +63,35 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/about', 'showAboutPage')->name('about');
 });
 
-
-
-//Comment Routes
 Route::controller(CommentController::class)->group(function () {
-    Route::post('/post/{postId}/comments', 'addComment');
-    Route::get('/post/{postId}/comments',  'getComments');
+    Route::post('/posts/{postId}/comments', 'addComment');
+    Route::get('/posts/{postId}/comments', 'getComments');
+    Route::put('/comments/{commentId}', 'editComment');
+    Route::delete('/comments/{commentId}', 'deleteComment');
+});
+
+
+Route::controller(PostController::class)->group(function () {
+    Route::post('/posts/react', 'reactToPost');
+    Route::get('/posts/{postId}/reactions', 'getPostReactions');
+    Route::post('/comments/react', 'reactToComment');
+    Route::get('/comments/{commentId}/reactions', 'getCommentReactions');
+});
+
+Route::controller(GroupController::class)->group(function () {
+    Route::get('/groups', 'getAllGroups');
+    Route::get('/groups/{groupId}', 'getGroup');
+    Route::post('/groups/create', 'createGroup');
+    Route::post('/groups/{groupId}/edit', 'editGroup');
+    Route::delete('/groups/{groupId}', 'deleteGroup');
+    Route::post('/groups/{groupId}/request-join', 'requestToJoinGroup');
+    Route::post('/groups/{groupId}/leave', 'leaveGroup');
+    Route::post('/groups/{groupId}/accept-join-request', 'acceptJoinRequest');
+    Route::post('/groups/{groupId}/reject-join-request', 'rejectJoinRequest');
+});
+
+Route::controller(NotificationController::class)->group(function () {
+    Route::get('/notifications/{userId}/{type}', 'getUserNotifications');
 });
 
 
@@ -84,11 +103,7 @@ Route::controller(CommentController::class)->group(function () {
 
 
 
-
-
-
-
-
+/*
 // API
 Route::controller(CardController::class)->group(function () {
     Route::put('/api/cards', 'create');
@@ -113,4 +128,4 @@ Route::controller(RegisterController::class)->group(function () {
     Route::get('/register', 'showRegistrationForm')->name('register');
     Route::post('/register', 'register');
 });
-
+*/
