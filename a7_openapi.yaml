@@ -212,7 +212,6 @@ paths:
         '404':
           description: 'Error. Invalid code.'
 
-
 #############################################Users############################################ 
 
   /user/{userId}:
@@ -349,9 +348,7 @@ paths:
                   302Failure:
                     description: 'Failed. Redirect back.'
 
-
-
-  #################Friendship Requests######################
+###################Friendship Requests######################
 
   /user/sendRequest:
     get:
@@ -467,7 +464,6 @@ paths:
           description: Forbidden, user not allowed to reject request
 
 ###################### Static Pages ######################
-
   /about:
 
     get:
@@ -480,7 +476,7 @@ paths:
         '200':
           description: 'OK. Show page'
 
-  ########################POSTS######################
+##########################POSTS######################
 
   ##Create a new post
   /post/create:
@@ -1038,7 +1034,8 @@ paths:
           description: Group deleted successfully
         '403':
           description: Forbidden, user not allowed to delete group
-##
+
+
   /group/RequestJoin:
     post:
       operationId: R707
@@ -1188,10 +1185,9 @@ paths:
         '403':
           description: 'Forbidden, user not allowed to access notifications.'
   
+###############################Search###########################
   
-  #############################Search###########################
-  
-  /api/serch/exactMatch/:
+  /api/search/exactMatch/:
     get:
       operationId: R903
       summary: 'R903: Search for exact match'
