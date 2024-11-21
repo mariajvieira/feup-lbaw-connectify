@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Post;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +21,15 @@ class Post extends Model
     protected $fillable = [
         'user_id', 'group_id', 'content', 'IMAGE1', 'IMAGE2', 'IMAGE3', 'is_public', 'post_date',
     ];
+
+    //Define public post
+    public function public()
+    {
+        return Post::select('post.*')
+                ->join('user', 'user.user_id', '=', 'post.user_id')
+                ->where('user.is_public', true)
+                ->where('post.is_public', true);
+    }
 
     /**
      * Get the user that owns the post.

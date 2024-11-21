@@ -8,7 +8,8 @@ use App\Models\User;
 use App\Models\Group;
 
 class PostController extends Controller
-{
+{ 
+    
     /**
      * Creates a new post.
      */
@@ -38,6 +39,17 @@ class PostController extends Controller
         $post->save();
 
         return response()->json($post, 201);
+    }
+
+    //Define user timeline
+    public function getPosts(Request $request)
+    {
+        if(!Auth::check()){ //not logged in
+            $posts = Post::public()->orderBy('created_at', 'desc')->get();	
+        }
+        $this->authorize('getPosts', Post::class);
+        $posts = Auth::user()->visiblePosts()->get();
+        //TODO: view to timeline
     }
 
     /**
