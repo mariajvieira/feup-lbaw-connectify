@@ -33,8 +33,8 @@ CREATE TYPE reactionType AS ENUM ('like', 'laugh', 'cry', 'applause', 'shocked')
 CREATE TABLE user_ (
     user_id SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL,
-    profile_picture TEXT,
+    email TEXT UNIQUE NOT NULL,
+    profile_picture TEXT DEFAULT 'default.png',
     user_password TEXT NOT NULL,
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );

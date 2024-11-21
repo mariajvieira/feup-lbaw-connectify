@@ -165,7 +165,7 @@ paths:
             schema:
               type: object
               properties:
-                e-mail:
+                email:
                   type: string 
               required:
                 - email
@@ -264,7 +264,7 @@ paths:
             Location:
               schema:
                 type: string
-              example:
+              examples:
                 401Unauthorized:
                   description: 'Unauthorized, redirect to current user profile.'
                   value: '/users/{userId}'
@@ -309,7 +309,7 @@ paths:
             Location:
               schema:
                 type: string
-              example:
+              examples:
                 302Success:
                   description: 'Successful edit. Redirect to user profile.'
                 302Failure:

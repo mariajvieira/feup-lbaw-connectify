@@ -2,80 +2,96 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use APP\Models\Post;
-// Added to define Eloquent relationships.
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // Don't add create and update timestamps in database.
-    public $timestamps  = false;
+    // Nome da tabela explicitamente definido
+    protected $table = 'user_';
+
+    // Desativar timestamps
+    public $timestamps = false;
 
     /**
-     * The attributes that are mass assignable.
+     * Atributos atribuíveis em massa.
      *
      * @var array<int, string>
      */
     protected $fillable = [
         'username',
         'email',
-        'password',
+        'user_password',
         'profile_picture',
         'is_public',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atributos ocultos na serialização.
      *
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
+        'user_password',
         'remember_token',
     ];
 
     /**
-     * The attributes that should be cast.
+     * Cast de atributos para tipos específicos.
      *
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'user_password' => 'hashed', // Hash automático
     ];
 
     /**
-     * Get the cards for a user.
+     * Relacionamento: um usuário pode ter muitos posts.
      */
-    public function cards(): HasMany
+    public function posts(): HasMany
     {
-        return $this->hasMany(Card::class);
+        return $this->hasMany(Post::class, 'user_id', 'user_id');
     }
 
-    public function visiblePosts(){
-        //own posts
-        $own = Post::select('*')->where('post.user_id',$this->user_id)->get();
-        //friends posts
-        $friends = Post::select('post.*')
-        ->join('friendship', function ($join) {
-            $join->on('friendship.user_id1', '=', 'post.user_id')
-                ->orOn('friendship.user_id2', '=', 'post.user_id');
-        })
-        ->where(function ($query) {
-            $query->where('friendship.user_id1', $this->user_id)
-                  ->orWhere('friendship.user_id2', $this->user_id);
-        });
-        
-        //public 
-        $public = Post::public();
+    /**
+     * Relacionamento: um usuário pode ter muitos amigos.
+     */
+    public function friendships(): HasMany
+    {
+        return $this->hasMany(Friendship::class, 'user_id1', 'user_id')
+            ->orWhere('user_id2', $this->user_id);
+    }
 
-        return $own->union($friends)->union($public)->orderBy('post_date','desc');
+    /**
+     * Posts visíveis para o usuário.
+     */
+    public function visiblePosts()
+    {
+        // Próprios posts
+        $ownPosts = Post::where('user_id', $this->user_id);
+
+        // Posts dos amigos
+        $friendPosts = Post::select('post.*')
+            ->join('friendship', function ($join) {
+                $join->on('friendship.user_id1', '=', 'post.user_id')
+                    ->orOn('friendship.user_id2', '=', 'post.user_id');
+            })
+            ->where(function ($query) {
+                $query->where('friendship.user_id1', $this->user_id)
+                    ->orWhere('friendship.user_id2', $this->user_id);
+            });
+
+        // Posts públicos
+        $publicPosts = Post::where('is_public', true);
+
+        return $ownPosts->union($friendPosts)
+            ->union($publicPosts)
+            ->orderBy('post_date', 'desc')
+            ->get();
     }
 }

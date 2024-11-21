@@ -71,8 +71,8 @@ Route::controller(PageController::class)->group(function () {
 
 //Comment Routes
 Route::controller(CommentController::class)->group(function () {
-    Route::post('/posts/{postId}/comments', 'addComment');
-    Route::get('/posts/{postId}/commnets',  'getComments');
+    Route::post('/post/{postId}/comments', 'addComment');
+    Route::get('/post/{postId}/comments',  'getComments');
 });
 
 

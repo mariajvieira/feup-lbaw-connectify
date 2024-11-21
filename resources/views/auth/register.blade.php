@@ -4,15 +4,6 @@
 <form method="POST" action="{{ route('register') }}">
     {{ csrf_field() }}
 
-  
-    <!-- <label for="profile_picture">Profile Picture</label>
-    <input id="profile_picture" type="file" name="profile_picture" accept="image/*">
-    @if ($errors->has('profile_picture'))
-      <span class="error">
-          {{ $errors->first('profile_picture') }}
-      </span>
-    @endif -->
-
     <label for="name">Name</label>
     <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus>
     @if ($errors->has('name'))
@@ -37,8 +28,13 @@
       </span>
     @endif
 
-    <label for="password-confirm">Confirm Password</label>
-    <input id="password-confirm" type="password" name="password_confirmation" required>
+    <label for="password_confirmation">Confirm Password</label>
+    <input id="password_confirmation" type="password" name="password_confirmation" required>
+    @if ($errors->has('password_confirmation'))
+      <span class="error">
+          {{ $errors->first('password_confirmation') }}
+      </span>
+    @endif
 
     <button type="submit">
       Register

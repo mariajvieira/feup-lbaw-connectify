@@ -4,18 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
 use Illuminate\View\View;
-
 use App\Models\User;
 
 class RegisterController extends Controller
 {
     /**
-     * Display a login form.
+     * Display the registration form.
      */
     public function showRegistrationForm(): View
     {
@@ -27,34 +24,38 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
+        // Validação dos dados enviados pelo formulário
         $request->validate([
-            'username' => 'required|string|max:250',
-            'email' => 'required|email|max:250|unique:users',
+            'username' => 'required|string|max:250|unique:users,username',
+            'email' => 'required|email|max:250|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'password_confirmation' => 'required',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'is_public' => 'required|boolean'
-        
+            'is_public' => 'sometimes|boolean', // Caso não enviado, assume o default do banco
         ]);
 
-        $profile_picture = '../../images/default.png'; 
+        // Define a imagem de perfil padrão
+        $profilePicturePath = 'images/default.png'; // Caminho relativo no sistema público
 
+        // Salva a imagem de perfil se foi enviada
         if ($request->hasFile('profile_picture')) {
             $profilePicturePath = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
-        User::create([
-            'name' => $request->name,
+        // Criação do novo usuário
+        $user = User::create([
+            'username' => $request->username,
             'email' => $request->email,
-            'profile_picture' => $profile_picture,
-            'is_public' => $request->is_public,
-            'password' => Hash::make($request->password)
+            'profile_picture' => $profilePicturePath,
+            'is_public' => $request->has('is_public') ? $request->is_public : true, // Se não enviado, assume público
+            'password' => Hash::make($request->password),
         ]);
 
-        $credentials = $request->only('email', 'password');
-        Auth::attempt($credentials);
+        // Autentica o novo usuário
+        Auth::login($user);
         $request->session()->regenerate();
+
+        // Redireciona após o registro e login
         return redirect()->route('posts')
-            ->withSuccess('You have successfully registered & logged in!');
+            ->with('success', 'You have successfully registered & logged in!');
     }
 }

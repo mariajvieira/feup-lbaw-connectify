@@ -4,15 +4,17 @@
 <form method="POST" action="{{ route('login') }}">
     {{ csrf_field() }}
 
-    <label for="email">E-mail</label>
-    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus>
-    @if ($errors->has('email'))
+    <!-- Campo genérico para Username ou E-mail -->
+    <label for="login">Username ou E-mail</label>
+    <input id="login" type="text" name="login" value="{{ old('login') }}" required autofocus>
+    @if ($errors->has('login'))
         <span class="error">
-          {{ $errors->first('email') }}
+          {{ $errors->first('login') }}
         </span>
     @endif
 
-    <label for="password" >Password</label>
+    <!-- Campo de senha -->
+    <label for="password">Password</label>
     <input id="password" type="password" name="password" required>
     @if ($errors->has('password'))
         <span class="error">
@@ -20,14 +22,18 @@
         </span>
     @endif
 
+    <!-- Opção para lembrar o login -->
     <label>
         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Remember Me
     </label>
 
+    <!-- Botões de ação -->
     <button type="submit">
         Login
     </button>
     <a class="button button-outline" href="{{ route('register') }}">Register</a>
+
+    <!-- Mensagem de sucesso -->
     @if (session('success'))
         <p class="success">
             {{ session('success') }}

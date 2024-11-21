@@ -19,7 +19,7 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect('/posts');
+            return redirect('/post');
         } else {
             return view('auth.login');
         }
@@ -31,19 +31,22 @@ class LoginController extends Controller
     public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'login' => ['required'],
             'password' => ['required'],
         ]);
+
+        $loginField = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
  
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        if (Auth::attempt([$loginField => $credentials['login'], 'password' => $credentials['password']], $request->filled('remember'))) {
             $request->session()->regenerate();
- 
-            return redirect()->intended('/posts');
+    
+            return redirect()->intended('/posts'); // Redireciona após login
         }
- 
+    
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+            'login' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+        ])->onlyInput('login');
     }
 
     /**
