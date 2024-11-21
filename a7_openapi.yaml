@@ -247,12 +247,12 @@ paths:
         '404':
           description: User not found
 
-  #Edit user profile
+
   /user/editProfile:
     get:
       operationId: R202
       summary: 'R202: Edit user profile page'
-      description: 'Provide user profile edit form. Access: USR, OWN'
+      description: 'Provide user profile edit form. Access: OWN, ADM'
       tags:
         - 'M02: Users'
       responses:
@@ -316,12 +316,11 @@ paths:
                   description: 'Failed. Redirect back.'
 
 
-  #Delete user profile
   /user/deleteProfile:
     post:
       operationId: R204
       summary: 'R204: Delete user profile'
-      description: 'Delete user profile. Access: USR, OWN'
+      description: 'Delete user profile. Access: OWN, ADM'
       tags:
         - 'M02: Users'
       requestBody:
@@ -469,7 +468,7 @@ paths:
     get:
       operationId: R407
       summary: 'R220: Get About Page'
-      description: 'Show About Page. Access USR, ADM, VST'
+      description: 'Show About Page. Access: USR, ADM, VST'
       tags:
         - 'M02: Users'
       responses:
@@ -478,7 +477,6 @@ paths:
 
 ##########################POSTS######################
 
-  ##Create a new post
   /post/create:
     get:
       operationId: R501
@@ -489,106 +487,89 @@ paths:
       responses:
         '200':
           description: 'Ok. Show post creation form'
+
     post:
       operationId: R502
       summary: 'R502: Create a new post action'
       tags:
         - 'M03: Posts'
       requestBody:
-          content:
-            application/x-www-form-urlencoded:
-              schema:
-                type: object
-                properties:
-                  content:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                imageUrls:
+                  type: array
+                  items:
                     type: string
-                  imageUrls:
-                    type: array
-                    items:
-                      type: string
-                    description: List of image URLs
-                  isPublic:
-                    type: boolean
-                required:
-                  - content
+                  description: List of image URLs
+                isPublic:
+                  type: boolean
+              required:
+                - content
       responses:
-        '302':
-          description: 'Redirect after processing new post'          
+        '201':  # Código de status correto para criação
+          description: 'Post created successfully'
           headers:
             Location:
               schema:
                 type: string
-              example:
-                302Success:
-                  description: 'Successful post create. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
+              example: '/post/{postId}'  # Exemplo de onde o novo post foi criado
+        '400':  # Para erros de validação ou requisição inválida
+          description: 'Bad request, invalid input data'
+        '500':  # Para erros do servidor
+          description: 'Internal server error'
 
-  /post/{postId}:
-    get:
-      operationId: R503
-      summary: 'R503: View post'
-      description: 'Show the post. Access: GST, USR, OWN, ADM'
-      tags:
-        - 'M03: Posts'
-      parameters:
-        - name: postId
-          in: path
-          required: true
-          description: The ID of the post
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Post retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  content:
-                    type: string
-                  imageUrls:
-                    type: array
-                    items:
-                      type: string
-                  postDate:
-                    type: string
-                    format: date-time
-                  isPublic:
-                    type: boolean
-                  userId:
-                    type: string
-        '404':
-          description: Post not found
 
-  # Delete a post
-  /post/delete:
-    get:
-      operationId: R504
-      summary: 'R504: Delete post page'
-      description: 'Provide post deletion form. Access: USR, OWN'
-      tags:
-        - 'M03: Posts'
-      responses:
-        '200':
-          description: 'Ok. Show post deletion form'
-        '401':
-            description: 'Unauthorized, user not allowed to delete post.'
-            headers:
-              Location:
+    /post/{postId}:
+      get:
+        operationId: R503
+        summary: 'R503: View post'
+        description: 'Show the post. Access: GST, USR, OWN, ADM'
+        tags:
+          - 'M03: Posts'
+        parameters:
+          - name: postId
+            in: path
+            required: true
+            description: The ID of the post
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Post retrieved
+            content:
+              application/json:
                 schema:
-                  type: string
-                example:
-                  401Unauthorized:
-                    description: 'Unauthorized, redirect to current user profile.'
-                    value: '/users/{userId}'
-    post:
-      operationId: R505
-      summary: 'R505: Delete a post'
-      description: Delete a post actioN
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    imageUrls:
+                      type: array
+                      items:
+                        type: string
+                    postDate:
+                      type: string
+                      format: date-time
+                    isPublic:
+                      type: boolean
+                    userId:
+                      type: string
+          '404':
+            description: Post not found
+
+
+  /post/delete:
+    delete: 
+      operationId: R504
+      summary: 'R504: Delete post action'
+      description: 'Delete a post. Access: OWN, ADM'
       tags:
         - 'M03: Posts'
       requestBody:
@@ -607,37 +588,43 @@ paths:
           description: Post deleted successfully
         '403':
           description: Forbidden, user not allowed to delete post  
+        '401':
+          description: Unauthorized, user not allowed to delete post
+          headers:
+            Location:
+              schema:
+                type: string
+              example: '/users/{userId}'  # Redirecionar para o perfil do usuário
 
-  #Edit a post
+
   /post/edit:
-    post:
+    put:  
       operationId: R506
-      summary: 'R506: Edit post'
-      description: Edit a post
+      summary: 'R506: Edit post. Acess: OWN, ADM'
+      description: 'Edit a post'
       tags:
         - 'M03: Posts'
-        
       requestBody:
         required: true
         content:
           application/x-www-form-urlencoded:
-              schema:
-                type: object
-                properties:
-                  postId:
-                    type: integer
-                  content:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                content:
+                  type: string
+                imageUrls:
+                  type: array
+                  items:
                     type: string
-                  imageUrls:
-                    type: array
-                    items:
-                      type: string
-                    description: List of image URLs
-                  isPublic:
-                    type: boolean
-                required:
-                  - postId
-                  - content  
+                  description: List of image URLs
+                isPublic:
+                  type: boolean
+              required:
+                - postId
+                - content
       responses:
         '200':
           description: Post edited successfully
@@ -646,201 +633,284 @@ paths:
 
 
   /post/comments/{postId}:
-      get:
-        operationId: R507
-        summary: 'R507: Get comments of a post'
-        description: 'Get comments of a post. Access: GST, USR, OWN, ADM'
-        tags:
-            - 'M03: Posts'
-        parameters:
-            - name: postId
-              in: path
-              required: true
-              description: The ID of the post
+    get:
+      operationId: R507
+      summary: 'R507: Get comments of a post'
+      description: 'Retrieve comments of a post. Access: GST, USR, OWN, ADM'
+      tags:
+        - 'M03: Posts'
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comments retrieved
+          content:
+            application/json:
               schema:
-                type: string
-        responses:
-            '200':
-              description: Comments retrieved
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        content:
-                          type: string
-                        commentDate:
-                          type: string
-                          format: date-time
-                        userId:
-                          type: string
-            '404':
-              description: Post not found
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    commentDate:
+                      type: string
+                      format: date-time
+                    userId:
+                      type: string
+        '404':
+          description: Post not found
 
 ###################Reactions####################
   
   /post/react:
-    post:
-      operationId: R508
-      summary: 'R508: React to a post'
-      description: 'React to a post. Access: USR'
-      tags:
-        - 'M03: Posts'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                postId:
-                  type: integer
-                reactionType:
-                  type: string
-                userId: 
-                  type: integer
-              required:
-                - postId
-                - reactionType
-      responses:
-        '302':
-          description: 'Redirect after processing new reaction'
-          headers:
-            Location:
-              schema:
+  post:
+    operationId: R508
+    summary: 'R508: React to a post'
+    description: 'React to a post. Access: USR'
+    tags:
+      - 'M03: Posts'
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              postId:
+                type: integer
+              reactionType:
                 type: string
-              example:
-                302Success:
-                  description: 'Successful reaction. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
+                enum:  # Especificando tipos de reações possíveis
+                  - like
+                  - love
+                  - laugh
+                  - wow
+                  - sad
+                  - angry
+              userId:
+                type: integer
+            required:
+              - postId
+              - reactionType
+    responses:
+      '302':
+        description: 'Redirect after processing new reaction'
+        headers:
+          Location:
+            schema:
+              type: string
+            example: '/post/{postId}'
 
   /post/reactions/{postId}:
-      get:
-        operationId: R509
-        summary: 'R509: Get reactions of a post'
-        description: 'Get reactions of a post. Access: GST, USR, OWN, ADM'
-        tags:
-            - 'M06: Reactions'
-        parameters:
-            - name: postId
-              in: path
-              required: true
-              description: The ID of the post
-              schema:
+  get:
+    operationId: R509
+    summary: 'R509: Get reactions of a post'
+    description: 'Get reactions of a post. Access: GST, USR, OWN, ADM'
+    tags:
+      - 'M06: Reactions'
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        description: The ID of the post
+        schema:
+          type: string  # Pode ser integer, dependendo do seu sistema
+    responses:
+      '200':
+        description: Reactions retrieved
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  reactionType:
+                    type: string
+                  reactionDate:
+                    type: string
+                    format: date-time
+                  userId:
+                    type: integer  # Consistência com o tipo no POST
+      '404':
+        description: Post not found
+
+  /post/comments/react:
+  post:
+    operationId: R510
+    summary: 'R510: React to a comment'
+    description: 'React to a comment. Access: USR'
+    tags:
+      - 'M03: Posts'
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              commentId:
+                type: integer
+              reactionType:
                 type: string
-        responses:
-            '200':
-              description: Reactions retrieved
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        reactionType:
-                          type: string
-                        reactionDate:
-                          type: string
-                          format: date-time
-                        userId:
-                          type: string
-            '404':
-              description: Post not found  
+                enum:  # Especificando tipos de reações possíveis
+                  - like
+                  - love
+                  - laugh
+                  - wow
+                  - sad
+                  - angry
+              userId:
+                type: integer
+            required:
+              - commentId
+              - reactionType
+    responses:
+      '302':
+        description: 'Redirect after processing new reaction'
+        headers:
+          Location:
+            schema:
+              type: string
+            example: '/post/comments/{commentId}'
+
+  /post/comments/reactions/{commentId}:
+  get:
+    operationId: R511
+    summary: 'R511: Get reactions of a comment'
+    description: 'Get reactions of a comment. Access: GST, USR, OWN, ADM'
+    tags:
+      - 'M03: Posts'
+    parameters:
+      - name: commentId
+        in: path
+        required: true
+        description: The ID of the comment
+        schema:
+          type: string  # Pode ser integer, dependendo do seu sistema
+    responses:
+      '200':
+        description: Reactions retrieved
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  reactionType:
+                    type: string
+                  reactionDate:
+                    type: string
+                    format: date-time
+                  userId:
+                    type: integer  # Consistência com o tipo no POST
+      '404':
+        description: Comment not found
+
 
 ###################Comments####################          
   /comment/create:
-    post:
-      operationId: R601
-      summary: 'R601: Create a new comment'
-      description: 'Create a new comment. Access: USR'
-      tags:
-       - 'M05: Comments'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                postId:
-                  type: integer
-                content:
-                  type: string
-              required:
-                - postId
-                - content
-      responses:
-        '302':
-          description: 'Redirect after processing new comment'
-          headers:
-            Location:
-              schema:
+  post:
+    operationId: R601
+    summary: 'R601: Create a new comment'
+    description: 'Create a new comment on a post. Access: USR'
+    tags:
+      - 'M05: Comments'
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              postId:
+                type: integer
+              content:
                 type: string
-              example:
-                302Success:
-                  description: 'Successful comment create. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
-  
-  /comment/edit:
-    post:
-      operationId: R602
-      summary: 'R602: Edit a comment'
-      description: 'Edit a comment. Access: USR, OWN'
-      tags:
-        - 'M05: Comments'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
+            required:
+              - postId
+              - content
+    responses:
+      '201':
+        description: 'Comment created successfully'
+        headers:
+          Location:
             schema:
-              type: object
-              properties:
-                commentId:
-                  type: integer
-                content:
-                  type: string
-              required:
-                - commentId
-                - content
-      responses:
-        '200':
-          description: Comment edited successfully
-        '403':
-          description: Forbidden, user not allowed to edit comment
+              type: string
+            example: '/comment/{commentId}'  # Exemplo para o comentário criado
+      '400':
+        description: 'Bad request, invalid input data'
+      '500':
+        description: 'Internal server error'
 
+  /comment/edit:
+  post:
+    operationId: R602
+    summary: 'R602: Edit a comment'
+    description: 'Edit a comment on a post. Access: OWN'
+    tags:
+      - 'M05: Comments'
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              commentId:
+                type: integer
+              content:
+                type: string
+            required:
+              - commentId
+              - content
+    responses:
+      '200':
+        description: 'Comment edited successfully'
+      '403':
+        description: 'Forbidden, user not allowed to edit comment'
+      '404':
+        description: 'Comment not found'
 
   /comment/delete:
-    post:
-      operationId: R603
-      summary: 'R603: Delete a comment'
-      description: 'Delete a comment. Access: USR, OWN'
-      tags:
-        - 'M05: Comments'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                commentId:
-                  type: integer
-              required:
-                - commentId
-      responses:
-        '200':
-          description: Comment deleted successfully
-        '403':
-          description: Forbidden, user not allowed to delete comment
+  post:
+    operationId: R603
+    summary: 'R603: Delete a comment'
+    description: 'Delete a comment from a post. Access: OWN, ADM'
+    tags:
+      - 'M05: Comments'
+    requestBody:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              commentId:
+                type: integer
+            required:
+              - commentId
+    responses:
+      '200':
+        description: 'Comment deleted successfully'
+      '403':
+        description: 'Forbidden, user not allowed to delete comment'
+      '404':
+        description: 'Comment not found'
+
 
 ###################Groups####################
 
@@ -848,63 +918,66 @@ paths:
     get:
       operationId: R701
       summary: 'R701: Get groups'
-      description: 'Get groups page. Access: GST, USR, OWN, ADM'
+      description: 'Retrieve the groups page. Access: GST, USR, OWN, ADM'
       tags:
         - 'M07: Groups'
       responses:
         '200':
           description: Groups retrieved. Show groups page.
         '302':
-          description: 'Redirect after processing groups page'
+          description: Redirect after processing the groups page.
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Access Unauthorized. Login to your account.'
-                  value: '/login'
-              
+                '/login': 
+                  description: 'User not logged in, redirect to login page.'
+          
   /group/{groupId}:
     get:
       operationId: R702
       summary: 'R702: View group'
-      description: 'Show specific group. Access: GST, USR, OWN, ADM'
+      description: 'Retrieve a specific group. Access: GST, USR, OWN, ADM'
       tags:
         - 'M07: Groups'
       parameters:
         - name: groupId
           in: path
           required: true
-          description: The ID of the group
+          description: 'ID of the group'
           schema:
-            type: string
+            type: integer
       responses:
         '200':
-          description: Group retrieved, show group page
+          description: Group retrieved, show group page.
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   id:
-                    type: string
+                    type: integer
                   name:
                     type: string
                   description:
                     type: string
                   isPublic:
                     type: boolean
+              example:
+                id: 1
+                name: "Tech Enthusiasts"
+                description: "A group for tech lovers"
+                isPublic: true
         '302':
-          description: 'Redirect after processing group page'
+          description: 'Redirect after processing group page.'
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Access Unauthorized. Login to your account.'
-                  value: '/login'
+                '/login': 
+                  description: 'User not logged in, redirect to login page.'
 
 
   /group/create:
@@ -933,21 +1006,22 @@ paths:
                 - isPublic
       responses:
         '302':
-          description: 'Redirect after processing new group'
+          description: 'Redirect after processing new group.'
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Successful group create. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
+                '/group/1': 
+                  description: 'Redirect to the newly created group.'
+                '/group/create': 
+                  description: 'Failed. Redirect back to create group page.'
+
   /group/edit:
     post:
       operationId: R704
       summary: 'R704: Edit a group'
-      description: 'Edit a group. Access: USR, OWN'
+      description: 'Edit the details of a group. Access: USR, OWN'
       tags:
         - 'M07: Groups'
       requestBody:
@@ -969,37 +1043,34 @@ paths:
                 - isPublic
       responses:
         '302':
-          description: 'Redirect after processing edit group'
+          description: 'Redirect after processing edit group.'
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Successful group edit. Redirect back.'
-                  value: '/group/{groupId}'
-                302Failure:
-                  description: 'Failed. Redirect back.'
-                  value: '/group/edit'
+                '/group/{groupId}': 
+                  description: 'Redirect to the updated group page.'
+                '/group/edit': 
+                  description: 'Failed. Redirect back to edit group page.'
 
-
-  /group/{groupId}/edit:  
+  /group/{groupId}/edit:
     get:
       operationId: R705
-      summary: 'R705: Edit group paga'
-      description: 'Provide group edit page. Access: USR, OWN'
+      summary: 'R705: Edit group page'
+      description: 'Provide the group edit page. Access: USR, OWN'
       tags:
         - 'M07: Groups'
       parameters:
         - name: groupId
           in: path
           required: true
-          description: The ID of the group
+          description: 'ID of the group'
           schema:
-            type: string
+            type: integer
       responses:
         '200':
-          description: 'Ok. Show group edit form'
+          description: 'Ok. Show group edit form.'
         '401':
           description: 'Unauthorized, user not allowed to edit group.'
           headers:
@@ -1007,9 +1078,8 @@ paths:
               schema:
                 type: string
               example:
-                401Unauthorized:
-                  description: 'Unauthorized, redirect to current group page.'
-                  value: '/group/{groupId}'              	    
+                '/group/{groupId}': 
+                  description: 'Redirect to current group page if unauthorized.'
 
   /group/delete:
     post:
@@ -1031,19 +1101,19 @@ paths:
                 - groupId
       responses:
         '200':
-          description: Group deleted successfully
+          description: 'Group deleted successfully.'
         '403':
-          description: Forbidden, user not allowed to delete group
-
+          description: 'Forbidden, user not allowed to delete group.'
+        '404':
+          description: 'Group not found.'
 
   /group/RequestJoin:
     post:
       operationId: R707
       summary: 'R706: Join a group'
-      description: 'Join a group. Access: USR'
+      description: 'Request to join a group. Access: USR'
       tags:
         - 'M07: Groups'
-
       requestBody:
         required: true
         content:
@@ -1060,22 +1130,20 @@ paths:
                 - userId
       responses:
         '302':
-          description: 'Redirect after processing join group'
+          description: 'Redirect after processing join group.'
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Successful group join. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
+                '/group/{groupId}': 
+                  description: 'Successfully joined. Redirect to group page.'
 
   /group/leave:
     post:
       operationId: R708
-      summary: 'R707: Leave a group'
-      description: 'Leave a group. Access: USR'
+      summary: 'R708: Leave a group'
+      description: 'Leave a group. Access: USR (User must be a member of the group)'
       tags:
         - 'M07: Groups'
       requestBody:
@@ -1094,22 +1162,22 @@ paths:
                 - userId
       responses:
         '302':
-          description: 'Redirect after processing leave group'
+          description: 'Redirect after processing leave group.'
           headers:
             Location:
               schema:
                 type: string
               example:
-                302Success:
-                  description: 'Successful group leave. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
-    
+                '/group/{groupId}': 
+                  description: 'User successfully left the group. Redirect to the group page.'
+                '/group/leave': 
+                  description: 'Failed to leave group (e.g., user not part of the group). Redirect back to leave page.'
+
   /group/acceptJoinRequest:
     post:
       operationId: R709
       summary: 'R708: Accept a join request'
-      description: 'Accept a join request. Access: USR'
+      description: 'Accept a join request. Access: OWN'
       tags:
         - 'M07: Groups'
       requestBody:
@@ -1128,15 +1196,15 @@ paths:
                 - userId
       responses:
         '202':
-          description: 'Request accepted'
+          description: 'Request accepted.'
         '401':
           description: 'Unauthorized, user not allowed to accept request.'
 
   /group/rejectJoinRequest:
     post:
       operationId: R710
-      summary: 'R709: Reject a join request'
-      description: 'Reject a join request. Access: USR'
+      summary: 'R710: Reject a join request'
+      description: 'Reject a join request. Access: OWN'
       tags:
         - 'M07: Groups'
       requestBody:
@@ -1155,43 +1223,75 @@ paths:
                 - userId
       responses:
         '202':
-          description: 'Request accepted'
+          description: 'Join request rejected.'
         '401':
-          description: 'Unauthorized, user not allowed to accept request.'
+          description: 'Unauthorized, user not allowed to reject the join request (Only group owners or admins can reject).'
+        '404':
+          description: 'Group or user not found.'
+
+
+############## Notifications ################################
 
   /api/notifications/{userId}/{type}:
     get:
       operationId: R801
       summary: 'R801: Get notifications'
-      description: 'Get notifications page. Access: USR'
+      description: 'Retrieve a list of notifications for a specific user and notification type. Access: USR'
       tags:
         - 'M08: Notifications'
       parameters:
         - name: userId
           in: path
           required: true
-          description: The ID of the user.
+          description: The ID of the user whose notifications are being retrieved.
           schema:
             type: string
         - name: type
           in: path
           required: true
-          description: The type of notification.
+          description: The type of notification to retrieve (e.g., "messages", "alerts", etc.).
           schema:
             type: string
       responses:
         '200':
-          description: Notifications retrieved. Show notifications page.
+          description: Notifications retrieved successfully. Show notifications page.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    notificationId:
+                      type: integer
+                    message:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    type:
+                      type: string
+                      description: 'The type of notification'
+                  example:
+                    - notificationId: 1
+                      message: 'You have a new message!'
+                      createdAt: '2024-11-21T14:30:00Z'
+                      type: 'messages'
         '403':
-          description: 'Forbidden, user not allowed to access notifications.'
-  
+          description: Forbidden, user not allowed to access notifications (e.g., user not logged in or invalid credentials).
+        '404':
+          description: User not found, no notifications available for the given userId.
+        '500':
+          description: Internal server error.
+
+
 ###############################Search###########################
   
   /api/search/exactMatch/:
     get:
       operationId: R903
       summary: 'R903: Search for exact match'
-      description: 'Perform an exact match search. Access: USR'
+      description: 'Perform an exact match search for a given term. Access: USR'
       tags:
         - 'M09: Search'
       parameters:
@@ -1204,13 +1304,13 @@ paths:
         - name: type
           in: query
           required: true
-          description: The type of search.
+          description: The type of search (e.g., "user", "group", "post", "comment"). Determines what type of entity to search for.
           schema:
             type: string
             enum: ['user', 'group', 'post', 'comment']
       responses:
         '200':
-          description: Results retrieved. Show results.
+          description: Results retrieved successfully. Returns a list of matching results.
           content:
             application/json:
               schema:
@@ -1231,34 +1331,61 @@ paths:
                           type: string
                   total:
                     type: integer
+              example:
+                results:
+                  - id: "123"
+                    type: "user"
+                    name: "John Doe"
+                    snippet: "John's profile description snippet."
+                total: 1
         '400':
-          description: Invalid search parameters.
-  
+          description: Invalid search parameters (e.g., missing or invalid `query` or `type`).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Invalid query parameter. 'type' must be one of ['user', 'group', 'post', 'comment']."
+        '404':
+          description: No results found for the given search criteria.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "No matching results found."
+
   
   /api/search/fulltext/:
     get:
       operationId: R902
       summary: 'R902: Search for full text'
-      description: 'Search for full text. Access: USR'
+      description: 'Search for documents or posts containing the specified keywords. Access: USR'
       tags: 
         - 'M09: Search'
       parameters:
         - name: query
           in: query
           required: true
-          description: The keywords to search for.
+          description: The keywords or phrase to search for.
           schema:
             type: string
         - name: type
           in: query
           required: true
-          description: The type of search.
+          description: The type of search (e.g., "user", "group", "post", "comment"). Determines what type of entity to search for.
           schema:
             type: string
             enum: ['user', 'group', 'post', 'comment']
       responses:
         '200':
-          description: Results retrieved. Show results.
+          description: Results retrieved successfully. Returns a list of matching results.
           content:
             application/json:
               schema:
@@ -1277,6 +1404,24 @@ paths:
                           type: string
                         snippet:
                           type: string
+              example:
+                results:
+                  - id: "456"
+                    type: "post"
+                    name: "Exploring APIs"
+                    snippet: "This post discusses how to interact with APIs in a full-text search."
         '400':
-          description: 'Invalid Parameters.'
-  
+          description: Invalid Parameters (e.g., missing or invalid `query` or `type`).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Invalid query parameter. 'type' must be one of ['user', 'group', 'post', 'comment']."
+
+
+
+##### Administrator #################

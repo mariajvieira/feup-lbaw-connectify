@@ -26,8 +26,8 @@ class RegisterController extends Controller
     {
         // Validação dos dados enviados pelo formulário
         $request->validate([
-            'username' => 'required|string|max:250|unique:users,username',
-            'email' => 'required|email|max:250|unique:users,email',
+            'username' => 'required|string|max:250|unique:user_,username', // Nome correto da tabela e coluna
+            'email' => 'required|email|max:250|unique:user_,email',        // Nome correto da tabela e coluna
             'password' => 'required|min:8|confirmed',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'sometimes|boolean', // Caso não enviado, assume o default do banco
@@ -47,7 +47,7 @@ class RegisterController extends Controller
             'email' => $request->email,
             'profile_picture' => $profilePicturePath,
             'is_public' => $request->has('is_public') ? $request->is_public : true, // Se não enviado, assume público
-            'password' => Hash::make($request->password),
+            'user_password' => Hash::make($request->password), // Corrigido para `user_password`
         ]);
 
         // Autentica o novo usuário

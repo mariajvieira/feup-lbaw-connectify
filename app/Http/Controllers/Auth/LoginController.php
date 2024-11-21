@@ -4,30 +4,21 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-
-    /**
-     * Display a login form.
-     */
-    public function showLoginForm()
+    public function showLoginForm(): View
     {
         if (Auth::check()) {
-            return redirect('/post');
+            return redirect('/posts');
         } else {
             return view('auth.login');
         }
     }
 
-    /**
-     * Handle an authentication attempt.
-     */
     public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -37,27 +28,23 @@ class LoginController extends Controller
 
         $loginField = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
- 
-        if (Auth::attempt([$loginField => $credentials['login'], 'password' => $credentials['password']], $request->filled('remember'))) {
+        if (Auth::attempt([$loginField => $credentials['login'], 'user_password' => $credentials['password']], $request->filled('remember'))) {
             $request->session()->regenerate();
-    
-            return redirect()->intended('/posts'); // Redireciona após login
+            return redirect()->intended('/posts'); 
         }
-    
+
         return back()->withErrors([
-            'login' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+            'login' => 'As credenciais fornecidas não correspondem aos nossos registos.',
         ])->onlyInput('login');
     }
 
-    /**
-     * Log out the user from application.
-     */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login')
             ->withSuccess('You have logged out successfully!');
-    } 
+    }
 }
