@@ -729,7 +729,7 @@ paths:
         summary: 'R509: Get reactions of a post'
         description: 'Get reactions of a post. Access: GST, USR, OWN, ADM'
         tags:
-            - 'M03: Posts'
+            - 'M06: Reactions'
         parameters:
             - name: postId
               in: path
