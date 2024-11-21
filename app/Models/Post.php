@@ -26,8 +26,8 @@ class Post extends Model
     public function public()
     {
         return Post::select('post.*')
-                ->join('user', 'user.user_id', '=', 'post.user_id')
-                ->where('user.is_public', true)
+                ->join('user_', 'user_.user_id', '=', 'post.user_id')
+                ->where('user_.is_public', true)
                 ->where('post.is_public', true);
     }
 
