@@ -1,5 +1,68 @@
 <?php
 
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
+// Added to define Eloquent relationships.
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+
+    protected $table = 'user_';
+    protected $primaryKey = 'user_id'; 
+    public $timestamps  = false;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'username',
+        'email',
+        'user_password',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'user_password',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    /**
+     * Get the cards for a user.
+     */
+    public function cards(): HasMany
+    {
+        return $this->hasMany(Card::class);
+    }
+}
+
+
+
+
+/*
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,55 +75,53 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // Nome da tabela explicitamente definido
     protected $table = 'user_';
+    protected $primaryKey = 'user_id'; 
+    public $incrementing = true; 
+    protected $keyType = 'string';
 
-    // Desativar timestamps
+
     public $timestamps = false;
 
-    /**
-     * Atributos atribuíveis em massa.
-     *
-     * @var array<int, string>
-     */
+
     protected $fillable = [
         'username',
         'email',
-        'user_password', // Alterado para corresponder à coluna da tabela
-        'profile_picture', // Alterado para corresponder à coluna da tabela
+        'user_password', 
+        'profile_picture', 
         'is_public',
     ];
 
-    /**
-     * Atributos ocultos na serialização.
-     *
-     * @var array<int, string>
-     */
+
     protected $hidden = [
-        'user_password', // Alterado para corresponder à coluna da tabela
+        'user_password', 
         'remember_token',
     ];
 
-    /**
-     * Relacionamento: um usuário pode ter muitos posts.
-     */
+    public function getAuthIdentifierName()
+    {
+        return 'username';
+    }
+
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['user_password'] = bcrypt($password);
+    }
+
+
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'user_id', 'user_id');
     }
 
-    /**
-     * Relacionamento: um usuário pode ter muitos amigos.
-     */
+
     public function friendships(): HasMany
     {
         return $this->hasMany(Friendship::class, 'user_id1', 'user_id')
             ->orWhere('user_id2', $this->user_id);
     }
 
-    /**
-     * Posts visíveis para o usuário.
-     */
+
     public function visiblePosts()
     {
         // Próprios posts
@@ -86,3 +147,4 @@ class User extends Authenticatable
             ->get();
     }
 }
+*/

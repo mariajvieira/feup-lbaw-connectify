@@ -1,3 +1,8 @@
+DROP SCHEMA IF EXISTS lbaw2453 CASCADE;
+CREATE SCHEMA lbaw2453;
+SET search_path = lbaw2453;
+
+
 DROP TABLE IF EXISTS user_ CASCADE;
 DROP TABLE IF EXISTS administrator CASCADE;
 DROP TABLE IF EXISTS post CASCADE;
@@ -31,7 +36,7 @@ CREATE TYPE reactionType AS ENUM ('like', 'laugh', 'cry', 'applause', 'shocked')
 -- Tables
 
 CREATE TABLE user_ (
-    user_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     profile_picture TEXT DEFAULT 'default.png',
@@ -40,13 +45,13 @@ CREATE TABLE user_ (
 );
 
 CREATE TABLE administrator (
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id)
 );
 
 CREATE TABLE group_ (
-    group_id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
+    owner_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     group_name TEXT NOT NULL,
     description TEXT,
     visibility BOOLEAN NOT NULL,
@@ -54,9 +59,9 @@ CREATE TABLE group_ (
 );
 
 CREATE TABLE post (
-    post_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    group_id INT REFERENCES group_(group_id) ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    group_id INT REFERENCES group_(id) ON UPDATE CASCADE,
     content TEXT,
     IMAGE1 TEXT,
     IMAGE2 TEXT,
@@ -67,92 +72,92 @@ CREATE TABLE post (
 );
 
 CREATE TABLE saved_post (
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, post_id)
 );
 
 CREATE TABLE comment_ (
     id SERIAL PRIMARY KEY,
-    post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE,
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     comment_content TEXT NOT NULL,
     commentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reaction (
-    reaction_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
     reaction_type reactionType NOT NULL,
     reaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE friend_request (
-    request_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     request_status statusFriendship_request NOT NULL,
-    sender_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    receiver_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE
+    sender_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    receiver_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE friendship (
-    user_id1 INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    user_id2 INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    user_id1 INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id2 INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id1, user_id2)
 );
 
 CREATE TABLE join_group_request (
-    request_id SERIAL PRIMARY KEY,
-    group_id INT NOT NULL REFERENCES group_(group_id) ON UPDATE CASCADE,
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
+    group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     request_status statusGroup_request NOT NULL,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE group_member (
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    group_id INT NOT NULL REFERENCES group_(group_id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, group_id)
 );
 
 CREATE TABLE group_owner (
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
-    group_id INT NOT NULL REFERENCES group_(group_id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, group_id)
 );
 
 CREATE TABLE notification (
-    notification_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(user_id) ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
     related_id INT,
     is_read BOOLEAN DEFAULT false,
     notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE comment_notification (
-    notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
+    notification_id INT PRIMARY KEY REFERENCES notification(id) ON UPDATE CASCADE,
     comment_id INT NOT NULL REFERENCES comment_(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE reaction_notification (
-    notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
-    reaction_id INT NOT NULL REFERENCES reaction(reaction_id) ON UPDATE CASCADE
+    notification_id INT PRIMARY KEY REFERENCES notification(id) ON UPDATE CASCADE,
+    reaction_id INT NOT NULL REFERENCES reaction(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE friend_request_notification (
-    notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
-    friend_request_id INT NOT NULL REFERENCES friend_request(request_id) ON UPDATE CASCADE
+    notification_id INT PRIMARY KEY REFERENCES notification(id) ON UPDATE CASCADE,
+    friend_request_id INT NOT NULL REFERENCES friend_request(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE group_request_notification (
-    notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
-    group_request_id INT NOT NULL REFERENCES join_group_request(request_id) ON UPDATE CASCADE
+    notification_id INT PRIMARY KEY REFERENCES notification(id) ON UPDATE CASCADE,
+    group_request_id INT NOT NULL REFERENCES join_group_request(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE group_post_notification (
-    notification_id INT PRIMARY KEY REFERENCES notification(notification_id) ON UPDATE CASCADE,
-    post_id INT NOT NULL REFERENCES post(post_id) ON UPDATE CASCADE
+    notification_id INT PRIMARY KEY REFERENCES notification(id) ON UPDATE CASCADE,
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE
 );
 
 -- Perfomance Indices
@@ -380,7 +385,7 @@ EXECUTE FUNCTION enforce_group_posting();
 CREATE OR REPLACE FUNCTION enforce_group_membership_control()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF (SELECT is_public FROM group_ WHERE group_id = NEW.group_id) = FALSE THEN
+    IF (SELECT is_public FROM group_ WHERE id = NEW.group_id) = FALSE THEN
         IF NEW.request_status = 'Pending' THEN
             RAISE EXCEPTION 'Group membership requires owner approval.';
         END IF;
@@ -621,7 +626,7 @@ DECLARE
     groupOwnerId INT;
     groupMemberIds INT[];
     new_post_id INT;
-    member_id INT;  -- Declare member_id here
+    member_id INT;  
 BEGIN
     INSERT INTO post (user_id, group_id, content, post_date)
     VALUES (p_user_id, p_group_id, p_content, NOW())
@@ -695,7 +700,7 @@ END $$ LANGUAGE plpgsql;
 
 INSERT INTO user_ (username, email, profile_picture, user_password, is_public)
 VALUES
-    ('alice_wonder', 'alice@example.com', 'alice.jpg', 'securepassword1', TRUE),
+    ('alice_wonder', 'alice@example.com', 'alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
     ('bob_builder', 'bob@example.com', 'bob.jpg', 'securepassword2', TRUE),
     ('charlie_chaplin', 'charlie@example.com', 'charlie.jpg', 'securepassword3', FALSE),
     ('daisy_duck', 'daisy@example.com', 'daisy.jpg', 'securepassword4', TRUE),
