@@ -461,7 +461,7 @@ paths:
       summary: 'R701: Search for exact match'
       description: 'Perform an exact match search for a given term. Access: USR'
       tags:
-        - 'M08: Search'
+        - 'M07: Search'
       parameters:
         - name: query
           in: query
@@ -535,7 +535,7 @@ paths:
       summary: 'R702: Search for full text'
       description: 'Search for documents or posts containing the specified keywords. Access: USR'
       tags: 
-        - 'M08: Search'
+        - 'M07: Search'
       parameters:
         - name: query
           in: query
@@ -598,7 +598,7 @@ paths:
       summary: 'R801: Search user accounts'
       description: 'Search for user accounts using filters like username, email, or roles. Access: ADM.'
       tags:
-        - 'Administrator: User Management'
+        - 'M08: Administration'
       parameters:
         - name: username
           in: query
@@ -661,7 +661,7 @@ paths:
       summary: 'R802: View user account details'
       description: 'Retrieve detailed information about a specific user account. Access: ADM.'
       tags:
-        - 'Administrator: User Management'
+        - 'M08: Administration'
       parameters:
         - name: userId
           in: path
@@ -710,7 +710,7 @@ paths:
       summary: 'R803: Create a new user account'
       description: 'Allow an administrator to create a new user account with specific attributes. Access: ADM.'
       tags:
-        - 'Administrator: User Management'
+        - 'M08: Administration'
       requestBody:
         required: true
         content:
@@ -767,7 +767,7 @@ paths:
       summary: 'R804: Edit user account details'
       description: 'Allow an administrator to update details of a user account. Access: ADM.'
       tags:
-        - 'Administrator: User Management'
+        - 'M08: Administration'
       requestBody:
         required: true
         content:
