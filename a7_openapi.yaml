@@ -10,7 +10,7 @@ servers:
 
 externalDocs:
   description: Find more info here.
-  url: https://gitlab.up.pt/lbaw/lbaw2223/lbaw2453/-/wikis/eap
+  url: https://gitlab.up.pt/lbaw/lbaw2425/lbaw2453/-/wikis/eap
 
 tags:
   - name: 'M01: Authentication'
