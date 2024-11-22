@@ -15,13 +15,12 @@ externalDocs:
 tags:
   - name: 'M01: Authentication'
   - name: 'M02: Users'
-  - name: 'M03: Posts'
+  - name: 'M03: Posts and Comments'
   - name: 'M04: Friendship Requests'
-  - name: 'M05: Comments'
-  - name: 'M06: Reactions'
-  - name: 'M07: Groups'
-  - name: 'M08: Notifications'
-  - name: 'M09: Search'
+  - name: 'M05: Groups'
+  - name: 'M06: Notifications'
+  - name: 'M07: Search'
+  - name: 'M08: Administration'
 
 paths:
 
@@ -149,69 +148,6 @@ paths:
                   description: 'Failed authentication. Redirect to login form.'
                   value: '/login'
 
-  /sendVerificationCode:
-
-    post:
-      operationId: R106
-      summary: 'R106 : Send Verification Code Action'
-      description: 'Sends email with validation code. Access: GST'
-      tags:
-        - 'M01: Authentication'
-
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string 
-              required:
-                - email
-               
-      responses:
-        '200':
-          description: 'Ok. You received a verification code on your email.'
-        '404':
-          description: 'Error. Email doesnt exists.'
-
-
-
-  /recoverPassword:
-    post:
-      operationId: R107
-      summary: 'R107 : Recover Password Action'
-      description: 'Changes the password with the validation code received on email. Access: GST'
-      tags:
-        - 'M01: Authentication'
-
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                password:
-                  type: string
-                  format: password
-                verify_password:
-                  type: string
-                  format: password
-              required:
-                - code
-                - password
-                - verify_password;
-
-      responses:
-        '200':
-          description: 'Ok. Your password was changed successfully.'
-        '404':
-          description: 'Error. Invalid code.'
-
 #############################################Users############################################ 
 
   /user/{userId}:
@@ -245,7 +181,7 @@ paths:
                   isPublic:
                     type: boolean
         '404':
-          description: User not found
+          description: User not logged in or user not found
 
 
   /user/editProfile:
@@ -267,7 +203,7 @@ paths:
               examples:
                 401Unauthorized:
                   description: 'Unauthorized, redirect to current user profile.'
-                  value: '/users/{userId}'
+                  value: '/user/{userId}'
         
     post:
       operationId: R203
@@ -312,8 +248,10 @@ paths:
               examples:
                 302Success:
                   description: 'Successful edit. Redirect to user profile.'
+                  value: '/user/{userId}'
                 302Failure:
                   description: 'Failed. Redirect back.'
+                  value: '/user/editProfile'
 
 
   /user/deleteProfile:
@@ -347,152 +285,38 @@ paths:
                   302Failure:
                     description: 'Failed. Redirect back.'
 
-###################Friendship Requests######################
 
-  /user/sendRequest:
-    get:
-     operationId: R401
-     summary: 'friendship request form'
-     description: 'Provide friendship request form. Access: USR'
-     tags:
-       - 'M04: Friendship Requests'
-     responses:
-        '200':
-          description: 'Ok. Show friendship request form'
-    post:
-      operationId: R402
-      summary: 'R401: Send a friendship request'
-      description: 'Send a friendship request to another user. Access: USR'
-      tags:
-        - 'M04: Friendship Requests'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-              required:
-                - userId
-      responses:
-        '302':
-          description: 'Redirect after sending request.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                302Success:
-                  description: 'Successful request sent. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
-
-  /user/acceptRequest:
-    get:
-      operationId: R403
-      summary: 'friendship request form'
-      description: 'Provide friendship request form. Access: USR'
-      tags:
-        - 'M04: Friendship Requests'
-      responses:
-        '200':
-          description: 'Ok. Show friendship request form'
-    post:
-      operationId: R404
-      summary: 'R405: Accept a friendship request'
-      description: 'Accept a friendship request from another user. Access: USR'
-      tags:
-        - 'M04: Friendship Requests'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-              required:
-                - userId
-      responses:
-        '302':
-          description: 'Redirect after processing request.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                302Success:
-                  description: 'Successful request accepted. Redirect back.'
-                302Failure:
-                  description: 'Failed. Redirect back.'
-
-  /user/rejectRequest:
-    get:
-      operationId: R405
-      summary: 'friendship request form'
-      description: 'Provide friendship request form. Access: USR'
-      tags:
-        - 'M04: Friendship Requests'
-      responses:
-        '200':
-          description: 'Ok. Show friendship request form'
-    post:
-      operationId: R406
-      summary: 'R403: Reject a friendship request'
-      description: 'Reject a friendship request from another user. Access: USR'
-      tags:
-        - 'M04: Friendship Requests'	
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-              required:
-                - userId
-      responses:
-        '200':
-          description: Request rejected successfully
-        '403':
-          description: Forbidden, user not allowed to reject request
-
-###################### Static Pages ######################
-  /about:
+  /home:
 
     get:
-      operationId: R407
-      summary: 'R220: Get About Page'
-      description: 'Show About Page. Access: USR, ADM, VST'
+      operationId: R205
+      summary: 'R205: View home page'
+      description: 'Show home page. Access: USR, ADM'
       tags:
         - 'M02: Users'
+
       responses:
         '200':
-          description: 'OK. Show page'
+          description: 'OK. Show home page for an individual user'
+        '302':
+          description: 'Redirect if not unauthorized.'
+          headers:
+            Location:
+              schema:
+                type: string
+              example:
+                  302Success:
+                    description: 'You need to login first. Redirect to login page.'
+                    value: '/login'
 
 ##########################POSTS######################
 
   /post/create:
-    get:
-      operationId: R501
-      summary: 'R501: Create a new post page'
-      description: 'Provide post creation form. Access: USR'
-      tags:
-        - 'M03: Posts'
-      responses:
-        '200':
-          description: 'Ok. Show post creation form'
-
     post:
-      operationId: R502
-      summary: 'R502: Create a new post action'
+      operationId: R301
+      summary: 'R301: Create a new post action'
       tags:
-        - 'M03: Posts'
+        - 'M03: Posts and Comments'
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -511,26 +335,25 @@ paths:
               required:
                 - content
       responses:
-        '201':  # Código de status correto para criação
+        '201':  
           description: 'Post created successfully'
           headers:
             Location:
               schema:
                 type: string
-              example: '/post/{postId}'  # Exemplo de onde o novo post foi criado
-        '400':  # Para erros de validação ou requisição inválida
+              example: '/post/{postId}'  
+        '400':  
           description: 'Bad request, invalid input data'
-        '500':  # Para erros do servidor
+        '500': 
           description: 'Internal server error'
 
-
-    /post/{postId}:
+  /post/{postId}:
       get:
-        operationId: R503
-        summary: 'R503: View post'
+        operationId: R302
+        summary: 'R302: View post'
         description: 'Show the post. Access: GST, USR, OWN, ADM'
         tags:
-          - 'M03: Posts'
+          - 'M03: Posts and Comments'
         parameters:
           - name: postId
             in: path
@@ -564,14 +387,13 @@ paths:
           '404':
             description: Post not found
 
-
   /post/delete:
     delete: 
-      operationId: R504
-      summary: 'R504: Delete post action'
+      operationId: R303
+      summary: 'R303: Delete post action'
       description: 'Delete a post. Access: OWN, ADM'
       tags:
-        - 'M03: Posts'
+        - 'M03: Posts and Comments'
       requestBody:
         required: true
         content:
@@ -596,14 +418,13 @@ paths:
                 type: string
               example: '/users/{userId}'  # Redirecionar para o perfil do usuário
 
-
   /post/edit:
     put:  
-      operationId: R506
-      summary: 'R506: Edit post. Acess: OWN, ADM'
+      operationId: R304
+      summary: 'R304: Edit post. Acess: OWN, ADM'
       description: 'Edit a post'
       tags:
-        - 'M03: Posts'
+        - 'M03: Posts and Comments'
       requestBody:
         required: true
         content:
@@ -631,669 +452,16 @@ paths:
         '403':
           description: Forbidden, user not allowed to edit post
 
-
-  /post/comments/{postId}:
-    get:
-      operationId: R507
-      summary: 'R507: Get comments of a post'
-      description: 'Retrieve comments of a post. Access: GST, USR, OWN, ADM'
-      tags:
-        - 'M03: Posts'
-      parameters:
-        - name: postId
-          in: path
-          required: true
-          description: The ID of the post
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Comments retrieved
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    content:
-                      type: string
-                    commentDate:
-                      type: string
-                      format: date-time
-                    userId:
-                      type: string
-        '404':
-          description: Post not found
-
-###################Reactions####################
-  
-  /post/react:
-  post:
-    operationId: R508
-    summary: 'R508: React to a post'
-    description: 'React to a post. Access: USR'
-    tags:
-      - 'M03: Posts'
-    requestBody:
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            type: object
-            properties:
-              postId:
-                type: integer
-              reactionType:
-                type: string
-                enum:  # Especificando tipos de reações possíveis
-                  - like
-                  - love
-                  - laugh
-                  - wow
-                  - sad
-                  - angry
-              userId:
-                type: integer
-            required:
-              - postId
-              - reactionType
-    responses:
-      '302':
-        description: 'Redirect after processing new reaction'
-        headers:
-          Location:
-            schema:
-              type: string
-            example: '/post/{postId}'
-
-  /post/reactions/{postId}:
-  get:
-    operationId: R509
-    summary: 'R509: Get reactions of a post'
-    description: 'Get reactions of a post. Access: GST, USR, OWN, ADM'
-    tags:
-      - 'M06: Reactions'
-    parameters:
-      - name: postId
-        in: path
-        required: true
-        description: The ID of the post
-        schema:
-          type: string  # Pode ser integer, dependendo do seu sistema
-    responses:
-      '200':
-        description: Reactions retrieved
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  reactionType:
-                    type: string
-                  reactionDate:
-                    type: string
-                    format: date-time
-                  userId:
-                    type: integer  # Consistência com o tipo no POST
-      '404':
-        description: Post not found
-
-  /post/comments/react:
-  post:
-    operationId: R510
-    summary: 'R510: React to a comment'
-    description: 'React to a comment. Access: USR'
-    tags:
-      - 'M03: Posts'
-    requestBody:
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            type: object
-            properties:
-              commentId:
-                type: integer
-              reactionType:
-                type: string
-                enum:  # Especificando tipos de reações possíveis
-                  - like
-                  - love
-                  - laugh
-                  - wow
-                  - sad
-                  - angry
-              userId:
-                type: integer
-            required:
-              - commentId
-              - reactionType
-    responses:
-      '302':
-        description: 'Redirect after processing new reaction'
-        headers:
-          Location:
-            schema:
-              type: string
-            example: '/post/comments/{commentId}'
-
-  /post/comments/reactions/{commentId}:
-  get:
-    operationId: R511
-    summary: 'R511: Get reactions of a comment'
-    description: 'Get reactions of a comment. Access: GST, USR, OWN, ADM'
-    tags:
-      - 'M03: Posts'
-    parameters:
-      - name: commentId
-        in: path
-        required: true
-        description: The ID of the comment
-        schema:
-          type: string  # Pode ser integer, dependendo do seu sistema
-    responses:
-      '200':
-        description: Reactions retrieved
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  reactionType:
-                    type: string
-                  reactionDate:
-                    type: string
-                    format: date-time
-                  userId:
-                    type: integer  # Consistência com o tipo no POST
-      '404':
-        description: Comment not found
-
-
-###################Comments####################          
-  /comment/create:
-  post:
-    operationId: R601
-    summary: 'R601: Create a new comment'
-    description: 'Create a new comment on a post. Access: USR'
-    tags:
-      - 'M05: Comments'
-    requestBody:
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            type: object
-            properties:
-              postId:
-                type: integer
-              content:
-                type: string
-            required:
-              - postId
-              - content
-    responses:
-      '201':
-        description: 'Comment created successfully'
-        headers:
-          Location:
-            schema:
-              type: string
-            example: '/comment/{commentId}'  # Exemplo para o comentário criado
-      '400':
-        description: 'Bad request, invalid input data'
-      '500':
-        description: 'Internal server error'
-
-  /comment/edit:
-  post:
-    operationId: R602
-    summary: 'R602: Edit a comment'
-    description: 'Edit a comment on a post. Access: OWN'
-    tags:
-      - 'M05: Comments'
-    requestBody:
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            type: object
-            properties:
-              commentId:
-                type: integer
-              content:
-                type: string
-            required:
-              - commentId
-              - content
-    responses:
-      '200':
-        description: 'Comment edited successfully'
-      '403':
-        description: 'Forbidden, user not allowed to edit comment'
-      '404':
-        description: 'Comment not found'
-
-  /comment/delete:
-  post:
-    operationId: R603
-    summary: 'R603: Delete a comment'
-    description: 'Delete a comment from a post. Access: OWN, ADM'
-    tags:
-      - 'M05: Comments'
-    requestBody:
-      required: true
-      content:
-        application/x-www-form-urlencoded:
-          schema:
-            type: object
-            properties:
-              commentId:
-                type: integer
-            required:
-              - commentId
-    responses:
-      '200':
-        description: 'Comment deleted successfully'
-      '403':
-        description: 'Forbidden, user not allowed to delete comment'
-      '404':
-        description: 'Comment not found'
-
-
-###################Groups####################
-
-  /groups:
-    get:
-      operationId: R701
-      summary: 'R701: Get groups'
-      description: 'Retrieve the groups page. Access: GST, USR, OWN, ADM'
-      tags:
-        - 'M07: Groups'
-      responses:
-        '200':
-          description: Groups retrieved. Show groups page.
-        '302':
-          description: Redirect after processing the groups page.
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/login': 
-                  description: 'User not logged in, redirect to login page.'
-          
-  /group/{groupId}:
-    get:
-      operationId: R702
-      summary: 'R702: View group'
-      description: 'Retrieve a specific group. Access: GST, USR, OWN, ADM'
-      tags:
-        - 'M07: Groups'
-      parameters:
-        - name: groupId
-          in: path
-          required: true
-          description: 'ID of the group'
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Group retrieved, show group page.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  description:
-                    type: string
-                  isPublic:
-                    type: boolean
-              example:
-                id: 1
-                name: "Tech Enthusiasts"
-                description: "A group for tech lovers"
-                isPublic: true
-        '302':
-          description: 'Redirect after processing group page.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/login': 
-                  description: 'User not logged in, redirect to login page.'
-
-
-  /group/create:
-    post:
-      operationId: R703
-      summary: 'R703: Create a new group'
-      description: 'Create a new group. Access: USR'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                isPublic:
-                  type: boolean
-              required:
-                - name
-                - description
-                - isPublic
-      responses:
-        '302':
-          description: 'Redirect after processing new group.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/group/1': 
-                  description: 'Redirect to the newly created group.'
-                '/group/create': 
-                  description: 'Failed. Redirect back to create group page.'
-
-  /group/edit:
-    post:
-      operationId: R704
-      summary: 'R704: Edit a group'
-      description: 'Edit the details of a group. Access: USR, OWN'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                description:
-                  type: string
-                isPublic:
-                  type: boolean
-              required:
-                - name
-                - description
-                - isPublic
-      responses:
-        '302':
-          description: 'Redirect after processing edit group.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/group/{groupId}': 
-                  description: 'Redirect to the updated group page.'
-                '/group/edit': 
-                  description: 'Failed. Redirect back to edit group page.'
-
-  /group/{groupId}/edit:
-    get:
-      operationId: R705
-      summary: 'R705: Edit group page'
-      description: 'Provide the group edit page. Access: USR, OWN'
-      tags:
-        - 'M07: Groups'
-      parameters:
-        - name: groupId
-          in: path
-          required: true
-          description: 'ID of the group'
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: 'Ok. Show group edit form.'
-        '401':
-          description: 'Unauthorized, user not allowed to edit group.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/group/{groupId}': 
-                  description: 'Redirect to current group page if unauthorized.'
-
-  /group/delete:
-    post:
-      operationId: R706
-      summary: 'R705: Delete a group'
-      description: 'Delete a group. Access: USR, OWN'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                groupId:
-                  type: integer
-              required:
-                - groupId
-      responses:
-        '200':
-          description: 'Group deleted successfully.'
-        '403':
-          description: 'Forbidden, user not allowed to delete group.'
-        '404':
-          description: 'Group not found.'
-
-  /group/RequestJoin:
-    post:
-      operationId: R707
-      summary: 'R706: Join a group'
-      description: 'Request to join a group. Access: USR'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                groupId:
-                  type: integer
-              required:
-                - groupId
-                - userId
-      responses:
-        '302':
-          description: 'Redirect after processing join group.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/group/{groupId}': 
-                  description: 'Successfully joined. Redirect to group page.'
-
-  /group/leave:
-    post:
-      operationId: R708
-      summary: 'R708: Leave a group'
-      description: 'Leave a group. Access: USR (User must be a member of the group)'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                groupId:
-                  type: integer
-              required:
-                - groupId
-                - userId
-      responses:
-        '302':
-          description: 'Redirect after processing leave group.'
-          headers:
-            Location:
-              schema:
-                type: string
-              example:
-                '/group/{groupId}': 
-                  description: 'User successfully left the group. Redirect to the group page.'
-                '/group/leave': 
-                  description: 'Failed to leave group (e.g., user not part of the group). Redirect back to leave page.'
-
-  /group/acceptJoinRequest:
-    post:
-      operationId: R709
-      summary: 'R708: Accept a join request'
-      description: 'Accept a join request. Access: OWN'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                groupId:
-                  type: integer
-              required:
-                - groupId
-                - userId
-      responses:
-        '202':
-          description: 'Request accepted.'
-        '401':
-          description: 'Unauthorized, user not allowed to accept request.'
-
-  /group/rejectJoinRequest:
-    post:
-      operationId: R710
-      summary: 'R710: Reject a join request'
-      description: 'Reject a join request. Access: OWN'
-      tags:
-        - 'M07: Groups'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                groupId:
-                  type: integer
-              required:
-                - groupId
-                - userId
-      responses:
-        '202':
-          description: 'Join request rejected.'
-        '401':
-          description: 'Unauthorized, user not allowed to reject the join request (Only group owners or admins can reject).'
-        '404':
-          description: 'Group or user not found.'
-
-
-############## Notifications ################################
-
-  /api/notifications/{userId}/{type}:
-    get:
-      operationId: R801
-      summary: 'R801: Get notifications'
-      description: 'Retrieve a list of notifications for a specific user and notification type. Access: USR'
-      tags:
-        - 'M08: Notifications'
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          description: The ID of the user whose notifications are being retrieved.
-          schema:
-            type: string
-        - name: type
-          in: path
-          required: true
-          description: The type of notification to retrieve (e.g., "messages", "alerts", etc.).
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Notifications retrieved successfully. Show notifications page.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    notificationId:
-                      type: integer
-                    message:
-                      type: string
-                    createdAt:
-                      type: string
-                      format: date-time
-                    type:
-                      type: string
-                      description: 'The type of notification'
-                  example:
-                    - notificationId: 1
-                      message: 'You have a new message!'
-                      createdAt: '2024-11-21T14:30:00Z'
-                      type: 'messages'
-        '403':
-          description: Forbidden, user not allowed to access notifications (e.g., user not logged in or invalid credentials).
-        '404':
-          description: User not found, no notifications available for the given userId.
-        '500':
-          description: Internal server error.
-
-
+       
 ###############################Search###########################
   
   /api/search/exactMatch/:
     get:
-      operationId: R903
-      summary: 'R903: Search for exact match'
+      operationId: R701
+      summary: 'R701: Search for exact match'
       description: 'Perform an exact match search for a given term. Access: USR'
       tags:
-        - 'M09: Search'
+        - 'M08: Search'
       parameters:
         - name: query
           in: query
@@ -1361,14 +529,13 @@ paths:
               example:
                 message: "No matching results found."
 
-  
   /api/search/fulltext/:
     get:
-      operationId: R902
-      summary: 'R902: Search for full text'
+      operationId: R702
+      summary: 'R702: Search for full text'
       description: 'Search for documents or posts containing the specified keywords. Access: USR'
       tags: 
-        - 'M09: Search'
+        - 'M08: Search'
       parameters:
         - name: query
           in: query
@@ -1424,3 +591,222 @@ paths:
 
 
 ##### Administrator #################
+
+  /admin/users/search:
+    get:
+      operationId: R801
+      summary: 'R801: Search user accounts'
+      description: 'Search for user accounts using filters like username, email, or roles. Access: ADM.'
+      tags:
+        - 'Administrator: User Management'
+      parameters:
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by username (partial match allowed)
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by email (partial match allowed)
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [user, moderator, admin]
+          description: Filter by user role
+        - name: isActive
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by account status (active/inactive)
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: User ID
+                    username:
+                      type: string
+                      description: Username
+                    email:
+                      type: string
+                      description: User email
+                    role:
+                      type: string
+                      description: User role
+                    isActive:
+                      type: boolean
+                      description: Account active status
+        '403':
+          description: Forbidden - User does not have administrator access
+        '500':
+          description: Internal server error
+
+  /admin/users/{userId}:
+    get:
+      operationId: R802
+      summary: 'R802: View user account details'
+      description: 'Retrieve detailed information about a specific user account. Access: ADM.'
+      tags:
+        - 'Administrator: User Management'
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user to retrieve
+      responses:
+        '200':
+          description: User account details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: User ID
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                    enum: [user, moderator, admin]
+                  isActive:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Account creation date
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Last update date
+        '403':
+          description: Forbidden - User does not have administrator access
+        '404':
+          description: User account not found
+        '500':
+          description: Internal server error
+
+  /admin/users/create:
+    post:
+      operationId: R803
+      summary: 'R803: Create a new user account'
+      description: 'Allow an administrator to create a new user account with specific attributes. Access: ADM.'
+      tags:
+        - 'Administrator: User Management'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                role:
+                  type: string
+                  enum: [user, moderator, admin]
+                isActive:
+                  type: boolean
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '201':
+          description: User account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID of the newly created user
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  isActive:
+                    type: boolean
+        '400':
+          description: Bad request - Validation error
+        '403':
+          description: Forbidden - User does not have administrator access
+        '500':
+          description: Internal server error
+
+  /admin/users/edit:
+    put:
+      operationId: R804
+      summary: 'R804: Edit user account details'
+      description: 'Allow an administrator to update details of a user account. Access: ADM.'
+      tags:
+        - 'Administrator: User Management'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: ID of the user to edit
+                username:
+                  type: string
+                  description: Updated username
+                email:
+                  type: string
+                  format: email
+                  description: Updated email address
+                password:
+                  type: string
+                  format: password
+                  description: Updated password
+                role:
+                  type: string
+                  enum: [user, moderator, admin]
+                  description: Updated role of the user
+                isActive:
+                  type: boolean
+                  description: Updated account status
+              required:
+                - userId
+      responses:
+        '200':
+          description: User account updated successfully
+        '400':
+          description: Bad request - Validation error
+        '403':
+          description: Forbidden - User does not have administrator access
+        '404':
+          description: User account not found
+        '500':
+          description: Internal server error
+
