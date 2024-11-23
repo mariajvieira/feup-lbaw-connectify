@@ -45,6 +45,36 @@ class User extends Authenticatable
     {
         return $this->user_password;
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+
+    public function visiblePosts()
+    {
+        $ownPosts = Post::where('user_id', $this->id);
+    
+        $friendPosts = Post::select('posts.*')
+            ->join('friendships', function ($join) {
+                $join->on('friendships.user_id1', '=', 'posts.user_id')
+                     ->orOn('friendships.user_id2', '=', 'posts.user_id');
+            })
+            ->where(function ($query) {
+                $query->where('friendships.user_id1', $this->id)
+                      ->orWhere('friendships.user_id2', $this->id);
+            });
+    
+        $publicPosts = Post::where('is_public', true);
+    
+
+        return $ownPosts->union($friendPosts)
+            ->union($publicPosts)
+            ->orderBy('post_date', 'desc')
+            ->get();
+    }
+    
 }
 
 

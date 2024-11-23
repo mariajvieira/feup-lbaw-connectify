@@ -10,6 +10,18 @@ use App\Models\Group;
 class PostController extends Controller
 { 
     
+
+    public function show($id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return redirect()->route('home')->with('error', 'Post não encontrado.');
+        }
+
+        return view('pages.post', compact('post'));
+    }
+
     /**
      * Creates a new post.
      */
@@ -44,7 +56,7 @@ class PostController extends Controller
     //Define user timeline
     public function getPosts(Request $request)
     {
-        if(!Auth::check()){ //not logged in
+        if(!Auth::check()){ 
             $posts = Post::public()->orderBy('created_at', 'desc')->get();	
         }
         $this->authorize('getPosts', Post::class);

@@ -49,6 +49,10 @@ Route::put('/user/{id}', [UserController::class, 'editProfile'])->name('user.edi
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 
 
+// Posts
+Route::get('/posts/{id}', [PostController::class, 'show'])->name('post');
+
+
 /*
 
 // Home

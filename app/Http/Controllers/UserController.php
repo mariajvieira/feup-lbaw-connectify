@@ -13,13 +13,15 @@ class UserController extends Controller
     public function getProfile($id)
     {
         $user = User::find($id);
-
-
+    
         if (!$user) {
             return redirect()->route('home')->with('error', 'Usuário não encontrado');
         }
     
-        return view('pages.user', compact('user'));
+        // Carregar apenas os posts do usuário, ordenados por data
+        $posts = $user->posts()->orderBy('post_date', 'desc')->get();
+    
+        return view('pages.user', compact('user', 'posts'));
     }
 
     // Edit user profile

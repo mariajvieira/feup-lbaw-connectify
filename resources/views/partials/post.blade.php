@@ -1,12 +1,13 @@
-<article class="card" data-id="{{ $card->id }}">
-    <header>
-        <h2><a href="/posts/{{ $post->id }}">{{ $post->content }}</a></h2>
-        <a href="#" class="delete">&#10761;</a>
-    </header>
-    <ul>
-        @each('partials.item', $card->items()->orderBy('id')->get(), 'item')
-    </ul>
-    <form class="new_item">
-        <input type="text" name="description" placeholder="new item">
-    </form>
-</article>
+<div class="post-item">
+    <h4>{{ $post->title }}</h4>
+    <p>{{ $post->content }}</p> <!-- Mostra o conteúdo completo -->
+    <span class="post-date">
+        Published at {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y  H:i') }}
+    </span>
+
+    @if($post->image)
+        <div class="post-image">
+            <img src="{{ asset('storage/' . $post->image) }}" alt="Imagem do Post">
+        </div>
+    @endif
+</div>

@@ -16,10 +16,14 @@ class Post extends Model
 
     protected $table = 'post';
 
-    protected $primaryKey = 'post_id';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'user_id', 'group_id', 'content', 'IMAGE1', 'IMAGE2', 'IMAGE3', 'is_public', 'post_date',
+    ];
+
+    protected $casts = [
+        'post_date' => 'datetime',
     ];
 
     //Define public post
