@@ -56,14 +56,14 @@ class User extends Authenticatable
     {
         $ownPosts = Post::where('user_id', $this->id);
     
-        $friendPosts = Post::select('posts.*')
-            ->join('friendships', function ($join) {
-                $join->on('friendships.user_id1', '=', 'posts.user_id')
-                     ->orOn('friendships.user_id2', '=', 'posts.user_id');
+        $friendPosts = Post::select('post.*')
+            ->join('friendship', function ($join) {
+                $join->on('friendship.user_id1', '=', 'post.user_id')
+                     ->orOn('friendship.user_id2', '=', 'post.user_id');
             })
             ->where(function ($query) {
-                $query->where('friendships.user_id1', $this->id)
-                      ->orWhere('friendships.user_id2', $this->id);
+                $query->where('friendship.user_id1', $this->id)
+                      ->orWhere('friendship.user_id2', $this->id);
             });
     
         $publicPosts = Post::where('is_public', true);

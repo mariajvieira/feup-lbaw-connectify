@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -51,7 +52,9 @@ Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.d
 
 // Posts
 Route::get('/posts/{id}', [PostController::class, 'show'])->name('post');
-
+Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
+Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
+Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
 
 /*
 
