@@ -11,7 +11,7 @@
 
     <h3>Posts</h3>
     <div class="user-posts">
-        @include('pages.posts', ['posts' => $posts]) <!-- Chama a página de posts -->
+        @include('pages.posts', ['posts' => $posts]) 
     </div>
 
     <div class="edit-profile">

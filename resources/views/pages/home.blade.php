@@ -8,9 +8,7 @@
         <p>No posts to show.</p>
     @else
         <div class="post-list">
-            @foreach($posts as $post)
-                @include('partials.post', ['post' => $post])
-            @endforeach
+            @include('pages.posts', ['posts' => $posts]) 
         </div>
     @endif
 </div>

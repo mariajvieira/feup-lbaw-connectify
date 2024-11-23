@@ -25,7 +25,36 @@ class UserController extends Controller
     }
 
     // Edit user profile
-    public function editProfile(Request $request, $id)
+    public function editProfile($id)
+    {
+        $user = User::find($id);
+        
+        if (!$user) {
+            return redirect()->route('home')->with('error', 'Usuário não encontrado');
+        }
+
+        return view('partials.profileedit', compact('user')); 
+    }
+
+    // Delete user
+    public function deleteUser($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
+            Storage::delete('public/' . $user->profile_picture);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    public function updateProfile(Request $request, $id)
     {
         $user = User::find($id);
 
@@ -41,6 +70,7 @@ class UserController extends Controller
             'is_public' => 'nullable|boolean',
         ]);
 
+        // Atualizando os dados do usuário
         if ($request->has('username')) {
             $user->username = $request->username;
         }
@@ -66,24 +96,6 @@ class UserController extends Controller
 
         $user->save();
 
-        return view('partials.profileedit', compact('user'));
-    }
-
-    // Delete user
-    public function deleteUser($id)
-    {
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
-            Storage::delete('public/' . $user->profile_picture);
-        }
-
-        $user->delete();
-
-        return response()->json(['message' => 'User deleted successfully']);
+        return redirect()->route('user', ['id' => $user->id])->with('success', 'Perfil atualizado com sucesso!');
     }
 }

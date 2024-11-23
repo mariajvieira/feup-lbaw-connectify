@@ -56,10 +56,7 @@ class User extends Authenticatable
     {
 
         $userId = auth()->id();
-    
 
-        $ownPosts = Post::where('user_id', $userId);
-    
         $friendPosts = Post::select('post.*')
             ->join('friendship', function ($join) use ($userId) {
                 $join->on('friendship.user_id1', '=', 'post.user_id')
@@ -71,7 +68,7 @@ class User extends Authenticatable
             });
     
 
-        $posts = $ownPosts->unionAll($friendPosts)
+        $posts = $friendPosts
             ->orderByDesc('post_date') // Ordenar pela data do post
             ->get();
     
@@ -90,6 +87,7 @@ class User extends Authenticatable
         // Combina ambos os relacionamentos
         return $friends1->union($friends2);
     }
+
     public function friendships(): HasMany
     {
         return $this->hasMany(Friendship::class, 'user_id1', 'user_id')

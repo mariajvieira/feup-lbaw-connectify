@@ -45,16 +45,19 @@ Route::controller(RegisterController::class)->group(function () {
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 
 Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
-Route::put('/user/{id}', [UserController::class, 'editProfile'])->name('user.update');
+Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
 
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 
 
 // Posts
 Route::get('/posts/{id}', [PostController::class, 'show'])->name('post');
+
 Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
-Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
 Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
+
+Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
+
 
 /*
 
