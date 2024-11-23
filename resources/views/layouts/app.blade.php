@@ -25,7 +25,11 @@
             <header>
                 <h1><a href="{{ url('/home') }}">Connectify</a></h1>
                 @if (Auth::check())
-                    <a class="button" href="{{ url('/logout') }}"> Logout </a> <span>{{ Auth::user()->username }}</span>
+                    <!-- Link para o perfil do usuário -->
+                    <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
+                        <span>{{ Auth::user()->username }}</span>
+                    </a>
+                    <a class="button" href="{{ url('/logout') }}">Logout</a>
                 @endif
             </header>
             <section id="content">

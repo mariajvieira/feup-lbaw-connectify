@@ -20,8 +20,8 @@
       </span>
     @endif
 
-    <label for="password">Password</label>
-    <input id="password" type="password" name="user_password" required>
+    <label for="user_password">Password</label>
+    <input id="user_password" type="password" name="user_password" required>
     @if ($errors->has('user_password'))
       <span class="error">
           {{ $errors->first('user_password') }}

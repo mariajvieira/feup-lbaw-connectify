@@ -38,14 +38,14 @@ class RegisterController extends Controller
             User::create([
                 'username' => $request->username,
                 'email' => $request->email,
-                'user_password' => Hash::make($request->user_password),
+                'user_password' => Hash::make($validated['user_password']),
             ]);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }
 
         $credentials = $request->only('email', 'user_password');
-
+        Auth::login($user);
         Auth::attempt($credentials);
         $request->session()->regenerate();
         return redirect()->route('home')

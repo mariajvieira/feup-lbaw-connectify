@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -25,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 });
 
-
+// Authentication 
 Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
@@ -39,6 +40,13 @@ Route::controller(RegisterController::class)->group(function () {
 
 
 
+
+// User
+Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
+
+Route::put('/user/{id}', [UserController::class, 'editProfile'])->name('user.edit');
+
+Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 
 
 /*

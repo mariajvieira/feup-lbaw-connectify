@@ -14,17 +14,12 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
 
-        return response()->json([
-            'id' => $user->id, 
-            'username' => $user->username,
-            'email' => $user->email,
-            'profilePicture' => $user->profile_picture, 
-            'is_public' => $user->is_public
-        ]);
+        if (!$user) {
+            return redirect()->route('home')->with('error', 'Usuário não encontrado');
+        }
+    
+        return view('pages.user', compact('user'));
     }
 
     // Edit user profile
@@ -39,7 +34,7 @@ class UserController extends Controller
         $request->validate([
             'username' => 'sometimes|string|max:250|unique:users,username,' . $user->id,
             'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
-            'password' => 'nullable|min:8|confirmed',
+            'user_password' => 'nullable|min:8|confirmed',
             'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
