@@ -21,27 +21,22 @@ use App\Http\Controllers\Auth\RegisterController;
 // Home
 Route::redirect('/', '/login');
 
-
-Route::redirect('/', '/login'); // Redireciona para login ao acessar a raiz do site
-
 Route::middleware('auth')->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home'); // Acesso protegido
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
 });
 
 
-
-
-
-
-
-
-
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'authenticate']);
-    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
+Route::controller(LoginController::class)->group(function () {
+    Route::get('/login', 'showLoginForm')->name('login');
+    Route::post('/login', 'authenticate');
+    Route::get('/logout', 'logout')->name('logout');
 });
+
+Route::controller(RegisterController::class)->group(function () {
+    Route::get('/register', 'showRegistrationForm')->name('register');
+    Route::post('/register', 'register');
+});
+
 
 
 
