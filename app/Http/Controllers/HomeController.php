@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Post;
 
 use Illuminate\Http\Request;
 
@@ -23,26 +24,20 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Pega o usuário logado
+        // Obtém o usuário logado
         $user = auth()->user();
     
-        // Se o usuário não estiver logado, redireciona para a página de login
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Por favor, faça login');
-        }
+        // Obtém os posts visíveis (do próprio usuário, amigos e públicos)
+        $posts = $user->visiblePosts();  // Chamando a função visiblePosts() que retorna os posts
     
-        // Buscar os posts visíveis (do próprio usuário, amigos e posts públicos)
-        $posts = $user->visiblePosts(); // Aqui estamos utilizando o método que você criou no modelo
-    
-     
-        // Se não houver posts, retornar à home com uma mensagem
-        if ($posts->isEmpty()) {
-            return view('home')->with('message', 'Você não tem amigos ou seus amigos não postaram ainda.');
-        }
-    
-        // Passar os posts para a view
+        // Retorna a view com os posts
         return view('pages.home', compact('posts'));
     }
+    
+    
+    
+    
+    
     
     
 }

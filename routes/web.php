@@ -41,11 +41,11 @@ Route::controller(RegisterController::class)->group(function () {
 
 
 
-
 // User
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 
-Route::put('/user/{id}', [UserController::class, 'editProfile'])->name('user.edit');
+Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
+Route::put('/user/{id}', [UserController::class, 'editProfile'])->name('user.update');
 
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 

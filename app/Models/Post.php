@@ -30,8 +30,8 @@ class Post extends Model
     public function public()
     {
         return Post::select('post.*')
-                ->join('user_', 'user_.user_id', '=', 'post.user_id')
-                ->where('user_.is_public', true)
+                ->join('users', 'users.id', '=', 'post.user_id')
+                ->where('users.is_public', true)
                 ->where('post.is_public', true);
     }
 
@@ -40,7 +40,7 @@ class Post extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class);
     }
 
     /**

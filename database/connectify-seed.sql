@@ -885,6 +885,7 @@ VALUES
 
 INSERT INTO friendship (user_id1, user_id2)
 VALUES
+    (1,2),
     (3, 4),
     (5, 6),
     (7, 8),

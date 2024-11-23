@@ -15,7 +15,9 @@
     </div>
 
     <div class="edit-profile">
-        <a href="{{ route('user.edit', $user->id) }}" class="btn btn-primary">Edit Profile</a>
+        @if(auth()->id() === $user->id)
+            <a href="{{ route('user.edit', ['id' => $user->id]) }}" class="btn btn-primary">Editar Perfil</a>
+        @endif
     </div>
 </div>
 @endsection

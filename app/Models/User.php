@@ -54,115 +54,50 @@ class User extends Authenticatable
 
     public function visiblePosts()
     {
-        $ownPosts = Post::where('user_id', $this->id);
+
+        $userId = auth()->id();
+    
+
+        $ownPosts = Post::where('user_id', $userId);
     
         $friendPosts = Post::select('post.*')
-            ->join('friendship', function ($join) {
+            ->join('friendship', function ($join) use ($userId) {
                 $join->on('friendship.user_id1', '=', 'post.user_id')
                      ->orOn('friendship.user_id2', '=', 'post.user_id');
             })
-            ->where(function ($query) {
-                $query->where('friendship.user_id1', $this->id)
-                      ->orWhere('friendship.user_id2', $this->id);
+            ->where(function ($query) use ($userId) {
+                $query->where('friendship.user_id1', $userId)
+                      ->orWhere('friendship.user_id2', $userId);
             });
     
-        $publicPosts = Post::where('is_public', true);
-    
 
-        return $ownPosts->union($friendPosts)
-            ->union($publicPosts)
-            ->orderBy('post_date', 'desc')
+        $posts = $ownPosts->unionAll($friendPosts)
+            ->orderByDesc('post_date') // Ordenar pela data do post
             ->get();
+    
+        return $posts;
     }
     
-}
 
 
-
-
-/*
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Notifiable;
-
-    protected $table = 'user_';
-    protected $primaryKey = 'user_id'; 
-    public $incrementing = true; 
-    protected $keyType = 'string';
-
-
-    public $timestamps = false;
-
-
-    protected $fillable = [
-        'username',
-        'email',
-        'password', 
-        'profile_picture', 
-        'is_public',
-    ];
-
-
-    protected $hidden = [
-        'password', 
-        'remember_token',
-    ];
-
-    public function getAuthIdentifierName()
+    public function friends()
     {
-        return 'username';
+        // Amizades onde o usuário é o user_id1
+        $friends1 = $this->belongsToMany(User::class, 'friendship', 'user_id1', 'user_id2');
+        // Amizades onde o usuário é o user_id2
+        $friends2 = $this->belongsToMany(User::class, 'friendship', 'user_id2', 'user_id1');
+
+        // Combina ambos os relacionamentos
+        return $friends1->union($friends2);
     }
-
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = bcrypt($password);
-    }
-
-
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'user_id', 'user_id');
-    }
-
-
     public function friendships(): HasMany
     {
         return $this->hasMany(Friendship::class, 'user_id1', 'user_id')
             ->orWhere('user_id2', $this->user_id);
     }
 
-
-    public function visiblePosts()
-    {
-        // Próprios posts
-        $ownPosts = Post::where('user_id', $this->user_id);
-
-        // Posts dos amigos
-        $friendPosts = Post::select('post.*')
-            ->join('friendship', function ($join) {
-                $join->on('friendship.user_id1', '=', 'post.user_id')
-                    ->orOn('friendship.user_id2', '=', 'post.user_id');
-            })
-            ->where(function ($query) {
-                $query->where('friendship.user_id1', $this->user_id)
-                    ->orWhere('friendship.user_id2', $this->user_id);
-            });
-
-        // Posts públicos
-        $publicPosts = Post::where('is_public', true);
-
-        return $ownPosts->union($friendPosts)
-            ->union($publicPosts)
-            ->orderBy('post_date', 'desc')
-            ->get();
-    }
+    
 }
-*/
+
+
+

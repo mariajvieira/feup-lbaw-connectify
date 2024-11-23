@@ -66,7 +66,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return response()->json(['message' => 'Profile updated successfully']);
+        return view('partials.profileedit', compact('user'));
     }
 
     // Delete user
