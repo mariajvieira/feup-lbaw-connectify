@@ -39,7 +39,8 @@ class LoginController extends Controller
             $request->session()->regenerate();
             session(['id' => Auth::id()]);     
             session()->save();     
-            return redirect()->intended('/home');
+            return redirect('/home');
+
         }
  
         return back()->withErrors([

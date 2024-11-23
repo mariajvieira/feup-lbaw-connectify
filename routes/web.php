@@ -2,9 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\CardController;
 use App\Http\Controllers\ItemController;
-
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -22,29 +21,19 @@ use App\Http\Controllers\Auth\RegisterController;
 // Home
 Route::redirect('/', '/login');
 
-use App\Http\Controllers\HomeController;
+
+Route::redirect('/', '/login'); // Redireciona para login ao acessar a raiz do site
 
 Route::middleware('auth')->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/home', [HomeController::class, 'index'])->name('home'); // Acesso protegido
 });
 
-// Cards
-Route::controller(CardController::class)->group(function () {
-    Route::get('/cards', 'list')->name('cards');
-    Route::get('/cards/{id}', 'show');
-});
 
-// API
-Route::controller(CardController::class)->group(function () {
-    Route::put('/api/cards', 'create');
-    Route::delete('/api/cards/{card_id}', 'delete');
-});
 
-Route::controller(ItemController::class)->group(function () {
-    Route::put('/api/cards/{card_id}', 'create');
-    Route::post('/api/item/{id}', 'update');
-    Route::delete('/api/item/{id}', 'delete');
-});
+
+
+
+
 
 
 Route::middleware('guest')->group(function () {
@@ -79,10 +68,6 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/auth/register', 'register');
 });
 
-Route::controller(PasswordController::class)->group(function () {
-    Route::post('/auth/send-verification-code', 'sendVerificationCode'); 
-    Route::post('/auth/recover-password', 'recoverPassword'); 
-});
 
 
 // Users
