@@ -30,11 +30,11 @@ class LoginController extends Controller
         // Valida os dados do formulário
         $credentials = $request->validate([
             'email' => ['required', 'email'],
-            'user_password' => ['required'],
+            'password' => ['required'],
         ]);
         
-        // Mapeia o campo 'user_password' para 'password'
-        $credentials['password'] = $credentials['user_password'];
+        // Mapeia o campo 'password' para 'password'
+        $credentials['password'] = $credentials['password'];
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             session(['id' => Auth::id()]);     

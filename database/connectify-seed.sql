@@ -40,7 +40,7 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     profile_picture TEXT DEFAULT 'default.png',
-    user_password TEXT NOT NULL,
+    password TEXT NOT NULL,
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
 
@@ -698,7 +698,7 @@ END $$ LANGUAGE plpgsql;
 
 
 
-INSERT INTO users (username, email, profile_picture, user_password, is_public)
+INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
     ('alice_wonder', 'alice@example.com', 'alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
     ('bob_builder', 'bob@example.com', 'bob.jpg', 'securepassword2', TRUE),

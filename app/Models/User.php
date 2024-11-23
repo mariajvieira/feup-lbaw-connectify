@@ -23,7 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
-        'user_password',
+        'password',
         'is_public',
     ];
 
@@ -33,7 +33,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'user_password',
+        'password',
     ];
 
     /**
@@ -43,7 +43,7 @@ class User extends Authenticatable
      */
     public function getAuthPassword()
     {
-        return $this->user_password;
+        return $this->password;
     }
 
     public function posts()
@@ -105,14 +105,14 @@ class User extends Authenticatable
     protected $fillable = [
         'username',
         'email',
-        'user_password', 
+        'password', 
         'profile_picture', 
         'is_public',
     ];
 
 
     protected $hidden = [
-        'user_password', 
+        'password', 
         'remember_token',
     ];
 
@@ -123,7 +123,7 @@ class User extends Authenticatable
 
     public function setPasswordAttribute($password)
     {
-        $this->attributes['user_password'] = bcrypt($password);
+        $this->attributes['password'] = bcrypt($password);
     }
 
 
