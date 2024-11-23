@@ -16,8 +16,10 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    protected $keyType = 'int';
     protected $table = 'user_';
-    protected $primaryKey = 'user_id'; 
     public $timestamps  = false;
 
     /**
@@ -47,7 +49,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'user_password' => 'hashed',
     ];
 
     /**

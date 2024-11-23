@@ -19,7 +19,7 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'id' => $user->user_id, // Alterado para corresponder ao campo da tabela
+            'id' => $user->id, // Alterado para corresponder ao campo da tabela
             'username' => $user->username,
             'email' => $user->email,
             'profilePicture' => $user->profile_picture, // Alterado para corresponder ao campo da tabela
@@ -37,8 +37,8 @@ class UserController extends Controller
         }
 
         $request->validate([
-            'username' => 'sometimes|string|max:250|unique:user_,username,' . $user->user_id,
-            'email' => 'sometimes|email|max:250|unique:user_,email,' . $user->user_id,
+            'username' => 'sometimes|string|max:250|unique:user_,username,' . $user->id,
+            'email' => 'sometimes|email|max:250|unique:user_,email,' . $user->id,
             'password' => 'nullable|min:8|confirmed',
             'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
@@ -52,8 +52,8 @@ class UserController extends Controller
             $user->email = $request->email;
         }
 
-        if ($request->has('password')) {
-            $user->user_password = Hash::make($request->password); // Alterado para corresponder ao campo da tabela
+        if ($request->has('user_password')) {
+            $user->user_password = Hash::make($request->user_password); 
         }
 
         if ($request->hasFile('profilePicture')) {

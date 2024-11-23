@@ -471,7 +471,7 @@ RETURNS VOID AS $$
 BEGIN
     UPDATE user_ 
     SET username = newName, email = newEmail, profile_picture = newProfilePicture 
-    WHERE user_id = userId;
+    WHERE id = userId;
 END; $$ LANGUAGE plpgsql;
 
 
@@ -563,7 +563,7 @@ BEGIN
     SET user_id = NULL 
     WHERE user_id = user_id;
 
-    DELETE FROM "user" 
+    DELETE FROM user_ 
     WHERE id = user_id;
 END; 
 $$ LANGUAGE plpgsql;
