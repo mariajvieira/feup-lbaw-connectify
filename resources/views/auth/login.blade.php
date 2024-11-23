@@ -13,10 +13,10 @@
     @endif
 
     <label for="password" >Password</label>
-    <input id="password" type="password" name="password" required>
-    @if ($errors->has('password'))
+    <input id="password" type="password" name="user_password" required>
+    @if ($errors->has('user_password'))
         <span class="error">
-            {{ $errors->first('password') }}
+            {{ $errors->first('user_password') }}
         </span>
     @endif
 

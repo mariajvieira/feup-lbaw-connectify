@@ -19,10 +19,10 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'id' => $user->id, // Alterado para corresponder ao campo da tabela
+            'id' => $user->id, 
             'username' => $user->username,
             'email' => $user->email,
-            'profilePicture' => $user->profile_picture, // Alterado para corresponder ao campo da tabela
+            'profilePicture' => $user->profile_picture, 
             'is_public' => $user->is_public
         ]);
     }
@@ -37,8 +37,8 @@ class UserController extends Controller
         }
 
         $request->validate([
-            'username' => 'sometimes|string|max:250|unique:user_,username,' . $user->id,
-            'email' => 'sometimes|email|max:250|unique:user_,email,' . $user->id,
+            'username' => 'sometimes|string|max:250|unique:users,username,' . $user->id,
+            'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8|confirmed',
             'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',

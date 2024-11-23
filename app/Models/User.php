@@ -3,24 +3,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
-// Added to define Eloquent relationships.
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $primaryKey = 'id';
-    public $incrementing = true;
-    protected $keyType = 'int';
-    protected $table = 'user_';
-    public $timestamps  = false;
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -31,6 +24,7 @@ class User extends Authenticatable
         'username',
         'email',
         'user_password',
+        'is_public',
     ];
 
     /**
@@ -43,21 +37,13 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the password for authentication.
      *
-     * @var array<string, string>
+     * @return string
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'user_password' => 'hashed',
-    ];
-
-    /**
-     * Get the cards for a user.
-     */
-    public function cards(): HasMany
+    public function getAuthPassword()
     {
-        return $this->hasMany(Card::class);
+        return $this->user_password;
     }
 }
 

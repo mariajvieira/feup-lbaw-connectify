@@ -3,7 +3,7 @@ CREATE SCHEMA lbaw2453;
 SET search_path = lbaw2453;
 
 
-DROP TABLE IF EXISTS user_ CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS administrator CASCADE;
 DROP TABLE IF EXISTS post CASCADE;
 DROP TABLE IF EXISTS saved_post CASCADE;
@@ -35,7 +35,7 @@ CREATE TYPE reactionType AS ENUM ('like', 'laugh', 'cry', 'applause', 'shocked')
 
 -- Tables
 
-CREATE TABLE user_ (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -45,13 +45,13 @@ CREATE TABLE user_ (
 );
 
 CREATE TABLE administrator (
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id)
 );
 
 CREATE TABLE group_ (
     id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    owner_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     group_name TEXT NOT NULL,
     description TEXT,
     visibility BOOLEAN NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE group_ (
 
 CREATE TABLE post (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     group_id INT REFERENCES group_(id) ON UPDATE CASCADE,
     content TEXT,
     IMAGE1 TEXT,
@@ -72,7 +72,7 @@ CREATE TABLE post (
 );
 
 CREATE TABLE saved_post (
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, post_id)
 );
@@ -80,14 +80,14 @@ CREATE TABLE saved_post (
 CREATE TABLE comment_ (
     id SERIAL PRIMARY KEY,
     post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     comment_content TEXT NOT NULL,
     commentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reaction (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
     reaction_type reactionType NOT NULL,
     reaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -97,39 +97,39 @@ CREATE TABLE friend_request (
     id SERIAL PRIMARY KEY,
     request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     request_status statusFriendship_request NOT NULL,
-    sender_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
-    receiver_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE
+    sender_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
+    receiver_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE friendship (
-    user_id1 INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
-    user_id2 INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id1 INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
+    user_id2 INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id1, user_id2)
 );
 
 CREATE TABLE join_group_request (
     id SERIAL PRIMARY KEY,
     group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     request_status statusGroup_request NOT NULL,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE group_member (
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, group_id)
 );
 
 CREATE TABLE group_owner (
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     group_id INT NOT NULL REFERENCES group_(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id, group_id)
 );
 
 CREATE TABLE notification (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES user_(id) ON UPDATE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     related_id INT,
     is_read BOOLEAN DEFAULT false,
     notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -172,7 +172,7 @@ CREATE INDEX idx_notification_user_date ON notification (user_id, notification_d
 
 -- User FTS index
 DROP FUNCTION IF EXISTS user_search_update() CASCADE;
-ALTER TABLE user_
+ALTER TABLE users
 ADD COLUMN tsvectors TSVECTOR;
 
 CREATE FUNCTION user_search_update() RETURNS TRIGGER AS $$
@@ -190,11 +190,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER user_search_update
-BEFORE INSERT OR UPDATE ON user_
+BEFORE INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE PROCEDURE user_search_update();
 
-CREATE INDEX idx_user_search ON user_ USING GIN (tsvectors);
+CREATE INDEX idx_user_search ON users USING GIN (tsvectors);
 
 -- Post FTS index
 DROP FUNCTION IF EXISTS post_search_update() CASCADE;
@@ -276,7 +276,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_enforce_profile_visibility
-BEFORE UPDATE ON user_
+BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION enforce_profile_visibility_update();
 
@@ -353,7 +353,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_anonymize_user_data
-AFTER DELETE ON user_
+AFTER DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION anonymize_user_data();
 
@@ -469,7 +469,7 @@ END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_user_info(userId INT, newName TEXT, newEmail TEXT, newProfilePicture TEXT) 
 RETURNS VOID AS $$
 BEGIN
-    UPDATE user_ 
+    UPDATE users
     SET username = newName, email = newEmail, profile_picture = newProfilePicture 
     WHERE id = userId;
 END; $$ LANGUAGE plpgsql;
@@ -563,7 +563,7 @@ BEGIN
     SET user_id = NULL 
     WHERE user_id = user_id;
 
-    DELETE FROM user_ 
+    DELETE FROM users
     WHERE id = user_id;
 END; 
 $$ LANGUAGE plpgsql;
@@ -698,7 +698,7 @@ END $$ LANGUAGE plpgsql;
 
 
 
-INSERT INTO user_ (username, email, profile_picture, user_password, is_public)
+INSERT INTO users (username, email, profile_picture, user_password, is_public)
 VALUES
     ('alice_wonder', 'alice@example.com', 'alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
     ('bob_builder', 'bob@example.com', 'bob.jpg', 'securepassword2', TRUE),

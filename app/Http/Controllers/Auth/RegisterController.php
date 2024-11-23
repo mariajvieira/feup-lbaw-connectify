@@ -30,7 +30,7 @@ class RegisterController extends Controller
     {
         $request->validate([
             'username' => 'required|string|max:250',
-            'email' => 'required|email|max:250|unique:user_',
+            'email' => 'required|email|max:250|unique:users',
             'user_password' => 'required|min:8|confirmed'
         ]);
 
@@ -45,16 +45,13 @@ class RegisterController extends Controller
         }
 
         $credentials = $request->only('email', 'user_password');
+
         Auth::attempt($credentials);
         $request->session()->regenerate();
-        session(['id' => Auth::id()]);
-        session()->save();
-
         return redirect()->route('home')
             ->withSuccess('You have successfully registered & logged in!');
     }
 }
-
 /*
 namespace App\Http\Controllers\Auth;
 

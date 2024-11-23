@@ -24,8 +24,9 @@ Route::redirect('/', '/login');
 
 use App\Http\Controllers\HomeController;
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-
+Route::middleware('auth')->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+});
 
 // Cards
 Route::controller(CardController::class)->group(function () {
@@ -46,18 +47,12 @@ Route::controller(ItemController::class)->group(function () {
 });
 
 
-// Authentication
-Route::controller(LoginController::class)->group(function () {
-    Route::get('/login', 'showLoginForm')->name('login');
-    Route::post('/login', 'authenticate');
-    Route::get('/logout', 'logout')->name('logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'authenticate']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register']);
 });
-
-Route::controller(RegisterController::class)->group(function () {
-    Route::get('/register', 'showRegistrationForm')->name('register');
-    Route::post('/register', 'register');
-});
-
 
 
 
