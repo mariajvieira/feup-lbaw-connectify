@@ -40,8 +40,7 @@ Route::middleware('auth')->group(function () {
 Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
-    //Route::post('/logout', 'logout')->name('logout'); // Usar POST para logout por segurança
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::post('/logout', 'logout')->name('logout'); 
 
 });
 

@@ -46,11 +46,11 @@
         @endauth
 
         <div class="user-actions">
-            @if(Auth::user()->isAdmin())
-                <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
-            @endif
-
             @auth
+
+                @if(Auth::user()->isAdmin())
+                                <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
+                @endif
                 <!-- Link para a Home (posts dos amigos) -->
                 <a href="{{ route('home') }}" class="button">Friends</a>
 
@@ -85,4 +85,3 @@
     </main>
 </body>
 </html>
-
