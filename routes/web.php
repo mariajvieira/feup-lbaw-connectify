@@ -9,7 +9,7 @@ use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PublicHomeController;
-
+use App\Http\Controllers\FeedController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,10 +24,17 @@ use App\Http\Controllers\PublicHomeController;
 // Public Home
 Route::get('/', [PublicHomeController::class, 'index'])->name('welcome');
 
+
 // Home (Protected)
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 });
+
+// Feed (Protected)
+Route::middleware('auth')->group(function () {
+    Route::get('/feed', [FeedController::class, 'index'])->name('feed');
+});
+
 
 // Authentication 
 Route::controller(LoginController::class)->group(function () {

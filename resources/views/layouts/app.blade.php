@@ -18,54 +18,63 @@
 </head>
 <body>
     <main>
-        <header>
-            <h1>
-                <a href="{{ Auth::check() ? route('home') : route('welcome') }}">Connectify</a>
-            </h1>
-            <div class="header-actions">
-                <!-- Barra de busca -->
-                @auth
-                    <form action="{{ route('search') }}" method="GET" class="search-form">
-                        <input 
-                            type="text" 
-                            name="query" 
-                            id="searchInput" 
-                            placeholder="Search posts, users..." 
-                            class="search-input" 
-                            value="{{ request('query') }}" 
-                            required>
-                    </form>
+    <header>
+    <h1>
+        <a href="{{ Auth::check() ? route('home') : route('welcome') }}">Connectify</a>
+    </h1>
+    <div class="header-actions">
+        <!-- Barra de busca -->
+        @auth
+            <form action="{{ route('search') }}" method="GET" class="search-form">
+                <input 
+                    type="text" 
+                    name="query" 
+                    id="searchInput" 
+                    placeholder="Search posts, users..." 
+                    class="search-input" 
+                    value="{{ request('query') }}" 
+                    required>
+            </form>
 
-                    <script type="text/javascript">
-                        document.getElementById('searchInput').addEventListener('keydown', function(event) {
-                            if (event.key === 'Enter') {
-                                document.getElementById('searchForm').submit();
-                            }
-                        });
-                    </script>
-                @endauth
+            <script type="text/javascript">
+                document.getElementById('searchInput').addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        document.getElementById('searchForm').submit();
+                    }
+                });
+            </script>
+        @endauth
 
-                <div class="user-actions">
-                    @auth
-                        <!-- Link para criar novo post -->
-                        <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
-                        <!-- Link para o perfil do usuário -->
-                        <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
-                            <span>{{ Auth::user()->username }}</span>
-                        </a>
-                        <!-- Logout -->
-                        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                            @csrf
-                            <button type="submit" class="logout-link">Logout</button>
-                        </form>
-                    @else
-                        <!-- Links para visitantes -->
-                        <a href="{{ route('login') }}" class="button login-button">Login</a>
-                        <a href="{{ route('register') }}" class="button register-button">Register</a>
-                    @endauth
-                </div>
-            </div>
-        </header>
+        <div class="user-actions">
+            @auth
+                <!-- Link para a Home (posts dos amigos) -->
+                <a href="{{ route('home') }}" class="button">Home (Amigos)</a>
+
+                <!-- Link para o Feed (posts públicos + amigos) -->
+                <a href="{{ route('feed') }}" class="button">Feed (Públicos + Amigos)</a>
+
+                <!-- Link para criar novo post -->
+                <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
+
+                <!-- Link para o perfil do usuário -->
+                <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
+                    <span>{{ Auth::user()->username }}</span>
+                </a>
+
+                <!-- Logout -->
+                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="logout-link">Logout</button>
+                </form>
+            @else
+                <!-- Links para visitantes -->
+                <a href="{{ route('login') }}" class="button login-button">Login</a>
+                <a href="{{ route('register') }}" class="button register-button">Register</a>
+            @endauth
+        </div>
+    </div>
+</header>
+
         <section id="content">
             @yield('content')
         </section>
