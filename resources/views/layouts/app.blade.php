@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="{{ app()->getLocale() }}">
     <head>
         <meta charset="utf-8">
@@ -19,6 +20,7 @@
             // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
         </script>
         <script type="text/javascript" src={{ url('js/app.js') }} defer>
+
         </script>
     </head>
     <body>
@@ -40,16 +42,14 @@
 
                     @if (Auth::check())
                         <div class="user-actions">
+                            <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
                             <!-- Link para o perfil do usuário -->
                             <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
                                 <span>{{ Auth::user()->username }}</span>
                             </a>
 
-                            <!-- Botão de novo post -->
-                            <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
-
                             <!-- Logout -->
-                            <a class="button logout-button" href="{{ url('/logout') }}">Logout</a>
+                            <a href="{{ route('logout') }}" class="logout-link">Logout</a>
                         </div>
                     @endif
                 </div>
