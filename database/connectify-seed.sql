@@ -701,7 +701,7 @@ END $$ LANGUAGE plpgsql;
 INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
     ('alice_wonder', 'alice@example.com', 'alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
-    ('bob_builder', 'bob@example.com', 'bob.jpg', 'securepassword2', TRUE),
+    ('bob_builder', 'bob@example.com', 'bob.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
     ('charlie_chaplin', 'charlie@example.com', 'charlie.jpg', 'securepassword3', FALSE),
     ('daisy_duck', 'daisy@example.com', 'daisy.jpg', 'securepassword4', TRUE),
     ('edgar_allan', 'edgar@example.com', 'edgar.jpg', 'securepassword5', TRUE),
