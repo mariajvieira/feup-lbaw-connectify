@@ -266,7 +266,11 @@ BEGIN
             SELECT 1 FROM friendship
             WHERE (user_id1 = NEW.id AND user_id2 = current_user) OR
                   (user_id2 = NEW.id AND user_id1 = current_user)
+        ) AND NOT EXISTS (
+            SELECT 1 FROM administrators
+            WHERE user_id = current_user
         ) THEN
+            -- Lança um erro se o usuário não for amigo nem administrador
             RAISE EXCEPTION 'Perfil privado. Acesso negado.';
         END IF;
     END IF;
@@ -770,35 +774,35 @@ VALUES
 
 INSERT INTO post (user_id, group_id, content, IMAGE1, IMAGE2, IMAGE3, is_public, post_date)
 VALUES
-    (1, NULL, 'Just finished reading a fantastic book!', NULL, 'book1.jpg', NULL, TRUE, '2023-01-01 12:00:00'),
-    (2, NULL, 'Building a new project, check it out!', 'construction.jpg', NULL, NULL, TRUE, '2023-01-02 12:01:00'),
-    (3, NULL, 'Check out my latest painting!', NULL, 'artwork1.jpg', 'artwork2.jpg', TRUE, '2023-01-03 12:02:00'),
-    (4, NULL, 'Excited about the new tech innovations!', NULL, 'tech1.jpg', NULL, TRUE, '2023-01-04 12:03:00'),
-    (5, NULL, 'Lets solve some mysteries together!', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
-    (6, NULL, 'Adopting a new puppy today!', NULL, 'puppy.jpg', NULL, TRUE, '2023-01-06 12:05:00'),
-    (7, NULL, 'Just got back from my trip to Italy!', NULL, NULL, 'italy.jpg', TRUE, '2023-01-07 12:06:00'),
-    (8, NULL, 'Tried a new recipe today, it was delicious!', 'recipe.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
-    (9, NULL, 'Just finished a 5k run, feeling great!', NULL, 'run.jpg', NULL, TRUE, '2023-01-09 12:08:00'),
-    (10, NULL, 'Discovering new music every day!', NULL, NULL, 'music.jpg', TRUE, '2023-01-10 12:09:00'),
+    (1, NULL, 'Just finished reading a fantastic book!','images/1.1.jpg', NULL, NULL, TRUE, '2023-01-01 12:00:00'),
+    (2, NULL, 'Building a new project, check it out!', 'images/2.1.jpg', NULL, NULL, TRUE, '2023-01-02 12:01:00'),
+    (3, NULL, 'Check out my latest painting!', 'images/3.1.jpg', 'images/3.2.jpg',  NULL,TRUE, '2023-01-03 12:02:00'),
+    (4, NULL, 'Paris!', 'images/4.1.jpg', NULL, NULL, TRUE, '2023-01-04 12:03:00'),
+    (5, NULL, 'Did you know that octopuses have three hearts? Two pump blood to the gills, and one pumps it to the rest of the body. What’s even more fascinating is that the heart that supplies the body stops beating when the octopus swims! Nature is incredible, isn’t it?', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
+    (6, NULL, 'New family member!', 'puppy.jpg', NULL, NULL, TRUE, '2023-01-06 12:05:00'),
+    (7, NULL, 'Just got back from my trip to Italy!', 'images/7.1.jpg', NULL, NULL, TRUE, '2023-01-07 12:06:00'),
+    (8, NULL, 'Tried a new recipe today, it was delicious!', 'images/8.1.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
+    (9, NULL, 'Just finished a 5k run, feeling great!', 'images/9.1.jpg', NULL, NULL, TRUE, '2023-01-09 12:08:00'),
+    (10, NULL, 'I love listening to music!', 'images/10.1.jpg', NULL, NULL, TRUE, '2023-01-10 12:09:00'),
     (1, NULL, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, '2023-01-11 12:10:00'),
-    (2, NULL, 'New construction materials available!', 'materials.jpg', NULL, NULL, TRUE, '2023-01-12 12:11:00'),
-    (3, NULL, 'Art competition coming up!', NULL, 'competition.jpg', NULL, TRUE, '2023-01-13 12:12:00'),
-    (4, NULL, 'Latest gadget review is out!', NULL, NULL, 'gadget.jpg', TRUE, '2023-01-14 12:13:00'),
-    (5, NULL, 'Share your best mystery story!', NULL, NULL, NULL, TRUE, '2023-01-15 12:14:00'),
-    (6, NULL, 'What is your favorite pet?', NULL, NULL, NULL, TRUE, '2023-01-16 12:15:00'),
-    (7, NULL, 'Looking for travel buddies!', NULL, NULL, NULL, TRUE, '2023-01-17 12:16:00'),
-    (8, NULL, 'Food festival this weekend!', NULL, NULL, 'festival.jpg', TRUE, '2023-01-18 12:17:00'),
-    (9, NULL, 'Join my fitness challenge!', NULL, NULL, NULL, TRUE, '2023-01-19 12:18:00'),
-    (10, NULL, 'Music festival coming soon!', NULL, 'festival.jpg', NULL, TRUE, '2023-01-20 12:19:00'),
-    (1, NULL, 'What construction project are you working on?', NULL, NULL, NULL, TRUE, '2023-01-21 12:20:00'),
-    (2, NULL, 'Have you seen my latest drawing?', NULL, 'drawing.jpg', NULL, TRUE, '2023-01-22 12:21:00'),
-    (3, NULL, 'What are your thoughts on AI?', NULL, NULL, NULL, TRUE, '2023-01-23 12:22:00'),
-    (4, NULL, 'Anyone solved a mystery recently?', NULL, NULL, NULL, TRUE, '2023-01-24 12:23:00'),
-    (5, NULL, 'Adopt, dont shop!', NULL, NULL, NULL, TRUE, '2023-01-25 12:24:00'),
-    (6, NULL, 'Whats your favorite travel destination?', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
-    (7, NULL, 'What dish should I try next?', NULL, NULL, NULL, TRUE, '2023-01-27 12:26:00'),
-    (8, NULL, 'Who wants to join me for a workout?', NULL, NULL, NULL, TRUE, '2023-01-28 12:27:00'),
-    (9, NULL, 'Whats your go-to song for motivation?', NULL, NULL, NULL, TRUE, '2023-01-29 12:28:00');
+    (2, NULL, 'Love building stuff together!', 'images/12.1.jpg', NULL, NULL, TRUE, '2023-01-12 12:11:00'),
+    (3, NULL, 'Art online class coming up!', 'images/13.1.jpg', NULL, NULL, TRUE, '2023-01-13 12:12:00'),
+    (4, NULL, NULL , 'images/14.1.jpg.jpg', NULL, NULL, TRUE, '2023-01-14 12:13:00'),
+    (5, NULL, 'Amazing coffe with an amazing view', NULL, NULL, NULL, TRUE, '2023-01-15 12:14:00'),
+    (6, NULL, 'Happy birthday mom!', 'images/16.1.jpg', NULL, NULL, TRUE, '2023-01-16 12:15:00'),
+    (7, NULL, NULL, 'images/17.1.jpg', NULL, NULL, TRUE, '2023-01-17 12:16:00'),
+    (8, NULL, 'Food festival this weekend!', 'images/18.1.jpg', 'images/18.2.jpg', NULL, TRUE, '2023-01-18 12:17:00'),
+    (9, NULL, 'Join my fitness challenge!', 'images/19.1.jpg', NULL, NULL, TRUE, '2023-01-19 12:18:00'),
+    (10, NULL, 'Rock n roll!!!','images/20.1.jpg', NULL, NULL, TRUE, '2023-01-20 12:19:00'),
+    (1, NULL, 'Finally got my first job as a software engineer! Wish me luck :)', NULL, NULL, NULL, TRUE, '2023-01-21 12:20:00'),
+    (2, NULL, 'First day at college','images/22.2.jpg', NULL, NULL, TRUE, '2023-01-22 12:21:00'),
+    (3, NULL, NULL,'images/23.2.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
+    (4, NULL, 'Today in Porto', 'images/24.2.jpg', NULL, NULL, TRUE, '2023-01-24 12:23:00'),
+    (5, NULL, 'Adopt, dont shop!', 'images/25.2.jpg', NULL, NULL, TRUE, '2023-01-25 12:24:00'),
+    (6, NULL, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
+    (7, NULL, 'Family time :)', 'images/27.1.jpg', NULL, NULL, TRUE, '2023-01-27 12:26:00'),
+    (8, NULL, 'Who wants to join me for a workout?', 'images/28.1.jpg', NULL, NULL, TRUE, '2023-01-28 12:27:00'),
+    (9, NULL, 'Whats your favourite song? I love Despacito', 'images/29.1.jpg', NULL, NULL, TRUE, '2023-01-29 12:28:00');
 
 
 INSERT INTO saved_post (user_id, post_id)

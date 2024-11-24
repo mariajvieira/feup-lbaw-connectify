@@ -69,7 +69,7 @@ class User extends Authenticatable
     
 
         $posts = $friendPosts
-            ->orderByDesc('post_date') // Ordenar pela data do post
+            ->orderByDesc('post_date') 
             ->get();
     
         return $posts;
