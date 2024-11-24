@@ -25,33 +25,38 @@ class PostController extends Controller
     /**
      * Creates a new post.
      */
-    public function create(Request $request)
+    //public function create(Request $request)
+    //{
+        //$validated = $request->validate([
+        //    'user_id' => 'required|exists:user_,user_id',
+        //    'group_id' => 'nullable|exists:group_,group_id',
+        //    'content' => 'nullable|string',
+        //    'IMAGE1' => 'nullable|string',
+        //    'IMAGE2' => 'nullable|string',
+        //    'IMAGE3' => 'nullable|string',
+        //   'is_public' => 'required|boolean',
+        //]);
+
+        //$post = new Post();
+        //$post->user_id = $validated['user_id'];
+        //$post->group_id = $validated['group_id'] ?? null;
+        //$post->content = $validated['content'] ?? null;
+        //$post->IMAGE1 = $validated['IMAGE1'] ?? null;
+        //$post->IMAGE2 = $validated['IMAGE2'] ?? null;
+        //$post->IMAGE3 = $validated['IMAGE3'] ?? null;
+        //$post->is_public = $validated['is_public'];
+
+        //$this->authorize('create', $post);
+
+        //$post->save();
+
+        //return response()->json($post, 201);
+    //}
+    public function create()
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:user_,user_id',
-            'group_id' => 'nullable|exists:group_,group_id',
-            'content' => 'nullable|string',
-            'IMAGE1' => 'nullable|string',
-            'IMAGE2' => 'nullable|string',
-            'IMAGE3' => 'nullable|string',
-            'is_public' => 'required|boolean',
-        ]);
-
-        $post = new Post();
-        $post->user_id = $validated['user_id'];
-        $post->group_id = $validated['group_id'] ?? null;
-        $post->content = $validated['content'] ?? null;
-        $post->IMAGE1 = $validated['IMAGE1'] ?? null;
-        $post->IMAGE2 = $validated['IMAGE2'] ?? null;
-        $post->IMAGE3 = $validated['IMAGE3'] ?? null;
-        $post->is_public = $validated['is_public'];
-
-        $this->authorize('create', $post);
-
-        $post->save();
-
-        return response()->json($post, 201);
+        return view('partials.create');
     }
+
 
     //Define user timeline
     public function getPosts(Request $request)
@@ -124,5 +129,30 @@ class PostController extends Controller
     
         return redirect()->route('user', auth()->id())->with('error', 'You do not have permission to delete this post');
     }
-    
+    public function store(Request $request)
+    {
+        // Validação dos dados recebidos do formulário
+        $validated = $request->validate([
+            'content' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+            'is_public' => 'required|boolean',
+        ]);
+
+        // Criar o post
+        $post = new Post();
+        $post->user_id = auth()->id(); // Usando o ID do usuário autenticado
+        $post->content = $validated['content'];
+        $post->is_public = $validated['is_public'];
+
+        // Se houver uma imagem, faz o upload
+        if ($request->hasFile('image')) {
+            $post->image = $request->file('image')->store('posts', 'public');
+        }
+
+        // Salva o post
+        $post->save();
+
+        // Redireciona para o home ou página do usuário
+        return redirect()->route('home')->with('success', 'Post criado com sucesso!');
+    }
 }
