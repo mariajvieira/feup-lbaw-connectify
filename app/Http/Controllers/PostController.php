@@ -33,32 +33,48 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // Validação dos dados recebidos do formulário
-        $validated = $request->validate([
-            'content' => 'nullable|string',
-            'image1' => 'nullable|image|max:2048',
-            'image2' => 'nullable|image|max:2048',
-            'image3' => 'nullable|image|max:2048',
+        // Validação dos dados
+        $request->validate([
+            'content' => 'nullable|string|max:255', // A descrição é opcional, mas deve ser uma string se fornecida
             'is_public' => 'required|boolean',
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
-        // Criar o post
+        
+        // Criação do post
         $post = new Post();
-        $post->user_id = auth()->id();
-        $post->content = $validated['content'];
-        $post->is_public = $validated['is_public'];
-
-        // Upload de imagens
-        foreach (['image1', 'image2', 'image3'] as $imageField) {
-            if ($request->hasFile($imageField)) {
-                $post->$imageField = $request->file($imageField)->store('posts', 'public');
+        $post->content = $request->content;
+        $post->is_public = $request->is_public;
+        $post->user_id = Auth::id(); 
+        
+        // Salvar o post inicialmente para obter o post ID
+        $post->save();
+        
+        // Processamento das imagens e armazenamento nos campos image1, image2, image3
+        for ($i = 1; $i <= 3; $i++) {
+            if ($request->hasFile('image'.$i)) {
+                $image = $request->file('image'.$i);
+                
+                // Criar o caminho da imagem diretamente dentro de public/images/
+                $imageDirectory = public_path('images');
+                
+                // Armazenar a imagem na pasta com o nome baseado no post_id e número da imagem
+                $imagePath = $image->move($imageDirectory, $post->id . '.' . $i . '.' . $image->getClientOriginalExtension());
+                
+                // Salva o caminho relativo da imagem no banco de dados
+                $post->{'image'.$i} = 'images/' . basename($imagePath);
             }
         }
-
+        
+        // Atualizar o post após o processamento das imagens
         $post->save();
-
-        return redirect()->route('home')->with('success', 'Post criado com sucesso!');
+        
+        return redirect()->route('home')->with('success', 'Post criado com sucesso');
     }
+    
+    
+
 
     public function edit($id)
     {

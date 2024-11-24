@@ -8,8 +8,16 @@
         <textarea name="content" id="content" class="form-control" rows="4" placeholder="What's on your mind?"></textarea>
     </div>
     <div class="form-group">
-        <label for="image" class="field-label">Upload Image (Optional):</label>
-        <input type="file" name="image" id="image" class="form-control">
+        <label for="image1" class="field-label">Upload Image 1 (Optional):</label>
+        <input type="file" name="image1" id="image1" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="image2" class="field-label">Upload Image 2 (Optional):</label>
+        <input type="file" name="image2" id="image2" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="image3" class="field-label">Upload Image 3 (Optional):</label>
+        <input type="file" name="image3" id="image3" class="form-control">
     </div>
     <div class="form-group">
         <label for="is_public" class="field-label">Is Public:</label>

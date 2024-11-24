@@ -341,7 +341,13 @@ paths:
             Location:
               schema:
                 type: string
-              example: '/post/{postId}'  
+              examples:
+                302Success:
+                  description: 'Post created. Redirect to post page.'
+                  value: '/post/{postId}'
+                302Error:
+                  description: 'Failed to create post. Redirect back.'
+                  value: '/post/create'
         '400':  
           description: 'Bad request, invalid input data'
         '500': 
@@ -452,9 +458,8 @@ paths:
         '403':
           description: Forbidden, user not allowed to edit post
 
-       
-###############################Search###########################
-  
+  ###############################Search###########################
+
   /api/search/exactMatch/:
     get:
       operationId: R701
