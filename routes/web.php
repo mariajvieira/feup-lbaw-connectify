@@ -40,6 +40,8 @@ Route::controller(RegisterController::class)->group(function () {
 });
 
 // User
+Route::get('/user/create', [UserController::class, 'createUser'])->name('user.create');
+Route::post('/user/create', [UserController::class, 'storeUser'])->name('user.store');
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
@@ -53,13 +55,13 @@ Route::post('/post/store', [PostController::class, 'store'])->name('post.store')
 
 
 // Search
-Route::get('/search', [UserSearchController::class, 'search'])->name('search');
+Route::get('api/search', [UserSearchController::class, 'search'])->name('search');
 
 // API Routes
 Route::prefix('api')->group(function () {
     // Posts API Routes
     Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
-    Route::delete('/post/{id}', [PostController::class, 'destroy'])->name('post.delete');
+    Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
 
     
     // User API Routes

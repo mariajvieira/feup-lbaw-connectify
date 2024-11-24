@@ -264,8 +264,8 @@ BEGIN
     IF NEW.is_public = FALSE THEN
         IF NOT EXISTS (
             SELECT 1 FROM friendship
-            WHERE (user_id1 = NEW.user_id AND user_id2 = current_user) OR
-                  (user_id2 = NEW.user_id AND user_id1 = current_user)
+            WHERE (user_id1 = NEW.id AND user_id2 = current_user) OR
+                  (user_id2 = NEW.id AND user_id1 = current_user)
         ) THEN
             RAISE EXCEPTION 'Perfil privado. Acesso negado.';
         END IF;

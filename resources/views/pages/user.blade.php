@@ -7,18 +7,20 @@
     <div class="profile-info">
         <p>{{ $user->email }}</p>
         <p>{{ $user->is_public ? 'Public' : 'Private' }}<strong> profile</strong> </p>
-    </div>
-    <div class="edit-profile">
-        @if(auth()->id() === $user->id)
-            <a href="{{ route('user.edit', ['id' => $user->id]) }}" class="btn btn-primary">Edit Profile</a>
+        @if($user->isAdmin()) <!-- Verifica se o usuário é administrador -->
+            <p><strong>Administrator</strong></p> <!-- Exibe "Administrator" -->
         @endif
+    </div>
+
+    <div class="edit-profile">
+        @can('editProfile', $user)
+            <a href="{{ route('user.edit', ['id' => $user->id]) }}" class="btn btn-primary">Edit Profile</a>
+        @endcan
     </div>
 
     <h3>Posts</h3>
     <div class="user-posts">
         @include('pages.posts', ['posts' => $posts]) 
     </div>
-
-
 </div>
 @endsection

@@ -19,9 +19,7 @@
             // Fix for Firefox autofocus CSS bug
             // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
         </script>
-        <script type="text/javascript" src={{ url('js/app.js') }} defer>
-
-        </script>
+        <script type="text/javascript" src={{ url('js/app.js') }} defer></script>
     </head>
     <body>
         <main>
@@ -38,7 +36,6 @@
                             class="search-input" 
                             value="{{ request('query') }}" 
                             required>
-
                     </form>
 
                     <script type="text/javascript">
@@ -50,12 +47,14 @@
                         });
                     </script>
 
-
                     @if (Auth::check())
                         <div class="user-actions">
+                            <!-- Exibe o botão 'New User' somente para administradores -->
+                            @if(Auth::user()->isAdmin())
+                                <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
+                            @endif
+
                             <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
-
-
 
                             <!-- Link para o perfil do usuário -->
                             <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">

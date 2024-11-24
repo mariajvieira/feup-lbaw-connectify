@@ -94,6 +94,16 @@ class User extends Authenticatable
             ->orWhere('user_id2', $this->user_id);
     }
 
+    public function isAdmin()
+    {
+        return Administrator::where('user_id', $this->id)->exists(); 
+    }
+
+
+    public function administrator()
+    {
+        return $this->hasOne(Administrator::class, 'user_id'); 
+    }
     
 }
 

@@ -60,8 +60,7 @@ class PostController extends Controller
     }
 
     
-    
-    
+
 
     public function edit($id)
     {
@@ -87,9 +86,6 @@ class PostController extends Controller
     
         $post = Post::findOrFail($id);
     
-        if ($post->user_id !== Auth::id()) {
-            return redirect()->route('home')->with('error', 'Você não tem permissão para editar este post.');
-        }
     
         $post->update([
             'content' => $validated['content'] ?? $post->content,
@@ -100,23 +96,9 @@ class PostController extends Controller
     }
     
 
-    /**
-     * Delete a specific post.
-     */
+
+
     public function delete($id)
-    {
-        $post = Post::findOrFail($id);
-
-        if ($post->user_id === Auth::id()) {
-            $post->delete();
-            return response()->json(['message' => 'Post deletado com sucesso!'], 200);
-        }
-
-        return response()->json(['error' => 'Você não tem permissão para deletar este post.'], 403);
-    }
-
-
-    public function destroy($id)
     {
         // Verifica se o post existe
         $post = Post::find($id);
@@ -158,10 +140,9 @@ class PostController extends Controller
         DB::table('saved_post')->where('post_id', $id)->delete();
 
         // Exclui o post
-        if ($post->user_id === auth()->id()) {
+
             $post->delete();
-            return redirect()->route('home')->with('success', 'Post deletado com sucesso.');
-        }
+
 
         return redirect()->route('home')->with('error', 'Você não tem permissão para deletar este post.');
     }

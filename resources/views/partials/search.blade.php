@@ -26,7 +26,7 @@
         <ul class="post-list">
             @foreach ($postsFullText as $post)
                 <li>
-                    <a href="{{ route('post.show', $post->id) }}">
+                    <a href="{{ route('post', $post->id) }}">
                         <p>{{ Str::limit($post->content, 100) }}</p>
                     </a>
                 </li>

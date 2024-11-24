@@ -14,6 +14,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Comment::class => CommentPolicy::class,
+        Post::class => PostPolicy::class,
+        User::class => UserPolicy::class,
     ];
 
     /**
@@ -21,6 +23,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
     }
 }

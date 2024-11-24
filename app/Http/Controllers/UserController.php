@@ -9,7 +9,39 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    // Get user profile by Id
+
+    public function createUser()
+    {
+        return view('partials.createuser');
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:250|unique:users',
+            'email' => 'required|email|max:250|unique:users',
+            'password' => 'required|min:8|confirmed',
+            'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'is_public' => 'nullable|boolean',
+        ]);
+
+        $user = new User();
+
+        $user->username = $request->username;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->is_public = $request->is_public ?? false;
+
+        if ($request->hasFile('profilePicture')) {
+            $user->profile_picture = $request->file('profilePicture')->store('profile_pictures', 'public');
+        }
+
+        $user->save();
+
+        return redirect()->route('user', ['id' => $user->id])->with('success', 'Usuário criado com sucesso!');
+    }
+
+
     public function getProfile($id)
     {
         $user = User::find($id);

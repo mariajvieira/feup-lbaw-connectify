@@ -5,7 +5,7 @@
             <h5><strong><a href="{{ route('user', ['id' => $post->user->id]) }}">@ {{ $post->user->username }}</a></strong></h5>
         </div>
 
-        @if($post->user_id === auth()->id())
+        @can('edit', $post)
         <!-- Botão dropdown com Editar e Deletar Post -->
         <div class="dropdown">
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -19,7 +19,7 @@
                 </li>
             </ul>
         </div>
-        @endif
+        @endcan
     </div>
 
     <p class="post-content">{{ $post->content }}</p>
