@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="search-results-container">
+<div class="container">
     <h2>Search Results for: "{{ $query }}"</h2>
 
     <h3>Users</h3>
@@ -24,7 +24,7 @@
         <p>No posts found.</p>
     @else
         <div class="post-list">
-            @include('pages.posts', ['posts' => $postsFullText]) 
+            @include('pages.posts', ['posts' => $postsFullText])
         </div>
     @endif
 </div>
