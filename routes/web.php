@@ -9,6 +9,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\PublicHomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,9 +22,10 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 
-// Home
-Route::redirect('/', '/login');
+// Public Home
+Route::get('/', [PublicHomeController::class, 'index'])->name('welcome');
 
+// Home (Protected)
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 });
@@ -32,7 +34,9 @@ Route::middleware('auth')->group(function () {
 Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
-    Route::get('/logout', 'logout')->name('logout');
+    //Route::post('/logout', 'logout')->name('logout'); // Usar POST para logout por segurança
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
 });
 
 Route::controller(RegisterController::class)->group(function () {
@@ -40,32 +44,28 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-
 // User
-Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
-
-Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
-Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
-
-Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
-
+Route::middleware('auth')->group(function () {
+    Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
+    Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
+    Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
+    Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
+});
 
 // Posts
-Route::get('/posts/{id}', [PostController::class, 'show'])->name('post');
-
-Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
-Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
-
-Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
-Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
-Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+Route::middleware('auth')->group(function () {
+    Route::get('/posts/{id}', [PostController::class, 'show'])->name('post');
+    Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
+    Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
+    Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
+    Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
+    Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+});
 
 // Search
-
-Route::get('/search', [UserSearchController::class, 'search'])->name('search');
-
-
-
+Route::middleware('auth')->group(function () {
+    Route::get('/search', [UserSearchController::class, 'search'])->name('search');
+});
 
 /*
 
