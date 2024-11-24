@@ -48,10 +48,10 @@
         <div class="user-actions">
             @auth
                 <!-- Link para a Home (posts dos amigos) -->
-                <a href="{{ route('home') }}" class="button">Home (Amigos)</a>
+                <a href="{{ route('home') }}" class="button">Friends</a>
 
                 <!-- Link para o Feed (posts públicos + amigos) -->
-                <a href="{{ route('feed') }}" class="button">Feed (Públicos + Amigos)</a>
+                <a href="{{ route('feed') }}" class="button">Feed</a>
 
                 <!-- Link para criar novo post -->
                 <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
