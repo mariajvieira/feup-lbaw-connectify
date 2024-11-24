@@ -32,13 +32,24 @@
                     <form action="{{ route('search') }}" method="GET" class="search-form">
                         <input 
                             type="text" 
-                            name="query" 
+                            name="query"
+                            id="searchInput"
                             placeholder="Search posts, users..." 
                             class="search-input" 
                             value="{{ request('query') }}" 
                             required>
 
                     </form>
+
+                    <script type="text/javascript">
+                        document.getElementById('searchInput').addEventListener('keydown', function(event) {
+                            // Quando pressionar Enter (código 13), envia o formulário
+                            if (event.key === 'Enter') {
+                                document.getElementById('searchForm').submit();
+                            }
+                        });
+                    </script>
+
 
                     @if (Auth::check())
                         <div class="user-actions">

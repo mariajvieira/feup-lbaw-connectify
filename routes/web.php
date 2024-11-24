@@ -6,6 +6,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -60,8 +61,7 @@ Route::get('/post/create', [PostController::class, 'create'])->name('post.create
 
 // Search
 
-Route::get('/search', [SearchController::class, 'index'])->name('search');
-
+Route::get('/search', [UserSearchController::class, 'search'])->name('search');
 
 
 
