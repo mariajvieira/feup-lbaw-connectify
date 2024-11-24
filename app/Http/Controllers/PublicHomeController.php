@@ -13,6 +13,6 @@ class PublicHomeController extends Controller
             ->get();
 
         // Retorna a view com os posts públicos
-        return view('pages.welcome', compact('posts'));
+        return view('pages.public_home', compact('posts'));
     }
 }

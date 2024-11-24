@@ -2,8 +2,9 @@
 
 @section('content')
 <div class="container">
-    <h1 class="display-4 text-center mb-4">Welcome to Our Community!</h1>
-    <p class="lead text-center mb-5">Browse public posts from our community and share your thoughts!</p>
+<h1 class="display-4 text-center mb-4">Welcome to Connectify!</h1>
+<p class="lead text-center mb-5">Where connections spark ideas, and every voice matters. Share yours today!</p>
+
 
     @if($posts->isEmpty())
         <div class="alert alert-info text-center">

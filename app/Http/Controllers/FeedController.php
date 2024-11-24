@@ -16,35 +16,11 @@ class FeedController extends Controller
     {
         // Obtém o usuário logado
         $user = auth()->user();
-
-        // Obtém os posts públicos
-        $publicPosts = Post::where('is_public', true)
-            ->orderBy('post_date', 'desc')
-            ->get();
-
-        // Obtém os IDs dos amigos diretamente com uma consulta
-        $friendIds = DB::table('friendship')
-            ->where('user_id1', $user->id)
-            ->orWhere('user_id2', $user->id)
-            ->pluck('user_id1', 'user_id2')
-            ->flatten()
-            ->unique();
-
-        // Adiciona o próprio usuário para garantir que seus próprios posts também apareçam
-        $friendIds->push($user->id);
-
-        // Agora, obtém os posts dos amigos
-        $friendPosts = Post::whereIn('user_id', $friendIds)
-            ->orderBy('post_date', 'desc')
-            ->get();
-
-        // Combina os posts públicos e os posts dos amigos
-        $posts = $publicPosts->merge($friendPosts);
-
-        // Ordena todos os posts pela data (descendente)
-        $posts = $posts->sortByDesc('post_date');
-
-        // Retorna a view com todos os posts
-        return view('pages.feed', compact('posts'));
+    
+        // Obtém os posts visíveis (do próprio usuário, amigos e públicos)
+        $posts = $user->Friends_Public_Posts();  // Chamando a função visiblePosts() que retorna os posts
+    
+        // Retorna a view com os posts
+        return view('pages.home', compact('posts'));
     }
 }
