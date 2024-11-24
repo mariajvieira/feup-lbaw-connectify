@@ -9,6 +9,11 @@ class UserPolicy
 {
     use HandlesAuthorization;
 
+    public function createUser(User $authUser)
+    {
+        return $authUser->isAdmin(); 
+    }
+
     /**
      * Determina se o usuário pode atualizar seu perfil.
      */

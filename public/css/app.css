@@ -166,6 +166,10 @@ header h1 a:hover {
   margin-bottom: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
+  text-align: center; 
+  width: 100%; 
+  max-width: 900px;
+  margin: 2 auto; 
 }
 
 .post-header {
@@ -192,9 +196,11 @@ header h1 a:hover {
 }
 
 .post-content {
-  font-size: 14px;
+  font-size: 18px; /* Aumenta o tamanho da fonte */
+  font-weight: 500; /* Faz o texto parecer mais forte */
   color: #333;
   margin: 15px 0;
+  line-height: 1.6; /* Melhora a legibilidade */
 }
 
 .post-date {
@@ -202,10 +208,29 @@ header h1 a:hover {
   color: #888;
 }
 
-.post-image img {
-  max-width: 100%;
-  border-radius: 8px;
+.post-images {
+  display: flex;
+  flex-wrap: wrap; /* Permite quebrar linha se houver muitas imagens */
+  gap: 10px; /* Espaço entre as imagens */
+  justify-content: center; /* Centraliza as imagens */
 }
+
+/* post-image img */
+.post-image img {
+  width: 100%; /* A imagem ocupa toda a largura da caixa */
+  border-radius: 8px;
+  height: auto;
+  object-fit: cover;
+}
+
+.post-content {
+  font-size: 18px; /* Aumenta o tamanho da fonte */
+  font-weight: 500; /* Faz o texto parecer mais forte */
+  color: #333;
+  margin: 15px 0;
+  line-height: 1.6; /* Melhora a legibilidade */
+}
+
 
 .post-item:hover {
   background-color: #d1e7f5; /* Efeito no hover */

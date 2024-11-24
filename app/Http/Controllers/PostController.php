@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 
 class PostController extends Controller
 {
@@ -28,7 +28,6 @@ class PostController extends Controller
         return view('partials.create');
     }
 
-
     /**
      * Store a newly created post.
      */
@@ -37,42 +36,40 @@ class PostController extends Controller
         // Validação dos dados recebidos do formulário
         $validated = $request->validate([
             'content' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'image1' => 'nullable|image|max:2048',
+            'image2' => 'nullable|image|max:2048',
+            'image3' => 'nullable|image|max:2048',
             'is_public' => 'required|boolean',
         ]);
 
         // Criar o post
         $post = new Post();
-        $post->user_id = auth()->id(); // Usando o ID do usuário autenticado
+        $post->user_id = auth()->id();
         $post->content = $validated['content'];
         $post->is_public = $validated['is_public'];
 
-        // Se houver uma imagem, faz o upload
-        if ($request->hasFile('image')) {
-            $post->image = $request->file('image')->store('posts', 'public');
+        // Upload de imagens
+        foreach (['image1', 'image2', 'image3'] as $imageField) {
+            if ($request->hasFile($imageField)) {
+                $post->$imageField = $request->file($imageField)->store('posts', 'public');
+            }
         }
 
-        // Salva o post
         $post->save();
 
-        // Redireciona para o home ou página do usuário
         return redirect()->route('home')->with('success', 'Post criado com sucesso!');
     }
-
-    
-
 
     public function edit($id)
     {
         $post = Post::find($id);
-    
+
         if (!$post) {
             return redirect()->route('home')->with('error', 'Post não encontrado.');
         }
-    
-        return view('partials.postedit', compact('post'));  // Renderiza a view com os dados do post
+
+        return view('partials.postedit', compact('post'));
     }
-    
 
     /**
      * Update a specific post.
@@ -82,75 +79,59 @@ class PostController extends Controller
         $validated = $request->validate([
             'content' => 'nullable|string',
             'is_public' => 'required|boolean',
+            'image1' => 'nullable|image|max:2048',
+            'image2' => 'nullable|image|max:2048',
+            'image3' => 'nullable|image|max:2048',
         ]);
-    
+
         $post = Post::findOrFail($id);
-    
-    
+
         $post->update([
             'content' => $validated['content'] ?? $post->content,
             'is_public' => $validated['is_public'],
         ]);
-    
+
+        // Atualizar imagens
+        foreach (['image1', 'image2', 'image3'] as $imageField) {
+            if ($request->hasFile($imageField)) {
+                $post->$imageField = $request->file($imageField)->store('posts', 'public');
+            }
+        }
+
+        $post->save();
+
         return redirect()->route('home')->with('success', 'Post atualizado com sucesso!');
     }
-    
 
-
-
+    /**
+     * Delete a post.
+     */
     public function delete($id)
     {
-        // Verifica se o post existe
         $post = Post::find($id);
 
         if (!$post) {
             return redirect()->route('home')->with('error', 'Post não encontrado.');
         }
 
-        // Exclui os registros na tabela group_post_notification que fazem referência ao post
-        DB::table('group_post_notification')
-            ->where('post_id', $id)
-            ->delete();
-
-        // Exclui os registros na tabela reaction_notification que fazem referência às reações
+        // Excluir dependências
+        DB::table('group_post_notification')->where('post_id', $id)->delete();
         DB::table('reaction_notification')
-            ->whereIn('reaction_id', function($query) use ($id) {
-                $query->select('id')
-                      ->from('reaction')
-                      ->where('post_id', $id);
-            })
-            ->delete();
-
-        // Exclui os registros na tabela reaction que fazem referência ao post
+            ->whereIn('reaction_id', function ($query) use ($id) {
+                $query->select('id')->from('reaction')->where('post_id', $id);
+            })->delete();
         DB::table('reaction')->where('post_id', $id)->delete();
-
-        // Exclui os registros na tabela comment_notification que fazem referência aos comentários
         DB::table('comment_notification')
-            ->whereIn('comment_id', function($query) use ($id) {
-                $query->select('id')
-                      ->from('comment_')
-                      ->where('post_id', $id);
-            })
-            ->delete();
-
-        // Exclui os comentários associados ao post
+            ->whereIn('comment_id', function ($query) use ($id) {
+                $query->select('id')->from('comment_')->where('post_id', $id);
+            })->delete();
         DB::table('comment_')->where('post_id', $id)->delete();
-
-        // Exclui os registros na tabela saved_post que fazem referência ao post
         DB::table('saved_post')->where('post_id', $id)->delete();
 
-        // Exclui o post
+        $post->delete();
 
-            $post->delete();
-
-
-        return redirect()->route('home')->with('error', 'Você não tem permissão para deletar este post.');
+        return redirect()->route('home')->with('success', 'Post deletado com sucesso!');
     }
-    
-    
-    
-    
-
 
     /**
      * Retrieve posts for the user's timeline.
@@ -163,12 +144,4 @@ class PostController extends Controller
 
         return response()->json(['posts' => $posts], 200);
     }
-
-
-    // Modelo Post
-public function savedPosts()
-{
-    return $this->hasMany(SavedPost::class, 'post_id');
-}
-
 }

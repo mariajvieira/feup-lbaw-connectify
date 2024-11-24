@@ -6,7 +6,7 @@
 
     <h3>Users</h3>
     @if($usersFullText->isEmpty())
-        <p>No users found matching your query.</p>
+        <p>No users found.</p>
     @else
         <ul class="user-list">
             @foreach ($usersFullText as $user)
@@ -21,17 +21,11 @@
 
     <h3>Posts</h3>
     @if($postsFullText->isEmpty())
-        <p>No posts found matching your query.</p>
+        <p>No posts found.</p>
     @else
-        <ul class="post-list">
-            @foreach ($postsFullText as $post)
-                <li>
-                    <a href="{{ route('post', $post->id) }}">
-                        <p>{{ Str::limit($post->content, 100) }}</p>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
+        <div class="post-list">
+            @include('pages.posts', ['posts' => $postsFullText]) 
+        </div>
     @endif
 </div>
 @endsection

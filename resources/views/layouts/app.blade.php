@@ -46,9 +46,9 @@
         <div class="user-actions">
             @auth
 
-                @if(Auth::user()->isAdmin())
-                                <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
-                @endif
+                @can('createUser', App\Models\User::class)
+                    <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
+                @endcan
                 <!-- Link para a Home (posts dos amigos) -->
                 <a href="{{ route('home') }}" class="button">Friends</a>
 
