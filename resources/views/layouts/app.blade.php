@@ -12,7 +12,8 @@
 
         <!-- Styles -->
         <link href="{{ url('css/milligram.min.css') }}" rel="stylesheet">
-        <link href="{{ url('css/app.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
         <script type="text/javascript">
             // Fix for Firefox autofocus CSS bug
             // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
@@ -24,13 +25,34 @@
         <main>
             <header>
                 <h1><a href="{{ url('/home') }}">Connectify</a></h1>
-                @if (Auth::check())
-                    <!-- Link para o perfil do usuário -->
-                    <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
-                        <span>{{ Auth::user()->username }}</span>
-                    </a>
-                    <a class="button" href="{{ url('/logout') }}">Logout</a>
-                @endif
+                <div class="header-actions">
+                    <!-- Barra de busca -->
+                    <form action="{{ route('search') }}" method="GET" class="search-form">
+                        <input 
+                            type="text" 
+                            name="query" 
+                            placeholder="Search posts, users..." 
+                            class="search-input" 
+                            value="{{ request('query') }}" 
+                            required>
+
+                    </form>
+
+                    @if (Auth::check())
+                        <div class="user-actions">
+                            <!-- Link para o perfil do usuário -->
+                            <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
+                                <span>{{ Auth::user()->username }}</span>
+                            </a>
+
+                            <!-- Botão de novo post -->
+                            <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
+
+                            <!-- Logout -->
+                            <a class="button logout-button" href="{{ url('/logout') }}">Logout</a>
+                        </div>
+                    @endif
+                </div>
             </header>
             <section id="content">
                 @yield('content')

@@ -40,7 +40,6 @@ Route::controller(RegisterController::class)->group(function () {
 });
 
 
-
 // User
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 
@@ -57,6 +56,14 @@ Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit'
 Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
 
 Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
+Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
+
+// Search
+
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+
+
 
 
 /*

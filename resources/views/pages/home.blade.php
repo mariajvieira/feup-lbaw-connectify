@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="container">
-    <h1>Feed de Posts</h1>
 
     @if($posts->isEmpty())
         <p>No posts to show.</p>
