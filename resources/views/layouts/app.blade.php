@@ -24,7 +24,6 @@
     </h1>
     <div class="header-actions">
         <!-- Barra de busca -->
-        @auth
             <form action="{{ route('search') }}" method="GET" class="search-form">
                 <input 
                     type="text" 
@@ -43,7 +42,6 @@
                     }
                 });
             </script>
-        @endauth
 
         <div class="user-actions">
             @auth
