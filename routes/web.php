@@ -8,7 +8,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserSearchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-
+use App\Http\Controllers\PublicHomeController;
+use App\Http\Controllers\FeedController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,18 +21,28 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 
-// Home
-Route::redirect('/', '/login');
+// Public Home
+Route::get('/', [PublicHomeController::class, 'index'])->name('welcome');
 
+
+// Home (Protected)
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 });
+
+// Feed (Protected)
+Route::middleware('auth')->group(function () {
+    Route::get('/feed', [FeedController::class, 'index'])->name('feed');
+});
+
 
 // Authentication 
 Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
-    Route::get('/logout', 'logout')->name('logout');
+    //Route::post('/logout', 'logout')->name('logout'); // Usar POST para logout por segurança
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
 });
 
 Route::controller(RegisterController::class)->group(function () {
