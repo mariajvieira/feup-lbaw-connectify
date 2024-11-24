@@ -8,16 +8,13 @@
         @if($post->user_id === auth()->id())
         <!-- Botão dropdown com Editar e Deletar Post -->
         <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                ...
-            </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <li><a class="dropdown-item btn btn-primary" href="{{ route('post.edit', $post->id) }}">Edit Post</a></li>
+                <li><a class="dropdown-item btn btn-primary" href="{{ route('post.edit', $post->id) }}">Edit</a></li>
                 <li>
                     <form action="{{ route('post.delete', $post->id) }}" method="POST" style="display: inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete Post</button>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
                     </form>
                 </li>
             </ul>
