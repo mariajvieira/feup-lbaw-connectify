@@ -54,6 +54,9 @@
                     @if (Auth::check())
                         <div class="user-actions">
                             <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
+
+
+
                             <!-- Link para o perfil do usuário -->
                             <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
                                 <span>{{ Auth::user()->username }}</span>
