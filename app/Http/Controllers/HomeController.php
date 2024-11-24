@@ -27,17 +27,11 @@ class HomeController extends Controller
         // Obtém o usuário logado
         $user = auth()->user();
     
-        // Obtém os posts visíveis (do próprio usuário, amigos e públicos)
+        // Obtém os posts do próprio usuário e dos seus amigos
         $posts = $user->visiblePosts();  // Chamando a função visiblePosts() que retorna os posts
     
         // Retorna a view com os posts
         return view('pages.home', compact('posts'));
     }
-    
-    
-    
-    
-    
-    
-    
+       
 }
