@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
@@ -181,3 +180,29 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 */
+Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
+Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
+Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
+Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
+
+// Posts
+Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
+Route::get('/post/{id}', [PostController::class, 'show'])->name('post');
+Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
+Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+
+
+// Search
+Route::get('/search', [UserSearchController::class, 'search'])->name('search');
+
+// API Routes
+Route::prefix('api')->group(function () {
+    // Posts API Routes
+    Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
+    Route::delete('/post/{id}', [PostController::class, 'destroy'])->name('post.delete');
+
+    
+    // User API Routes
+    //Route::put('/user/{id}', [UserController::class, 'updateProfile']); 
+    //Route::delete('/user/{id}', [UserController::class, 'deleteUser']); 
+});
