@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PublicHomeController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\FriendshipController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -63,6 +64,10 @@ Route::get('/post/{id}', [PostController::class, 'show'])->name('post');
 Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 
+// Friendship Requests
+Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');
+Route::post('/friend-request/{id}/accept', [FriendshipController::class, 'acceptRequest'])->name('friend-request.accept');
+Route::post('/friend-request/{id}/decline', [FriendshipController::class, 'declineRequest'])->name('friend-request.decline');
 
 // Search
 Route::get('api/search', [UserSearchController::class, 'search'])->name('search');

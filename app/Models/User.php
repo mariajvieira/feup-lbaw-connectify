@@ -140,6 +140,29 @@ class User extends Authenticatable
         return $this->hasOne(Administrator::class, 'user_id'); 
     }
     
+   public function isFriend(User $user)
+    {
+        return DB::table('friendship')
+            ->where(function ($query) use ($user) {
+                $query->where('user_id1', $this->id)
+                    ->where('user_id2', $user->id);
+            })
+            ->orWhere(function ($query) use ($user) {
+                $query->where('user_id1', $user->id)
+                    ->where('user_id2', $this->id);
+            })
+            ->exists();
+    }
+
+    public function hasPendingRequestFrom(User $user)
+    {
+        return DB::table('friend_request')
+            ->where('sender_id', $user->id)
+            ->where('receiver_id', $this->id)
+            ->where('request_status', 'pending')
+            ->exists();
+    }
+
 }
 
 
