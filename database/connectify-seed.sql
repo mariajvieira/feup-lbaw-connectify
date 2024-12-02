@@ -32,6 +32,7 @@ DROP TYPE IF EXISTS reactionType CASCADE;
 CREATE TYPE statusGroup_request AS ENUM ('pending', 'accepted', 'denied');
 CREATE TYPE statusFriendship_request AS ENUM ('pending', 'accepted', 'denied');
 CREATE TYPE reactionType AS ENUM ('like', 'laugh', 'cry', 'applause', 'shocked');
+CREATE TYPE targetType AS ENUM('post', 'comment');
 
 -- Tables
 
@@ -88,10 +89,12 @@ CREATE TABLE comment_ (
 CREATE TABLE reaction (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
-    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
+    target_id INT NOT NULL, -- ID de um post ou comentário
+    target_type targetType NOT NULL, --  'post' ou 'comment'
     reaction_type reactionType NOT NULL,
     reaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE friend_request (
     id SERIAL PRIMARY KEY,
@@ -270,7 +273,6 @@ BEGIN
             SELECT 1 FROM administrators
             WHERE user_id = current_user
         ) THEN
-            -- Lança um erro se o usuário não for amigo nem administrador
             RAISE EXCEPTION 'Perfil privado. Acesso negado.';
         END IF;
     END IF;
@@ -310,13 +312,16 @@ EXECUTE FUNCTION enforce_friend_request_limit();
 CREATE OR REPLACE FUNCTION enforce_reaction_limit()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- Verificar se já existe uma reação do mesmo usuário para o mesmo target (post ou comentário)
     IF EXISTS (
         SELECT 1 FROM reaction
-        WHERE post_id = NEW.post_id
+        WHERE target_id = NEW.target_id
+          AND target_type = NEW.target_type
           AND user_id = NEW.user_id
     ) THEN
-        RAISE EXCEPTION 'User already reacted to this post.';
+        RAISE EXCEPTION 'User already reacted to this target.';
     END IF;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -325,6 +330,7 @@ CREATE TRIGGER trg_enforce_reaction_limit
 BEFORE INSERT ON reaction
 FOR EACH ROW
 EXECUTE FUNCTION enforce_reaction_limit();
+
 
 
 -- TRIGGER04: Ensures each post has content (text or media) (BR08)
@@ -402,6 +408,34 @@ CREATE TRIGGER trg_enforce_group_membership_control
 BEFORE INSERT OR UPDATE ON join_group_request
 FOR EACH ROW
 EXECUTE FUNCTION enforce_group_membership_control();
+
+
+-- TRIGGER08: Validation of the reaction target (post or comment)
+CREATE OR REPLACE FUNCTION validate_target_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.target_type = 'post') THEN
+        IF NOT EXISTS (SELECT 1 FROM post WHERE id = NEW.target_id) THEN
+            RAISE EXCEPTION 'Target ID % not found in post table.', NEW.target_id;
+        END IF;
+    ELSIF (NEW.target_type = 'comment') THEN
+        IF NOT EXISTS (SELECT 1 FROM comment_ WHERE id = NEW.target_id) THEN
+            RAISE EXCEPTION 'Target ID % not found in comment table.', NEW.target_id;
+        END IF;
+    ELSE
+        RAISE EXCEPTION 'Invalid target type: %', NEW.target_type;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validate_target_id
+BEFORE INSERT OR UPDATE ON reaction
+FOR EACH ROW
+EXECUTE FUNCTION validate_target_id();
+
+
 
 -- Transactions
 SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;
@@ -852,28 +886,32 @@ VALUES
     (9, 2, 'Fitness is a journey, not a destination!'),
     (10, 3, 'I love discovering new music!');
 
-INSERT INTO reaction (user_id, post_id, reaction_type)
+
+INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)
 VALUES
-    (1, 1, 'like'),
-    (2, 2, 'laugh'),
-    (3, 3, 'applause'),
-    (4, 4, 'like'),
-    (5, 5, 'applause'),
-    (6, 6, 'like'),
-    (7, 7, 'applause'),
-    (8, 8, 'like'),
-    (9, 9, 'like'),
-    (10, 10, 'applause'),
-    (1, 2, 'shocked'),
-    (2, 3, 'like'),
-    (3, 4, 'like'),
-    (4, 5, 'shocked'),
-    (5, 6, 'like'),
-    (6, 7, 'shocked'),
-    (7, 8, 'like'),
-    (8, 9, 'shocked'),
-    (9, 10, 'like'),
-    (10, 1, 'shocked');
+    (1, 1, 'post', 'like', DEFAULT),
+    (2, 2, 'post', 'laugh', DEFAULT),
+    (3, 3, 'post', 'applause', DEFAULT),
+    (4, 4, 'post', 'like', DEFAULT),
+    (5, 5, 'post', 'applause', DEFAULT),
+    (6, 6, 'post', 'like', DEFAULT),
+    (7, 7, 'post', 'applause', DEFAULT),
+    (8, 8, 'post', 'like', DEFAULT),
+    (9, 9, 'post', 'like', DEFAULT),
+    (10, 10, 'post', 'applause', DEFAULT),
+    (1, 2, 'comment', 'shocked', DEFAULT),
+    (2, 3, 'comment', 'like', DEFAULT),
+    (3, 4, 'comment', 'like', DEFAULT),
+    (4, 5, 'comment', 'shocked', DEFAULT),
+    (5, 6, 'comment', 'like', DEFAULT),
+    (6, 7, 'comment', 'shocked', DEFAULT),
+    (7, 8, 'comment', 'like', DEFAULT),
+    (8, 9, 'comment', 'shocked', DEFAULT),
+    (9, 10, 'comment', 'like', DEFAULT),
+    (10, 1, 'comment', 'shocked', DEFAULT);
+
+
+
 
 INSERT INTO friend_request (sender_id, receiver_id, request_status)
 VALUES
@@ -886,6 +924,7 @@ VALUES
     (5, 2, 'accepted'),
     (7, 1, 'pending'),
     (2, 8, 'accepted');
+
 
 INSERT INTO friendship (user_id1, user_id2)
 VALUES

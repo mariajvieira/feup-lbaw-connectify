@@ -130,4 +130,5 @@ class UserController extends Controller
 
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Perfil atualizado com sucesso!');
     }
+
 }

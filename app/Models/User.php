@@ -134,6 +134,11 @@ class User extends Authenticatable
         return Administrator::where('user_id', $this->id)->exists(); 
     }
 
+    public function isPublic()
+    {
+        return $this->is_public;
+    }
+
 
     public function administrator()
     {
