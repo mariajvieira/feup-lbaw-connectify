@@ -86,9 +86,9 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully']);
     }
 
-    public function updateProfile(Request $request, $id)
+    public function updateProfile(Request $request)
     {
-        $user = User::find($id);
+        $user = auth()->user();
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
@@ -124,10 +124,41 @@ class UserController extends Controller
 
         if ($request->has('is_public')) {
             $user->is_public = $request->is_public;
+        } else {
+            $user->is_public = false;
         }
 
         $user->save();
 
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Perfil atualizado com sucesso!');
+    }
+
+    //List users pending firendship request
+    public function listPendingRequests()
+    {
+        $userId = auth()->id();
+
+        
+        $pendingRequests = DB::table('friend_request')
+            ->join('users', 'friend_request.sender_id', '=', 'users.id')
+            ->where('friend_request.receiver_id', $userId)
+            ->where('friend_request.request_status', 'pending')
+            ->select('friend_request.*', 'users.username as sender_username')
+            ->get();
+
+        return view('pages.pending_requests', compact('pendingRequests'));
+    }
+
+    public function getFriends($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $friends = $user->friends()->get(['id', 'username']); 
+
+        return response()->json($friends);
     }
 }

@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -163,6 +164,11 @@ class User extends Authenticatable
             ->exists();
     }
 
+    public function pendingRequests()
+    {
+        return $this->hasMany(FriendRequest::class, 'receiver_id')
+                    ->where('request_status', 'pending');
+    }
 }
 
 
