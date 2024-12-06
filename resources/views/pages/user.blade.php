@@ -76,7 +76,11 @@
 
     <h3>Posts</h3>
     <div class="user-posts">
-        @include('pages.posts', ['posts' => $posts]) 
+        @can('seePosts', $user)
+            @include('pages.posts', ['posts' => $posts]) 
+        @else 
+            <p>You have no permissions to see this user's posts. </p>
+        @endcan
     </div>
 </div>
 @endsection

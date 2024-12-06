@@ -48,4 +48,12 @@ class UserPolicy
         // Permitir se o usuário for o mesmo ou se for administrador
         return $authUser->id === $user->id || $authUser->isAdmin();
     }
+
+    public function seePosts(User $authUser, User $user) 
+    {
+        return $authUser->id === $user->id || 
+        $authUser->isAdmin() || 
+        $user->isPublic() || //se for público
+        $authUser->isFriend($user); // se for amigo
+    }
 }
