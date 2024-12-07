@@ -149,6 +149,12 @@ class UserController extends Controller
         return view('pages.pending_requests', compact('pendingRequests'));
     }
 
+    public function pendingRequests()
+{
+    return $this->hasMany(FriendRequest::class, 'receiver_id')
+                ->where('request_status', 'pending');
+}
+
     public function getFriends($id)
     {
         $user = User::findOrFail($id);

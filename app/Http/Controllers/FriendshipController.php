@@ -67,7 +67,7 @@ class FriendshipController extends Controller
             'user_id2' => max($friendRequest->sender_id, $friendRequest->receiver_id),
         ]);
 
-        return response()->json(['message' => 'Request accepted successfully.']);
+        return response()->json(['success' => true]);
     }
 
   
@@ -82,7 +82,7 @@ class FriendshipController extends Controller
         // Change request status to declined
         DB::table('friend_request')->where('id', $id)->update(['request_status' => 'denied']);
 
-        return response()->json(['message' => 'Request declined successfully.']);
+        return response()->json(['success' => true]);
     }
 
     public function removeFriend($id)
