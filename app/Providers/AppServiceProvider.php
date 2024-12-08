@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,9 @@ class AppServiceProvider extends ServiceProvider
             $schema = explode(':', $app_url)[0];
             URL::forceScheme($schema);
         }
+        Relation::morphMap([
+            'post' => 'App\Models\Post',
+            'comment' => 'App\Models\Comment',
+        ]);
     }
 }

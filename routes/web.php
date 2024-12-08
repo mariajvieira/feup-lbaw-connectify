@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PublicHomeController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\ReactionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -74,6 +75,12 @@ Route::post('/friend-request/{id}/decline', [FriendshipController::class, 'decli
 
 // Search
 Route::get('api/search', [UserSearchController::class, 'search'])->name('search');
+
+// Reactions
+//Route:get('/post/{id}/reactions', [ReactionController::class, 'index'])->name('post.reactions');
+// web.php
+Route::post('/posts/{post}/reactions', [ReactionController::class, 'store'])->name('reactions.store');
+Route::delete('/reactions/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
 
 // API Routes
 Route::prefix('api')->group(function () {

@@ -36,4 +36,21 @@
         @endforeach
     </div>
     <span class="post-date">Published at: {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</span>
+    
+    @php
+        $userReaction = $post->reactions
+            ->where('user_id', auth()->id())
+            ->first();
+    @endphp
+
+    <div class="reactions mt-3">
+        @foreach (['like', 'laugh', 'cry', 'applause', 'shocked'] as $reaction)
+            <button 
+                class="reaction-button {{ isset($userReaction) && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
+                data-reaction-type="{{ $reaction }}" 
+                data-post-id="{{ $post->id }}">
+                {{ ucfirst($reaction) }}
+            </button>
+        @endforeach
+    </div>
 </div>

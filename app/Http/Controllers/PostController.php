@@ -155,9 +155,9 @@ class PostController extends Controller
     public function getPosts()
     {
         $posts = Auth::check()
-            ? Auth::user()->visiblePosts()->get()
-            : Post::public()->orderBy('post_date', 'desc')->get();
-
+            ? Auth::user()->visiblePosts()->with('reactions')->orderBy('post_date', 'desc')->get()
+            : Post::public()->with('reactions')->orderBy('post_date', 'desc')->get();
+    
         return response()->json(['posts' => $posts], 200);
     }
 }

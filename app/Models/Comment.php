@@ -17,4 +17,23 @@ class Comment extends Model
         'comment_content',
         'commentDate',
     ];
+
+    protected $casts = [
+        'commentDate' => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+
+    public function reactions()
+    {
+        return $this->morphMany(Reaction::class, 'target');
+    }
 }
