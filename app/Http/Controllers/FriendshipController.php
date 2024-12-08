@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class FriendshipController extends Controller
@@ -67,7 +67,7 @@ class FriendshipController extends Controller
             'user_id2' => max($friendRequest->sender_id, $friendRequest->receiver_id),
         ]);
 
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', 'Friend added successfully.');
     }
 
   
@@ -82,28 +82,42 @@ class FriendshipController extends Controller
         // Change request status to declined
         DB::table('friend_request')->where('id', $id)->update(['request_status' => 'denied']);
 
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', 'Request declined successfully.');
     }
 
-    public function removeFriend($id)
+    
+
+    public function removeFriend(Request $request, $id)
     {
-        $userId1 = auth()->id();
-        $userId2 = $request->input('receiver_id');
-
-        #Search for friendship and delete it
-        $deleted = DB::table('friendship')
-        ->where(function ($query) use ($userId1, $userId2) {
-            $query->where('user_id1', $userId1)->where('user_id2', $userId2);
-        })
-        ->orWhere(function ($query) use ($userId1, $userId2) {
-            $query->where('user_id1', $userId2)->where('user_id2', $userId1);
-        })
-        ->delete();
-
-    if ($deleted) {
-        return response()->json(['message' => 'Friendship removed successfully.']);
+        try {
+            $userId1 = auth()->id();
+            $userId2 = $request->input('receiver_id'); 
+    
+            if (!$userId2) {
+                Log::error('Receiver ID não encontrado na requisição.', ['request' => $request->all()]);
+                return response()->json(['message' => 'Receiver ID é obrigatório.'], 400);
+            }
+    
+            $deleted = DB::table('friendship')
+                ->where(function ($query) use ($userId1, $userId2) {
+                    $query->where('user_id1', $userId1)->where('user_id2', $userId2);
+                })
+                ->orWhere(function ($query) use ($userId1, $userId2) {
+                    $query->where('user_id1', $userId2)->where('user_id2', $userId1);
+                })
+                ->delete();
+    
+            if ($deleted) {
+                Log::info('Friendship succesfully removed.', ['userId1' => $userId1, 'userId2' => $userId2]);
+                return response()->json(['message' => 'Friendship removed successfully.']);
+            }
+    
+            Log::warning('Not found', ['userId1' => $userId1, 'userId2' => $userId2]);
+            return response()->json(['message' => 'Friendship not found.'], 404);
+        } catch (\Exception $e) {
+            Log::error('Error to remove friendship', ['error' => $e->getMessage(), 'trace' => $e->getTrace()]);
+            return response()->json(['message' => 'Erro interno no servidor.'], 500);
+        }
     }
-
-    return response()->json(['message' => 'Friendship not found'], 404);
-}
+    
 }

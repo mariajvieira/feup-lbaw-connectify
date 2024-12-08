@@ -36,6 +36,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 });
 
+//Show friends 
+Route::middleware('auth')->group(function () {
+    Route::get('/user/{id}/friends/json', [UserController::class, 'getFriends'])->name('user.getfriends');
+    Route::post('/friendship/remove/{id}', [FriendshipController::class, 'removeFriend'])->name('friendship.remove');
+    Route::get('/user/{id}/friendspage', [UserController::class, 'showFriendsPage'])->name('user.friendsPage');
+});
+
 
 // Authentication 
 Route::controller(LoginController::class)->group(function () {
@@ -71,6 +78,7 @@ Route::post('/post/store', [PostController::class, 'store'])->name('post.store')
 Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');
 Route::post('/friend-request/{id}/accept', [FriendshipController::class, 'acceptRequest'])->name('friend-request.accept');
 Route::post('/friend-request/{id}/decline', [FriendshipController::class, 'declineRequest'])->name('friend-request.decline');
+Route::post('/friend-request/{id}/remove', [FriendshipController::class, 'removeFriend'])->name('friend-request.remove');
 
 // Search
 Route::get('api/search', [UserSearchController::class, 'search'])->name('search');

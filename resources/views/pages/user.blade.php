@@ -34,10 +34,12 @@
 
     <div class="List Friends">
     @if($user->id == Auth::id())
-        <button id="load-friends" data-user-id="{{ auth()->id() }}" >List friends</button>
-        <ul id="friendsList" style="display: none; margin-top: 10px;"></ul>
+        <a href="{{ route('user.friendsPage', ['id' => auth()->id()]) }}" class="btn btn-primary">
+            Show Friends
+        </a>
     @endif
-    </div>
+</div>
+
 
 
 

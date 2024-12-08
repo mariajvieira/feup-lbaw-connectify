@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -155,6 +156,18 @@ class UserController extends Controller
                 ->where('request_status', 'pending');
 }
 
+
+public function showFriendsPage($id)
+{
+    $user = User::findOrFail($id);
+
+    if ($user->id !== auth()->id()) {
+        abort(403, 'Acesso não autorizado.');
+    }
+
+    return view('pages.friendsList', ['user' => $user]);
+}
+
     public function getFriends($id)
     {
         $user = User::findOrFail($id);
@@ -163,7 +176,17 @@ class UserController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $friends = $user->friends()->get(['id', 'username']); 
+        $friends = DB::table('friendship')
+            ->join('users', function($join) use ($user) {
+                $join->on('friendship.user_id1', '=', 'users.id')
+                    ->orOn('friendship.user_id2', '=', 'users.id');
+            })
+            ->where('friendship.user_id1', '=', $user->id)
+            ->orWhere('friendship.user_id2', '=', $user->id)
+            ->where('users.id', '!=', $user->id) // Exclui o próprio usuário
+            ->select('users.id','users.username')
+            ->get();
+
 
         return response()->json($friends);
     }
