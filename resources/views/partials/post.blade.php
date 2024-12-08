@@ -30,14 +30,16 @@
         @foreach (['image1', 'image2', 'image3'] as $imageField)
             @if (!empty($post->$imageField))
                 <div class="post-image mb-2">
-                <img src="{{ asset($post->$imageField) }}" class="img-fluid" alt="Post Image">
+                    <img src="{{ asset($post->$imageField) }}" class="img-fluid" alt="Post Image">
                 </div>
             @endif
         @endforeach
     </div>
+    
     <span class="post-date">Published at: {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</span>
     
     @php
+        // Verificando se o usuário já reagiu ao post
         $userReaction = $post->reactions
             ->where('user_id', auth()->id())
             ->first();

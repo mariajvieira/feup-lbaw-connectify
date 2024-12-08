@@ -1,3 +1,8 @@
+document.addEventListener('DOMContentLoaded', function() {
+  addEventListeners();
+  addReactionEventListeners();
+});
+
 function addEventListeners() {
   let postCheckers = document.querySelectorAll('.post-item input[type=checkbox]');
   postCheckers.forEach(checker => {
@@ -115,10 +120,23 @@ function createPostElement(post) {
           <span>${post.content}</span>
           <a href="#" class="delete-post-btn">Delete</a>
       </div>
+      <div class="reactions mt-3">
+          ${['like', 'laugh', 'cry', 'applause', 'shocked'].map(reaction => `
+              <button 
+                  class="reaction-button ${post.user_reaction === reaction ? 'selected' : ''}" 
+                  data-reaction-type="${reaction}" 
+                  data-post-id="${post.id}">
+                  ${reaction.charAt(0).toUpperCase() + reaction.slice(1)}
+              </button>
+          `).join('')}
+      </div>
   `;
 
   newItem.querySelector('input[type=checkbox]').addEventListener('change', sendPostUpdateRequest);
   newItem.querySelector('.delete-post-btn').addEventListener('click', sendDeletePostRequest);
+
+  // Add reaction event listeners for new buttons
+  addReactionEventListeners();
 
   return newItem;
 }
@@ -128,6 +146,7 @@ function react(event) {
   const reactionType = button.getAttribute('data-reaction-type');
   const postId = button.getAttribute('data-post-id');
 
+  // Enviar nova reação ao servidor
   fetch('/reactions', {
       method: 'POST',
       headers: {
@@ -135,29 +154,29 @@ function react(event) {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
       },
       body: JSON.stringify({
-        target_id: postId,
-        target_type: 'post',  
-        reaction_type: reactionType,
-    }),
-    
+          target_id: postId,
+          target_type: 'post',
+          reaction_type: reactionType,
+      }),
   })
-      .then(response => response.json())
-      .then(data => {
-          console.log('Reação registrada:', data);
-
-          const buttons = document.querySelectorAll(`.reactions button[data-post-id="${postId}"]`);
+  .then(response => response.json())
+  .then(data => {
+      if (data.message === 'Reação registada com sucesso.') {
+          // Remover a classe 'selected' de todos os botões de reação
+          const parentReactions = button.closest('.reactions');
+          const buttons = parentReactions.querySelectorAll('button');
           buttons.forEach(btn => btn.classList.remove('selected'));
+
+          // Adicionar a classe 'selected' ao botão que o usuário clicou
           button.classList.add('selected');
-      })
-      .catch(error => console.error('Erro ao registrar a reação:', error));
+      } else {
+          console.error('Erro ao registar a reação:', data.error);
+      }
+  })
+  .catch(error => console.error('Erro ao registar a reação:', error));
 }
 
 function addReactionEventListeners() {
   const reactionButtons = document.querySelectorAll('.reactions button');
   reactionButtons.forEach(button => button.addEventListener('click', react));
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  addEventListeners();
-  addReactionEventListeners();
-});

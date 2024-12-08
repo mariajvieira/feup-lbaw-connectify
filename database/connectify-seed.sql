@@ -132,10 +132,10 @@ CREATE TABLE group_owner (
 
 CREATE TABLE notification (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
-    related_id INT,
+    content TEXT NOT NULL,
     is_read BOOLEAN DEFAULT false,
-    notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    notification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE
 );
 
 CREATE TABLE comment_notification (
@@ -1058,60 +1058,61 @@ VALUES
     (9, 9),
     (10, 10);
 
-INSERT INTO notification (user_id, related_id, is_read)
+INSERT INTO notification (content, is_read, notification_date, user_id)
 VALUES
-    (1, 1, FALSE),
-    (2, 2, TRUE),
-    (3, 3, FALSE),
-    (4, 4, TRUE),
-    (5, 5, FALSE),
-    (6, 6, TRUE),
-    (7, 7, FALSE),
-    (8, 8, TRUE),
-    (9, 9, FALSE),
-    (10, 10, TRUE),
-    (1, 2, FALSE),
-    (2, 3, TRUE),
-    (3, 4, FALSE),
-    (4, 5, TRUE),
-    (5, 6, FALSE),
-    (6, 7, TRUE),
-    (7, 8, FALSE),
-    (8, 9, TRUE),
-    (9, 10, FALSE),
-    (10, 1, TRUE);
+    ('Comment', FALSE, DEFAULT, 1),
+    ('Reaction', FALSE, DEFAULT, 2),
+    ('Friend Request', FALSE, DEFAULT, 3),
+    ('Group Request', FALSE, DEFAULT, 4),
+    ('Group Post', FALSE, DEFAULT, 5),
+    ('Comment', FALSE, DEFAULT, 6),
+    ('Reaction', FALSE, DEFAULT, 7),
+    ('Friend Request', FALSE, DEFAULT, 8),
+    ('Group Request', FALSE, DEFAULT, 9),
+    ('Group Post', FALSE, DEFAULT, 10),
+    ('Comment', FALSE, DEFAULT, 1),
+    ('Reaction', FALSE, DEFAULT, 2),
+    ('Friend Request', FALSE, DEFAULT, 3),
+    ('Group Request', FALSE, DEFAULT, 4),
+    ('Group Post', FALSE, DEFAULT, 5),
+    ('Comment', FALSE, DEFAULT, 6),
+    ('Reaction', FALSE, DEFAULT, 7),
+    ('Friend Request', FALSE, DEFAULT, 8),
+    ('Group Request', FALSE, DEFAULT, 9),
+    ('Group Post', FALSE, DEFAULT, 10);
+
 
 INSERT INTO comment_notification (notification_id, comment_id)
 VALUES
     (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4);
+    (6, 2),
+    (11, 3),
+    (16, 4);
 
 INSERT INTO reaction_notification (notification_id, reaction_id)
 VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4);
+    (2, 1),
+    (7, 2),
+    (12, 3),
+    (17, 4);
 
 INSERT INTO friend_request_notification (notification_id, friend_request_id)
 VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4);
+    (3, 1),
+    (8, 2),
+    (13, 3),
+    (18, 4);
 
 INSERT INTO group_request_notification (notification_id, group_request_id)
 VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4);
+    (4, 1),
+    (9, 2),
+    (14, 3),
+    (19, 4);
 
 INSERT INTO group_post_notification (notification_id, post_id)
 VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4);
+    (5, 1),
+    (10, 2),
+    (15, 3),
+    (20, 4);
