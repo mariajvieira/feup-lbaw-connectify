@@ -514,25 +514,45 @@ $$ LANGUAGE plpgsql;
 
 
 --Tran03
-CREATE OR REPLACE FUNCTION add_reaction(postId INT, userId INT, reactionType TEXT) 
+CREATE OR REPLACE FUNCTION add_reaction(targetId INT, userId INT, targetType targetType, reactionType reactionType) 
 RETURNS VOID AS $$
 DECLARE
     postOwnerId INT;
     reactionId INT;
 BEGIN
-    SELECT user_id INTO postOwnerId
-    FROM post
-    WHERE post_id = postId;
+    -- Verificar se o usuário já reagiu ao post ou comentário
+    IF EXISTS (
+        SELECT 1 FROM reaction
+        WHERE target_id = targetId
+          AND target_type = targetType
+          AND user_id = userId
+    ) THEN
+        RAISE EXCEPTION 'User already reacted to this target.';
+    END IF;
 
-    INSERT INTO reaction (reactionType, reaction_date, post_id, user_id) 
-    VALUES (reactionType, NOW(), postId, userId)
-    RETURNING reaction_id INTO reactionId;
+    -- Obter o proprietário do post ou comentário
+    IF targetType = 'post' THEN
+        SELECT user_id INTO postOwnerId
+        FROM post
+        WHERE id = targetId;
+    ELSIF targetType = 'comment' THEN
+        SELECT user_id INTO postOwnerId
+        FROM comment_
+        WHERE id = targetId;
+    END IF;
 
+    -- Inserir a reação
+    INSERT INTO reaction (reaction_type, reaction_date, target_id, target_type, user_id) 
+    VALUES (reactionType, NOW(), targetId, targetType, userId)
+    RETURNING id INTO reactionId;
+
+    -- Criar a notificação
     INSERT INTO notification (content, is_read, notification_date, user_id)
-    VALUES ('User ' || userId || ' reacted to your post with ' || reactionType, FALSE, NOW(), postOwnerId);
+    VALUES ('User ' || userId || ' reacted to your ' || targetType || ' with ' || reactionType, FALSE, NOW(), postOwnerId);
     
+    -- Relacionar a notificação com a reação
     INSERT INTO reaction_notification (notification_id, reaction_id)
-    VALUES (currval(pg_get_serial_sequence('notification', 'notification_id')), reactionId);
+    VALUES (currval(pg_get_serial_sequence('notification', 'id')), reactionId);
 END; $$ LANGUAGE plpgsql;
 
 --Tran04
@@ -921,26 +941,26 @@ VALUES
 
 INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)
 VALUES
-    (1, 1, 'post', 'like', DEFAULT),
-    (2, 2, 'post', 'laugh', DEFAULT),
-    (3, 3, 'post', 'applause', DEFAULT),
-    (4, 4, 'post', 'like', DEFAULT),
-    (5, 5, 'post', 'applause', DEFAULT),
-    (6, 6, 'post', 'like', DEFAULT),
-    (7, 7, 'post', 'applause', DEFAULT),
-    (8, 8, 'post', 'like', DEFAULT),
-    (9, 9, 'post', 'like', DEFAULT),
-    (10, 10, 'post', 'applause', DEFAULT),
-    (1, 2, 'comment', 'shocked', DEFAULT),
-    (2, 3, 'comment', 'like', DEFAULT),
-    (3, 4, 'comment', 'like', DEFAULT),
-    (4, 5, 'comment', 'shocked', DEFAULT),
-    (5, 6, 'comment', 'like', DEFAULT),
-    (6, 7, 'comment', 'shocked', DEFAULT),
-    (7, 8, 'comment', 'like', DEFAULT),
-    (8, 9, 'comment', 'shocked', DEFAULT),
-    (9, 10, 'comment', 'like', DEFAULT),
-    (10, 1, 'comment', 'shocked', DEFAULT);
+    (1, 1, 'post', 'like', '2023-01-30 10:00:00'),
+    (2, 2, 'post', 'laugh', '2023-01-31 10:00:00'),
+    (3, 3, 'post', 'applause', '2023-02-01 10:00:00'),
+    (4, 4, 'post', 'like', '2023-02-02 10:00:00'),
+    (5, 5, 'post', 'applause', '2023-02-03 10:00:00'),
+    (6, 6, 'post', 'like', '2023-02-04 10:00:00'),
+    (7, 7, 'post', 'applause', '2023-02-05 10:00:00'),
+    (8, 8, 'post', 'like', '2023-02-06 10:00:00'),
+    (9, 9, 'post', 'like', '2023-02-07 10:00:00'),
+    (10, 10, 'post', 'applause', '2023-02-08 10:00:00'),
+    (1, 2, 'comment', 'shocked', '2023-02-09 10:00:00'),
+    (2, 3, 'comment', 'like', '2023-02-10 10:00:00'),
+    (3, 4, 'comment', 'like', '2023-02-11 10:00:00'),
+    (4, 5, 'comment', 'shocked', '2023-02-12 10:00:00'),
+    (5, 6, 'comment', 'like', '2023-02-13 10:00:00'),
+    (6, 7, 'comment', 'shocked', '2023-02-14 10:00:00'),
+    (7, 8, 'comment', 'like', '2023-02-15 10:00:00'),
+    (8, 9, 'comment', 'shocked', '2023-02-16 10:00:00'),
+    (9, 10, 'comment', 'like', '2023-02-17 10:00:00'),
+    (10, 1, 'comment', 'shocked', '2023-02-18 10:00:00');
 
 
 

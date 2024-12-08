@@ -382,3 +382,10 @@ header h1 a:hover {
 .create-post-form .btn-primary:hover {
   background-color: #022c58;
 }
+
+
+button.selected {
+  background-color: #ed92f0;
+  color: #fff;
+  border-color: #ed92f0;
+}

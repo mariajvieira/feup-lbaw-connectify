@@ -37,4 +37,10 @@ class Post extends Model
     {
         return self::where('is_public', true);
     }
+
+    public function reactions()
+    {
+        return $this->morphMany(Reaction::class, 'target')
+            ->where('target_type', 'post'); 
+    }
 }
