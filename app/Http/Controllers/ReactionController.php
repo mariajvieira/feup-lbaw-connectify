@@ -53,28 +53,17 @@ class ReactionController extends Controller
     }
     
     
-    
-
     /**
      * Remove the specified reaction.
      */
-    public function destroy(Request $request)
+    public function destroy($reactionId)
     {
-        // Validação dos dados recebidos
-        $request->validate([
-            'target_type' => 'required|string|in:post,comment',
-            'target_id' => 'required|integer',
-        ]);
+        // Encontrar a reação
+        $reaction = Reaction::find($reactionId);
 
-        $reaction = Reaction::where([
-            'target_type' => $request->target_type,
-            'target_id' => $request->target_id,
-            'user_id' => auth()->id(),
-        ])->first();
-
-        // Verificar se a reação existe
-        if (!$reaction) {
-            return response()->json(['error' => 'Reação não encontrada.'], 404);
+        // Verificar se a reação existe e se pertence ao usuário autenticado
+        if (!$reaction || $reaction->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Reação não encontrada ou você não tem permissão para removê-la.'], 404);
         }
 
         // Apagar a reação
@@ -82,4 +71,5 @@ class ReactionController extends Controller
 
         return response()->json(['message' => 'Reação removida com sucesso.'], 200);
     }
+
 }
