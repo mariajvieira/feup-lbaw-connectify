@@ -59,9 +59,12 @@
                 <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
 
                 <!-- Link para o perfil do usuário -->
-                <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link">
+                <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" 
+                        style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; object-fit: cover;">
                     <span>{{ Auth::user()->username }}</span>
                 </a>
+
 
                 <!-- Logout -->
                 <form action="{{ route('logout') }}" method="POST" style="display: inline;">
