@@ -147,33 +147,40 @@ function react(event) {
   const postId = button.getAttribute('data-post-id');
 
   // Enviar nova reação ao servidor
-  fetch('/reactions', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      },
-      body: JSON.stringify({
-          target_id: postId,
-          target_type: 'post',
-          reaction_type: reactionType,
-      }),
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.message === 'Reação registada com sucesso.') {
-          // Remover a classe 'selected' de todos os botões de reação
-          const parentReactions = button.closest('.reactions');
-          const buttons = parentReactions.querySelectorAll('button');
-          buttons.forEach(btn => btn.classList.remove('selected'));
+  fetch(`/post/${postId}/reaction`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+    },
+    body: JSON.stringify({
+        target_id: postId,
+        target_type: 'post',
+        reaction_type: reactionType,
+    }),
+})
+.then(response => {
+    if (!response.ok) {
+        return response.text(); // Se não for ok, retorne a resposta como texto
+    }
+    return response.json(); // Caso contrário, analise como JSON
+})
+.then(data => {
+    if (typeof data === 'string') {
+        console.error('Erro na resposta do servidor:', data);
+    } else {
+        if (data.message === 'Reação registada com sucesso.') {
+            const parentReactions = button.closest('.reactions');
+            const buttons = parentReactions.querySelectorAll('button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        } else {
+            console.error('Erro ao registar a reação:', data.error);
+        }
+    }
+})
+.catch(error => console.error('Erro ao registar a reação:', error));
 
-          // Adicionar a classe 'selected' ao botão que o usuário clicou
-          button.classList.add('selected');
-      } else {
-          console.error('Erro ao registar a reação:', data.error);
-      }
-  })
-  .catch(error => console.error('Erro ao registar a reação:', error));
 }
 
 function addReactionEventListeners() {

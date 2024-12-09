@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 use App\Models\Reaction;
+use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -13,36 +14,44 @@ class ReactionController extends Controller
     /**
      * Store a newly created reaction.
      */
-    public function store(Request $request)
+    public function store(Request $request, $id)
     {
+        // Validar apenas o tipo de reação
         $validated = $request->validate([
-            'target_id' => 'required|exists:posts,id',
             'reaction_type' => 'required|in:like,laugh,cry,applause,shocked',
-            'target_type' => 'required|in:post',
         ]);
     
+        // Obter o usuário autenticado
+        $userId = auth()->id();
+    
+        // Verificar se o post existe
+        $postExists = Post::where('id', $id)->exists();
+        if (!$postExists) {
+            return response()->json(['error' => 'Post não encontrado.'], 404);
+        }
+    
         // Verificar se o usuário já reagiu ao post
-        $reaction = Reaction::where('user_id', auth()->id())
-                            ->where('target_id', $validated['target_id'])
-                            ->where('target_type', $validated['target_type'])
+        $reaction = Reaction::where('user_id', $userId)
+                            ->where('target_id', $id)
+                            ->where('target_type', 'post')
                             ->first();
     
         if ($reaction) {
-            // Se já houver uma reação, atualizar a reação existente
-            $reaction->reaction_type = $validated['reaction_type'];
-            $reaction->save();
+            // Atualizar reação existente
+            $reaction->update(['reaction_type' => $validated['reaction_type']]);
         } else {
-            // Caso contrário, criar uma nova reação
+            // Criar nova reação
             Reaction::create([
-                'user_id' => auth()->id(),
-                'target_id' => $validated['target_id'],
+                'user_id' => $userId,
+                'target_id' => $id,
                 'reaction_type' => $validated['reaction_type'],
-                'target_type' => $validated['target_type'],
+                'target_type' => 'post',
             ]);
         }
     
         return response()->json(['message' => 'Reação registada com sucesso.']);
     }
+    
     
     
 
@@ -68,7 +77,7 @@ class ReactionController extends Controller
             return response()->json(['error' => 'Reação não encontrada.'], 404);
         }
 
-        // Deletar a reação
+        // Apagar a reação
         $reaction->delete();
 
         return response()->json(['message' => 'Reação removida com sucesso.'], 200);
