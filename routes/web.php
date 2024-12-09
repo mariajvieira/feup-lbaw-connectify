@@ -85,9 +85,7 @@ Route::post('/friend-request/{id}/remove', [FriendshipController::class, 'remove
 Route::get('api/search', [UserSearchController::class, 'search'])->name('search');
 
 // Reactions
-//Route:get('/post/{id}/reactions', [ReactionController::class, 'index'])->name('post.reactions');
-// web.php
-Route::post('/posts/{post}/reactions', [ReactionController::class, 'store'])->name('reactions.store');
+Route::post('/post/{id}/reaction', [ReactionController::class, 'store'])->name('reaction.store');
 Route::delete('/reactions/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
 
 // API Routes
@@ -95,7 +93,6 @@ Route::prefix('api')->group(function () {
     // Posts API Routes
     Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
     Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
-
     
     // User API Routes
     //Route::put('/user/{id}', [UserController::class, 'updateProfile']); 

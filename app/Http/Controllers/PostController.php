@@ -160,4 +160,6 @@ class PostController extends Controller
     
         return response()->json(['posts' => $posts], 200);
     }
+
+    
 }

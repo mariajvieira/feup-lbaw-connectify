@@ -9,6 +9,7 @@ class Reaction extends Model
 {
 
     protected $table = 'reaction';
+    public $timestamps = false;
 
     use HasFactory;
 
