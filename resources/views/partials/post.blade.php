@@ -47,12 +47,28 @@
 
     <div class="reactions mt-3">
         @foreach (['like', 'laugh', 'cry', 'applause', 'shocked'] as $reaction)
-            <button 
-                class="reaction-button {{ isset($userReaction) && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
-                data-reaction-type="{{ $reaction }}" 
-                data-post-id="{{ $post->id }}">
-                {{ ucfirst($reaction) }}
-            </button>
+        <button 
+            class="reaction-button {{ isset($userReaction) && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
+            data-reaction-type="{{ $reaction }}" 
+            data-post-id="{{ $post->id }}"
+            @if(isset($userReaction) && $userReaction->reaction_type === $reaction)
+                data-reaction-id="{{ $userReaction->id }}"
+            @endif>
+            {{ ucfirst($reaction) }}
+        </button>
+
         @endforeach
     </div>
 </div>
+{{-- Exemplo de botão para salvar post --}}
+<form action="{{ route('posts.save', $post->id) }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-primary">Salvar Post</button>
+</form>
+
+{{-- Exemplo de botão para remover post salvo --}}
+<form action="{{ route('posts.unsave', $post->id) }}" method="POST">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-danger">Remover dos Salvos</button>
+</form>

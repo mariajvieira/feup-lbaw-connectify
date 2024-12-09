@@ -75,6 +75,13 @@ Route::get('/post/{id}', [PostController::class, 'show'])->name('post');
 Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 
+// Save and unsave post
+Route::middleware('auth')->group(function () {
+    Route::post('/posts/{id}/save', [PostController::class, 'save'])->name('posts.save');
+    Route::delete('/posts/{id}/unsave', [PostController::class, 'unsave'])->name('posts.unsave');
+});
+
+
 // Friendship Requests
 Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');
 Route::post('/friend-request/{id}/accept', [FriendshipController::class, 'acceptRequest'])->name('friend-request.accept');
@@ -86,7 +93,7 @@ Route::get('api/search', [UserSearchController::class, 'search'])->name('search'
 
 // Reactions
 Route::post('/post/{id}/reaction', [ReactionController::class, 'store'])->name('reaction.store');
-Route::delete('/reactions/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
+Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
 
 // API Routes
 Route::prefix('api')->group(function () {

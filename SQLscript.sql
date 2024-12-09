@@ -16,7 +16,6 @@ DROP TABLE IF EXISTS reaction_notification CASCADE;
 DROP TABLE IF EXISTS friend_request_notification CASCADE;
 DROP TABLE IF EXISTS group_request_notification CASCADE;
 DROP TABLE IF EXISTS group_post_notification CASCADE;
-
 DROP TYPE IF EXISTS statusGroup_request CASCADE;
 DROP TYPE IF EXISTS statusFriendship_request CASCADE;
 DROP TYPE IF EXISTS reactionType CASCADE;
