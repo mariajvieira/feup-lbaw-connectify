@@ -22,7 +22,7 @@ class UserController extends Controller
             'username' => 'required|string|max:250|unique:users',
             'email' => 'required|email|max:250|unique:users',
             'password' => 'required|min:8|confirmed',
-            'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
 
@@ -32,9 +32,10 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
         $user->is_public = $request->is_public ?? false;
+        $user->profile_picture = null;
 
-        if ($request->hasFile('profilePicture')) {
-            $user->profile_picture = $request->file('profilePicture')->store('profile_pictures', 'public');
+        if ($request->hasFile('profile_picture')) {
+            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
         $user->save();
@@ -99,7 +100,7 @@ class UserController extends Controller
             'username' => 'sometimes|string|max:250|unique:users,username,' . $user->id,
             'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
             'user_password' => 'nullable|min:8|confirmed',
-            'profilePicture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
 
@@ -116,11 +117,21 @@ class UserController extends Controller
             $user->user_password = Hash::make($request->user_password); 
         }
 
-        if ($request->hasFile('profilePicture')) {
-            if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
-                Storage::delete('public/' . $user->profile_picture);
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture && $user->profile_picture !== 'images/profile_pictures/default.png') {
+                // Apagando a imagem anterior, caso não seja a imagem padrão
+                if (Storage::exists(public_path($user->profile_picture))) {
+                    Storage::delete(public_path($user->profile_picture));
+                }
             }
-            $user->profile_picture = $request->file('profilePicture')->store('profile_pictures', 'public');
+    
+            // Processando e movendo a nova imagem para o diretório público
+            $profile_picture = $request->file('profile_picture');
+            $profile_picturePath = 'images/profile_pictures/' . $user->username . '.' . $profile_picture->getClientOriginalExtension();
+            $profile_picture->move(public_path('images/profile_pictures'), $user->username . '.' . $profile_picture->getClientOriginalExtension());
+            
+            // Atualizando o caminho da imagem no banco de dados
+            $user->profile_picture = $profile_picturePath;
         }
 
         if ($request->has('is_public')) {

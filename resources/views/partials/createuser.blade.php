@@ -2,10 +2,15 @@
 
 @section('content')
 <div class="create-user-container">
-    <h2>Criar Novo Usuário</h2>
+    <h2>Create New User</h2>
 
     <form action="{{ route('user.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
+
+        <!-- Profile picture -->
+        <label for="profile_picture">Profile Picture</label>
+        <input type="file" name="profile_picture" id="profile_picture" >
+        @error('profile_picture') <div class="error">{{ $message }}</div> @enderror
 
         <!-- Nome de usuário -->
         <label for="username">Username</label>

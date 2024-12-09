@@ -276,20 +276,20 @@ BEGIN
     IF NEW.id = current_user_id THEN
         RETURN NEW;  -- Permite atualização do próprio perfil
     END IF;
-
     -- Se o perfil for privado, verifique as condições
-    IF NEW.is_public = FALSE THEN
-        IF NOT EXISTS (
-            SELECT 1 FROM friendship
-            WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-            OR (user_id2 = NEW.id AND user_id1 = current_user_id)
-        ) AND NOT EXISTS (
-            SELECT 1 FROM administrator
-            WHERE user_id = current_user_id
-        ) THEN
-            RAISE EXCEPTION 'Perfil privado. Acesso negado.';
-        END IF;
-    END IF;
+    IF NEW.is_public == FALSE THEN
+            RAISE EXCEPTION 'AQUI';
+            IF NOT EXISTS (
+                SELECT 1 FROM friendship
+                WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
+                OR (user_id2 = NEW.id AND user_id1 = current_user_id)
+            ) AND NOT EXISTS (
+                SELECT 1 FROM administrator
+                WHERE user_id = current_user_id
+            ) THEN
+                RAISE EXCEPTION 'Perfil privado. Acesso negado.';
+      END IF;
+    END IF;	
 
     RETURN NEW;
 END;
