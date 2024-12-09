@@ -1,8 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-<form method="POST" action="{{ route('register') }}">
+<form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
     {{ csrf_field() }}
+
+    <h2>Register</h2>
+    <label for="profile_picture">Profile Picture</label>
+  <div>
+    @if (isset($user) && $user->profile_picture)
+        <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px;">
+    @endif
+    <input type="file" name="profile_picture" id="profile_picture" value="{{ old('profile_picture') }}">
+    @if ($errors->has('profile_picture'))
+        <span class="error">
+            {{ $errors->first('profile_picture') }}
+        </span>
+    @endif
+</div>
 
     <label for="username">Username</label>
     <input id="username" type="text" name="username" value="{{ old('username') }}" required autofocus>

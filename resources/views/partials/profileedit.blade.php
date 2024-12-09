@@ -11,6 +11,20 @@
 
         <h3>Edit Profile</h3>
 
+<div class="form-group">
+    <label for="profile_picture">Profile Picture:</label>
+    
+    <!-- Exibição da imagem de perfil atual -->
+    @if (!empty($user->profile_picture))
+        <div style="margin-bottom: 10px;">
+            <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; border: 1px solid #ddd; padding: 5px;">
+        </div>
+    @endif
+
+    <!-- Campo de upload de nova imagem -->
+    <input type="file" name="profile_picture" id="profile_picture" class="form-control" />
+</div>
+
         <!-- Editar Username -->
         <div class="form-group">
             <label for="username">Username:</label>
