@@ -60,3 +60,15 @@
         @endforeach
     </div>
 </div>
+{{-- Exemplo de botão para salvar post --}}
+<form action="{{ route('posts.save', $post->id) }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-primary">Salvar Post</button>
+</form>
+
+{{-- Exemplo de botão para remover post salvo --}}
+<form action="{{ route('posts.unsave', $post->id) }}" method="POST">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-danger">Remover dos Salvos</button>
+</form>
