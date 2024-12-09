@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\SavedPost;
 
 class PostController extends Controller
 {
@@ -160,6 +161,39 @@ class PostController extends Controller
     
         return response()->json(['posts' => $posts], 200);
     }
-
     
+
+    public function save($id)
+    {
+        $postExists = SavedPost::where('user_id', Auth::id())->where('post_id', $id)->exists();
+    
+        if ($postExists) {
+            return redirect()->back()->with('error', 'O post já está salvo.');
+        }
+    
+        SavedPost::create([
+            'user_id' => Auth::id(),
+            'post_id' => $id,
+        ]);
+    
+        return redirect()->back()->with('success', 'Post salvo com sucesso!');
+    }
+    
+    public function unsave($id)
+    {
+        $savedPost = SavedPost::where('user_id', Auth::id())->where('post_id', $id)->first();
+    
+        if (!$savedPost) {
+            return redirect()->back()->with('error', 'O post não está salvo.');
+        }
+    
+        $savedPost->delete();
+    
+        return redirect()->back()->with('success', 'Post removido dos salvos com sucesso!');
+    }
+    
+
+
+
+
 }
