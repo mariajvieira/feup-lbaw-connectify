@@ -882,7 +882,7 @@ VALUES
     (10, NULL, 'Rock n roll!!!','images/20.1.jpg', NULL, NULL, TRUE, '2023-01-20 12:19:00'),
     (1, NULL, 'Finally got my first job as a software engineer! Wish me luck :)', NULL, NULL, NULL, TRUE, '2023-01-21 12:20:00'),
     (2, NULL, 'First day at college','images/22.1.jpg', NULL, NULL, TRUE, '2023-01-22 12:21:00'),
-    (3, NULL, NULL,'images/23.2.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
+    (3, NULL, NULL,'images/23.1.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
     (4, NULL, 'Today in Porto', 'images/24.1.jpg', NULL, NULL, TRUE, '2023-01-24 12:23:00'),
     (5, NULL, 'Adopt, dont shop!', 'images/25.1.jpg', NULL, NULL, TRUE, '2023-01-25 12:24:00'),
     (6, NULL, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
@@ -936,7 +936,26 @@ VALUES
     (7, 10, 'Traveling is such a rewarding experience!'),
     (8, 1, 'Food is an art form in itself!'),
     (9, 2, 'Fitness is a journey, not a destination!'),
-    (10, 3, 'I love discovering new music!');
+    (10, 3, 'I love discovering new music!'),
+    (11, 4, 'I can recommend a great series!'),
+    (12, 5, 'I love working on projects like this!'),
+    (13, 6, 'Art is truly a reflection of the soul!'),
+    (14, 7, 'What do you think about this tech?'),
+    (15, 8, 'Tell me more about the mystery!'),
+    (16, 9, 'Dogs are the best companions!'),
+    (17, 10, 'Traveling is such a rewarding experience!'),
+    (18, 1, 'Food is an art form in itself!'),
+    (19, 2, 'Fitness is a journey, not a destination!'),
+    (20, 3, 'I love discovering new music!'),
+    (21, 4, 'I can recommend a great series!'),
+    (22, 5, 'I love working on projects like this!'),
+    (23, 6, 'Art is truly a reflection of the soul!'),
+    (24, 7, 'What do you think about this tech?'),
+    (25, 8, 'Tell me more about the mystery!'),
+    (26, 9, 'Dogs are the best companions!'),
+    (27, 10, 'Traveling is such a rewarding experience!'),
+    (28, 1, 'Food is an art form in itself!'),
+    (29, 2, 'Fitness is a journey, not a destination!');
 
 
 INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)

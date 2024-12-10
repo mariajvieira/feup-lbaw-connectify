@@ -43,4 +43,9 @@ class Post extends Model
         return $this->morphMany(Reaction::class, 'target')
         ->where('target_type', 'post');    
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'post_id', 'id');
+    }
 }

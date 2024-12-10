@@ -54,10 +54,38 @@
             data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}">
             {{ ucfirst($reaction) }}
         </button>
-
         @endforeach
     </div>
+
+    <!-- Exibir comentários já existentes -->
+    <div class="comment-section mt-4">
+        @foreach ($post->comments as $comment)
+        <div class="comment mt-2">
+            <p><strong>{{ $comment->user->username }}</strong>: {{ $comment->comment_content }}</p>
+
+            <!-- Botão para excluir comentário -->
+            @if ($comment->user_id === auth()->id())
+            <form action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+            </form>
+            @endif
+        </div>
+        @endforeach
+
+        <!-- Formulário de adicionar comentário -->
+        <form action="{{ route('comment.store', $post->id) }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label for="comment">Add a Comment:</label>
+                <textarea id="comment" name="comment" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success mt-2">Post Comment</button>
+        </form>
+    </div>
 </div>
+
 {{-- Exemplo de botão para salvar post --}}
 <form action="{{ route('posts.save', $post->id) }}" method="POST">
     @csrf

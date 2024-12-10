@@ -7,6 +7,7 @@ use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedPost;
+use App\Models\Comment;
 
 class PostController extends Controller
 {
@@ -192,8 +193,6 @@ class PostController extends Controller
         return redirect()->back()->with('success', 'Post removido dos salvos com sucesso!');
     }
     
-
-
 
 
 }

@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   addEventListeners();
   addReactionEventListeners();
+  addCommentEventListeners(); // Nova função para adicionar os eventos de comentários
 });
 
 function addEventListeners() {
@@ -20,6 +21,17 @@ function addEventListeners() {
   let postDeleters = document.querySelectorAll('.post-item .delete-post-btn');
   postDeleters.forEach(deleter => {
       deleter.addEventListener('click', sendDeletePostRequest);
+  });
+
+  // Eventos de envio e exclusão de comentários
+  let commentCreators = document.querySelectorAll('.create-comment-btn');
+  commentCreators.forEach(creator => {
+      creator.addEventListener('click', sendCreateCommentRequest);
+  });
+
+  let commentDeleters = document.querySelectorAll('.delete-comment-btn');
+  commentDeleters.forEach(deleter => {
+      deleter.addEventListener('click', sendDeleteCommentRequest);
   });
 }
 
@@ -130,15 +142,40 @@ function createPostElement(post) {
               </button>
           `).join('')}
       </div>
+      <div class="comments mt-4">
+          ${post.comments.map(comment => `
+              <div class="comment-item" data-id="${comment.id}">
+                  <span>${comment.user.name}: ${comment.content}</span>
+                  <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
+              </div>
+          `).join('')}
+      </div>
+      <div class="create-comment">
+          <textarea name="comment-content" placeholder="Add a comment..."></textarea>
+          <button class="create-comment-btn" data-post-id="${post.id}">Comment</button>
+      </div>
   `;
 
   newItem.querySelector('input[type=checkbox]').addEventListener('change', sendPostUpdateRequest);
   newItem.querySelector('.delete-post-btn').addEventListener('click', sendDeletePostRequest);
+  newItem.querySelector('.create-comment-btn').addEventListener('click', sendCreateCommentRequest);
 
   // Add reaction event listeners for new buttons
   addReactionEventListeners();
 
+  // Add delete comment event listeners
+  newItem.querySelectorAll('.delete-comment-btn').forEach(deleter => {
+    deleter.addEventListener('click', sendDeleteCommentRequest);
+  });
+
   return newItem;
+}
+
+function addReactionEventListeners() {
+  const reactionButtons = document.querySelectorAll('.reactions button');
+  reactionButtons.forEach(button => {
+    button.addEventListener('click', react);
+  });
 }
 
 function react(event) {
@@ -240,14 +277,63 @@ function react(event) {
   }
 }
 
+function addCommentEventListeners() {
+  document.querySelectorAll('.create-comment-btn').forEach(button => {
+    button.addEventListener('click', sendCreateCommentRequest);
+  });
 
-
-function addReactionEventListeners() {
-  const reactionButtons = document.querySelectorAll('.reactions button');
-  reactionButtons.forEach(button => {
-    button.addEventListener('click', react);
+  document.querySelectorAll('.delete-comment-btn').forEach(button => {
+    button.addEventListener('click', sendDeleteCommentRequest);
   });
 }
 
+function sendCreateCommentRequest(event) {
+  const button = event.target;
+  const postId = button.getAttribute('data-post-id');
+  const commentContent = button.previousElementSibling.value;
 
+  const data = {
+    content: commentContent,
+    post_id: postId,
+  };
 
+  sendAjaxRequest('POST', '/api/comments', data, commentAddedHandler);
+}
+
+function commentAddedHandler() {
+  if (this.status !== 200) {
+      console.error('Erro ao adicionar o comentário');
+      return;
+  }
+
+  const comment = JSON.parse(this.responseText);
+  const postElement = document.querySelector(`.post-item[data-id="${comment.post_id}"]`);
+  const commentsContainer = postElement.querySelector('.comments');
+  const newComment = document.createElement('div');
+  newComment.classList.add('comment-item');
+  newComment.setAttribute('data-id', comment.id);
+  newComment.innerHTML = `
+      <span>${comment.user.name}: ${comment.content}</span>
+      <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
+  `;
+  commentsContainer.appendChild(newComment);
+
+  // Reaplicar o evento de exclusão de comentário
+  newComment.querySelector('.delete-comment-btn').addEventListener('click', sendDeleteCommentRequest);
+}
+
+function sendDeleteCommentRequest(event) {
+  const commentId = event.target.getAttribute('data-id');
+  sendAjaxRequest('DELETE', `/api/comments/${commentId}`, null, commentDeletedHandler);
+}
+
+function commentDeletedHandler() {
+  if (this.status !== 200) {
+      console.error('Erro ao deletar o comentário');
+      return;
+  }
+
+  const comment = JSON.parse(this.responseText);
+  const commentElement = document.querySelector(`.comment-item[data-id="${comment.id}"]`);
+  commentElement.remove();
+}

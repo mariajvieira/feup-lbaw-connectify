@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 use App\Models\Comment;
+use App\Models\Post;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
 // Create comment
-    public function addComment(Request $request, $postId)
+    public function store(Request $request, $postId)
     {
     
         $validated = $request->validate([
@@ -62,7 +63,7 @@ class CommentController extends Controller
         return response()->json($comments, 200);
     }
 
-    public function deleteComment($commentId)
+    public function destroy($commentId)
     {
         $comment = Comment::find($commentId);
         if (!$comment) {

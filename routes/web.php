@@ -12,6 +12,7 @@ use App\Http\Controllers\PublicHomeController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ReactionController;
+use App\Http\Controllers\CommentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -94,6 +95,12 @@ Route::get('api/search', [UserSearchController::class, 'search'])->name('search'
 // Reactions
 Route::post('/post/{id}/reaction', [ReactionController::class, 'store'])->name('reaction.store');
 Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
+
+
+// Comments
+Route::post('/post/{id}/comment', [CommentController::class, 'store'])->name('comment.store');
+Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('comment.destroy');
+
 
 // API Routes
 Route::prefix('api')->group(function () {
