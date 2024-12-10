@@ -2,7 +2,11 @@
 
 @section('content')
 <div class="profile-container">
+<img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; border: 1px solid #ddd; padding: 5px;">
     <h2>@ {{ $user->username }}</h2>
+    <div class="profile-image">
+    
+    </div>
 
     <div class="profile-info">
         @if($user->id==Auth::id())
