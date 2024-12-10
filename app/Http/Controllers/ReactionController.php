@@ -41,7 +41,7 @@ class ReactionController extends Controller
             $reaction->update(['reaction_type' => $validated['reaction_type']]);
         } else {
             // Criar nova reação
-            Reaction::create([
+            $reaction = Reaction::create([
                 'user_id' => $userId,
                 'target_id' => $id,
                 'reaction_type' => $validated['reaction_type'],
@@ -49,8 +49,13 @@ class ReactionController extends Controller
             ]);
         }
     
-        return response()->json(['message' => 'Reação registada com sucesso.']);
+        // Certificar-se de que estamos retornando o ID correto da reação
+        return response()->json([
+            'message' => 'Reação registada com sucesso.',
+            'reaction_id' => $reaction->id // Garantir que o ID da reação seja retornado corretamente
+        ]);
     }
+    
     
     
     /**
@@ -58,18 +63,21 @@ class ReactionController extends Controller
      */
     public function destroy($reactionId)
     {
-        // Encontrar a reação
+        // Encontrar a reação, ou retornar um erro caso não exista
         $reaction = Reaction::find($reactionId);
-
+    
         // Verificar se a reação existe e se pertence ao usuário autenticado
         if (!$reaction || $reaction->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Reação não encontrada ou você não tem permissão para removê-la.'], 404);
+            return response()->json(['error' => 'Reação não encontrada ou você não tem permissão para removê-la.'], 403);
         }
-
+    
         // Apagar a reação
         $reaction->delete();
-
+    
+        // Retornar uma resposta JSON com status 200 e mensagem de sucesso
         return response()->json(['message' => 'Reação removida com sucesso.'], 200);
     }
+    
+    
 
 }

@@ -40,7 +40,7 @@
     
     @php
         // Verificando se o usuário já reagiu ao post
-        $userReaction = $post->reactions
+        $userReaction = $post->reactions()
             ->where('user_id', auth()->id())
             ->first();
     @endphp
@@ -48,12 +48,10 @@
     <div class="reactions mt-3">
         @foreach (['like', 'laugh', 'cry', 'applause', 'shocked'] as $reaction)
         <button 
-            class="reaction-button {{ isset($userReaction) && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
+            class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
             data-reaction-type="{{ $reaction }}" 
             data-post-id="{{ $post->id }}"
-            @if(isset($userReaction) && $userReaction->reaction_type === $reaction)
-                data-reaction-id="{{ $userReaction->id }}"
-            @endif>
+            data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}">
             {{ ucfirst($reaction) }}
         </button>
 

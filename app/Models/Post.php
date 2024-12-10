@@ -41,6 +41,6 @@ class Post extends Model
     public function reactions()
     {
         return $this->morphMany(Reaction::class, 'target')
-            ->where('target_type', 'post'); 
+        ->where('target_type', 'post');    
     }
 }

@@ -153,21 +153,31 @@ function react(event) {
       fetch(`/reaction/${reactionId}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
         },
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === 'Reação apagada com sucesso.') {
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errorData => {
+                throw new Error(errorData.error || 'Erro ao apagar a reação');
+            });
+        }
+    
+        return response.json();
+    })
+    .then(data => {
+        if (data.message === 'Reação removida com sucesso.') {
             button.classList.remove('selected');
-            button.removeAttribute('data-reaction-id'); // Remover o ID da reação
+            button.removeAttribute('data-reaction-id');
             alert(data.message);
-          } else {
+        } else {
             console.error('Erro ao apagar a reação:', data.error);
-          }
-        })
-        .catch(error => console.error('Erro ao apagar a reação:', error));
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao apagar a reação:', error);
+    });    
     } else {
       // Caso outra reação seja clicada, substituir a existente
       fetch(`/post/${postId}/reaction`, {
