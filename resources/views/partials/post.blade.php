@@ -75,7 +75,7 @@
         @endforeach
 
         <!-- Formulário de adicionar comentário -->
-        <form action="{{ route('comment.store', $post->id) }}" method="POST">
+        <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form">
             @csrf
             <div class="form-group">
                 <label for="comment">Add a Comment:</label>

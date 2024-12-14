@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', function() {
   addEventListeners();
   addReactionEventListeners();
   addCommentEventListeners(); // Nova função para adicionar os eventos de comentários
+
+  document.querySelectorAll('.add-comment-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        sendCreateCommentRequest(event);
+    });
+  });
 });
 
 function addEventListeners() {
@@ -23,11 +30,6 @@ function addEventListeners() {
       deleter.addEventListener('click', sendDeletePostRequest);
   });
 
-  // Eventos de envio e exclusão de comentários
-  let commentCreators = document.querySelectorAll('.create-comment-btn');
-  commentCreators.forEach(creator => {
-      creator.addEventListener('click', sendCreateCommentRequest);
-  });
 
   let commentDeleters = document.querySelectorAll('.delete-comment-btn');
   commentDeleters.forEach(deleter => {
@@ -42,14 +44,7 @@ function encodeForAjax(data) {
       .join('&');
 }
 
-function sendAjaxRequest(method, url, data, handler) {
-  let request = new XMLHttpRequest();
-  request.open(method, url, true);
-  request.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
-  request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-  request.addEventListener('load', handler);
-  request.send(encodeForAjax(data));
-}
+
 
 function sendPostUpdateRequest() {
   const item = this.closest('.post-item');
@@ -288,43 +283,52 @@ function addCommentEventListeners() {
 }
 
 function sendCreateCommentRequest(event) {
-  const button = event.target;
-  const postId = button.getAttribute('data-post-id');
-  const commentContent = button.previousElementSibling.value;
+  const form = event.target;
+  const postId = form.getAttribute('data-post-id');
+  const commentContent = form.querySelector('textarea[name=comment]').value;
 
   const data = {
-    content: commentContent,
-    post_id: postId,
+      comment: commentContent,
+      post_id: postId,
   };
 
-  sendAjaxRequest('POST', '/api/comments', data, commentAddedHandler);
+  sendAjaxRequest('POST', form.action, data, commentAddedHandler.bind(null, form));
 }
 
-function commentAddedHandler() {
-  if (this.status !== 200) {
+function commentAddedHandler(form) {
+  if (this.status !== 201) {
       console.error('Erro ao adicionar o comentário');
       return;
   }
 
   const comment = JSON.parse(this.responseText);
-  const postElement = document.querySelector(`.post-item[data-id="${comment.post_id}"]`);
-  const commentsContainer = postElement.querySelector('.comments');
+  const commentsContainer = form.closest('.comments');
   const newComment = document.createElement('div');
-  newComment.classList.add('comment-item');
+  newComment.classList.add('comment', 'mt-2');
   newComment.setAttribute('data-id', comment.id);
+
   newComment.innerHTML = `
-      <span>${comment.user.name}: ${comment.content}</span>
-      <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
+      <p><strong>${comment.user.username}</strong>: ${comment.comment_content}</p>
+      <form action="/comment/${comment.id}" method="POST" style="display: inline;">
+          <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+      </form>
   `;
   commentsContainer.appendChild(newComment);
 
-  // Reaplicar o evento de exclusão de comentário
-  newComment.querySelector('.delete-comment-btn').addEventListener('click', sendDeleteCommentRequest);
+  // Limpar o campo de comentário
+  form.querySelector('textarea[name="comment"]').value = '';
+
+  newComment.querySelector('form').removeEventListener('submit', sendDeleteCommentRequest);
+  newComment.querySelector('form').addEventListener('submit', sendDeleteCommentRequest);
 }
 
 function sendDeleteCommentRequest(event) {
-  const commentId = event.target.getAttribute('data-id');
-  sendAjaxRequest('DELETE', `/api/comments/${commentId}`, null, commentDeletedHandler);
+  const form = event.target;
+  const commentId = form.action.split('/').pop();
+
+  sendAjaxRequest('DELETE', form.action, null, commentDeletedHandler);
 }
 
 function commentDeletedHandler() {
@@ -334,6 +338,16 @@ function commentDeletedHandler() {
   }
 
   const comment = JSON.parse(this.responseText);
-  const commentElement = document.querySelector(`.comment-item[data-id="${comment.id}"]`);
+  const commentElement = document.querySelector(`.comment[data-id="${comment.id}"]`);
   commentElement.remove();
+}
+
+
+function sendAjaxRequest(method, url, data, handler) {
+  let request = new XMLHttpRequest();
+  request.open(method, url, true);
+  request.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
+  request.setRequestHeader('Content-Type', 'application/json');
+  request.addEventListener('load', handler);
+  request.send(JSON.stringify(data));
 }

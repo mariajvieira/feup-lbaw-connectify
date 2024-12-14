@@ -11,23 +11,24 @@ class CommentController extends Controller
 // Create comment
     public function store(Request $request, $postId)
     {
-    
-        $validated = $request->validate([
-            'content' => 'required|string',
+        $request->validate([
+            'comment' => 'required|string|max:255',
         ]);
 
-        $post = Post::find($postId);
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
-
         $comment = new Comment();
+        $comment->comment_content = $request->comment;
         $comment->post_id = $postId;
-        $comment->user_id = auth()->id(); 
-        $comment->comment_content = $validated['content'];
+        $comment->user_id = auth()->id();
         $comment->save();
 
-        return response()->json(['message' => 'Comment added successfully'], 201);
+        return response()->json([
+            'id' => $comment->id,
+            'comment_content' => $comment->comment_content,
+            'user' => [
+                'username' => $comment->user->username,
+            ],
+            'post_id' => $comment->post_id,
+        ], 201);
     }
 
 //edit comment
