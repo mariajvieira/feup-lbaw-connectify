@@ -15,6 +15,7 @@ class CommentController extends Controller
             'comment' => 'required|string|max:255',
         ]);
 
+
         $comment = new Comment();
         $comment->comment_content = $request->comment;
         $comment->post_id = $postId;
@@ -67,14 +68,14 @@ class CommentController extends Controller
     public function destroy($commentId)
     {
         $comment = Comment::find($commentId);
-        if (!$comment) {
-            return response()->json(['message' => 'Comment not found'], 404);
+        if ($comment && $comment->user_id === auth()->id()) {
+            $comment->delete();
+            return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); // Definido explicitamente o status 200
         }
-        $this->authorize('delete', $comment);	
-
-        $comment->delete();
-        return response()->json(['message' => 'Comment deleted successfully'], 200);
+        
+        return response()->json(['message' => 'Erro ao excluir comentário.'], 400); // Erro, código de status 400
     }
+    
 
     public function searchComments(Request $request)
     {

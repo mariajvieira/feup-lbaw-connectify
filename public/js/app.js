@@ -30,7 +30,7 @@ function addEventListeners() {
       deleter.addEventListener('click', sendDeletePostRequest);
   });
 
-
+  
   let commentDeleters = document.querySelectorAll('.delete-comment-btn');
   commentDeleters.forEach(deleter => {
       deleter.addEventListener('click', sendDeleteCommentRequest);
@@ -309,27 +309,55 @@ function commentAddedHandler(form) {
 
   newComment.innerHTML = `
       <p><strong>${comment.user.username}</strong>: ${comment.comment_content}</p>
-      <form action="/comment/${comment.id}" method="POST" style="display: inline;">
-          <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-          <input type="hidden" name="_method" value="DELETE">
-          <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
-      </form>
+      <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
   `;
   commentsContainer.appendChild(newComment);
 
   // Limpar o campo de comentário
   form.querySelector('textarea[name="comment"]').value = '';
 
-  newComment.querySelector('form').removeEventListener('submit', sendDeleteCommentRequest);
-  newComment.querySelector('form').addEventListener('submit', sendDeleteCommentRequest);
+  newComment.querySelector('.delete-comment-btn').addEventListener('click', sendDeleteCommentRequest);
 }
 
 function sendDeleteCommentRequest(event) {
-  const form = event.target;
-  const commentId = form.action.split('/').pop();
+  event.preventDefault(); // Prevents the default form submission
 
-  sendAjaxRequest('DELETE', form.action, null, commentDeletedHandler);
+  const commentId = event.target.getAttribute('data-id');
+  const formAction = `/comment/${commentId}`;
+
+  fetch(formAction, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ comment_id: commentId }),
+    redirect: 'manual' // Prevents the redirection
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error('Erro ao excluir o comentário');
+    }
+  })
+  .then(data => {
+    if (data.message === 'Comentário excluído com sucesso.') {
+      const commentElement = document.querySelector(`.comment[data-id="${commentId}"]`);
+      if (commentElement) {
+        commentElement.remove(); // Remove the comment from the page
+      }
+      alert(data.message); // Show success message
+    } else {
+      console.error('Erro ao excluir o comentário');
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao excluir o comentário:', error);
+  });
 }
+
+
 
 function commentDeletedHandler() {
   if (this.status !== 200) {

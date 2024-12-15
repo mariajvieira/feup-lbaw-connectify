@@ -65,17 +65,17 @@
 
             <!-- Botão para excluir comentário -->
             @if ($comment->user_id === auth()->id())
-            <form action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
-            </form>
+                <form class="delete-comment-form" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+                </form>
             @endif
         </div>
         @endforeach
 
         <!-- Formulário de adicionar comentário -->
-        <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form">
+        <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
             @csrf
             <div class="form-group">
                 <label for="comment">Add a Comment:</label>

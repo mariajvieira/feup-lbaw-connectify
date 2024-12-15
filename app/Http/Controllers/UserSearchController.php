@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Post;
+use App\Models\Comment;
 
 class UserSearchController extends Controller
 {
@@ -29,6 +30,7 @@ class UserSearchController extends Controller
                 ->get()
             : $usersExactMatch;
 
+
         // Agora, fazemos a busca de posts se necessário
         // Como não temos a coluna 'title', usamos 'content' para a busca
         $postsExactMatch = Post::where('content', 'like', '%' . $query . '%')
@@ -40,7 +42,21 @@ class UserSearchController extends Controller
                 ->get()
             : $postsExactMatch;
 
+
+
+
+        $commentsExactMatch = Comment::where('comment_content', 'like', '%' . $query . '%')
+            ->get();
+
+        // Se não encontrar resultados exatos, tenta um Full Text Search para posts
+        $commentsFullText = $commentsExactMatch->isEmpty() 
+            ? Post::whereRaw("to_tsvector('english', content) @@ plainto_tsquery('english', ?)", [$query])
+                ->get()
+            : $commentsExactMatch;
+
+
+
         // Retornamos a view com os resultados
-        return view('partials.search', compact('usersFullText', 'postsFullText', 'query'));
+        return view('partials.search', compact('usersFullText', 'postsFullText', 'commentsFullText', 'query'));
     }
 }
