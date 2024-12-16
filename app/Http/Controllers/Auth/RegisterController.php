@@ -49,6 +49,7 @@ class RegisterController extends Controller
             $user = User::create([
                 'username' => $request->username,
                 'email' => $request->email,
+                'profile_picture' => 'images/profile_pictures/default.jpg',
                 'password' => Hash::make($request->password),  // Criptografar o campo 'password'
             ]);
         } catch (\Exception $e) {
