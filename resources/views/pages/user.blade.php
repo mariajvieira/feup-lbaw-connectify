@@ -4,9 +4,7 @@
 <div class="profile-container">
 <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; border: 1px solid #ddd; padding: 5px;">
     <h2>@ {{ $user->username }}</h2>
-    <div class="profile-image">
-    
-    </div>
+
 
     <div class="profile-info">
         @if($user->id==Auth::id())
@@ -18,7 +16,7 @@
         @endif
     </div>
 
-    <div class="friendShip-request">
+    <div class="friendship-request">
         @if($user->id !== Auth::id()) 
             @if(!$user->isFriend(Auth::user())) 
                 @if(!$user->hasPendingRequestFrom(Auth::user())) 
@@ -66,43 +64,71 @@
 </style>
 
 <div class="container">
+    <!-- Grupos aos quais pertence -->
     <div class="column">
-        <h3>Your groups:</h3>
-        @if($user->groups->isEmpty())
-            <p>Você não está em nenhum grupo ainda.</p>
+        <h3>Groups:</h3>
+        @if($user->id === auth()->id())
+            @if($user->groups->isEmpty())
+                <p>You don't belong to any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->groups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'No description available' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         @else
-            <ul class="list-group">
-                @foreach($user->groups as $group)
-                    <li class="list-group-item">
-                        <strong>{{ $group->group_name }}</strong><br>
-                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
-                    </li>
-                @endforeach
-            </ul>
+            @if($user->groups->isEmpty())
+                <p>This user doesn't belong to any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->groups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'No description available' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         @endif
     </div>
+
+    <!-- Grupos que o utilizador possui -->
     <div class="column">
+        @if($user->id === auth()->id())
         <h3>Groups you own:</h3>
-        @if($user->ownedGroups->isEmpty())
-            <p>Você não possui nenhum grupo ainda.</p>
+            @if($user->ownedGroups->isEmpty())
+                <p>You don't own any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->ownedGroups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'No description available' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         @else
-            <ul class="list-group">
-                @foreach($user->ownedGroups as $group)
-                    <li class="list-group-item">
-                        <strong>{{ $group->group_name }}</strong><br>
-                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
-                    </li>
-                @endforeach
-            </ul>
+        <h3>Groups this user owns:</h3>
+            @if($user->ownedGroups->isEmpty())
+                <p>This user doesn't own any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->ownedGroups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'No description available' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         @endif
     </div>
 </div>
-
-
-
-
-
-
 
 
 
@@ -135,8 +161,6 @@
 </div>
 
 
-
-               
 
 
     <h3>Posts</h3>

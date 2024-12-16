@@ -843,7 +843,7 @@ VALUES
 
 INSERT INTO administrator (user_id)
 VALUES
-    (1), (3), (5), (7), (9), (10), (12), (15), (18), (21);
+    (1), (3), (5), (9), (10), (18);
 
 INSERT INTO group_ (owner_id, group_name, description, visibility)
 VALUES

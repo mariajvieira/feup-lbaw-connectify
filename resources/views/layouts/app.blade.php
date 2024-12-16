@@ -29,7 +29,7 @@
                     type="text" 
                     name="query" 
                     id="searchInput" 
-                    placeholder="Search posts, users..." 
+                    placeholder="Search posts, users, comments..." 
                     class="search-input" 
                     value="{{ request('query') }}" 
                     required>
