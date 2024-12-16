@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Grupo</title>
-</head>
-<body>
+@extends('layouts.app')
+
+@section('content')
+<div class="group-details-container">
     <h1>{{ $group->group_name }}</h1>
-    <p>{{ $group->description }}</p>
-    <p><strong>Visibilidade:</strong> {{ $group->visibility ? 'Visível' : 'Não Visível' }}</p>
-    <p><strong>Público:</strong> {{ $group->is_public ? 'Sim' : 'Não' }}</p>
-</body>
-</html>
+    <p><strong>Description:</strong> {{ $group->description }}</p>
+    <p><strong>Visibility:</strong> {{ $group->visibility ? 'Visible' : 'Not Visible' }}</p>
+    <p><strong>Public:</strong> {{ $group->is_public ? 'Yes' : 'No' }}</p>
+</div>
+@endsection
