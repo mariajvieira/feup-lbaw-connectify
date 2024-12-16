@@ -40,6 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 });
 
+
+// About us page
+Route::get('/about', function () {
+    return view('pages/about'); 
+})->name('about');
+
 //Show friends 
 Route::middleware('auth')->group(function () {
     Route::get('/user/{id}/friends/json', [UserController::class, 'getFriends'])->name('user.getfriends');

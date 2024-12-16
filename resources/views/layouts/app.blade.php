@@ -88,5 +88,13 @@
             @yield('content')
         </section>
     </main>
+
+    <footer style="text-align: center; padding: 20px; background-color: #f8f9fa;">
+        <p>Connectify 2024</p>
+        <a href="{{ route('about') }}" style="text-decoration: none; color:rgb(2, 20, 39);">About Us</a>
+        
+        <a href="{{ route('about') }}" style="text-decoration: none; color:rgb(2, 20, 39);">Help</a>
+
+    </footer>
 </body>
 </html>

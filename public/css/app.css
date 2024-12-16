@@ -7,7 +7,22 @@ header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #022c58;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px; /* Adicionando o espaço entre o header e o conteúdo abaixo */
+  margin-bottom: 100px; /* Adicionando o espaço entre o header e o conteúdo abaixo */
+  width: 100%; /* Header ocupa toda a largura */
+  position: fixed; /* Fixa o header no topo */
+  top: 0;
+  left: 0;
+  z-index: 1000; 
+}
+
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Altura mínima de 100% da janela */
+  padding-top: 200px; /* Ajuste conforme a altura do seu header */
+
 }
 
 header h1 a {
