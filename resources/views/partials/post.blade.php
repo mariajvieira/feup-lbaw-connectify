@@ -5,7 +5,14 @@
             <!-- Tornando o nome de usuário clicável e direcionando para o perfil do usuário -->
             <h5>
                 <strong>
-                    <a href="{{ route('user', ['id' => $post->user->id]) }}">@ {{ $post->user->username }}</a>
+                    <a 
+                        href="@if(auth()->check()) {{ route('user', ['id' => $post->user->id]) }} @else {{ route('login') }} @endif"
+                        @if(!auth()->check()) 
+                            onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                @else
+                        @endif
+                    >
+                        @ {{ $post->user->username }}
+                    </a>
                 </strong>
             </h5>
         </div>
@@ -61,7 +68,8 @@
                 data-reaction-type="{{ $reaction }}" 
                 data-post-id="{{ $post->id }}"
                 @if (!auth()->check())
-                    onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                @else
+                    onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                
+                @else
                     data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}"
                 @endif
             >
