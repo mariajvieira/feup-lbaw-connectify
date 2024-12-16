@@ -152,9 +152,9 @@ class PostController extends Controller
         DB::table('group_post_notification')->where('post_id', $id)->delete();
         DB::table('reaction_notification')
             ->whereIn('reaction_id', function ($query) use ($id) {
-                $query->select('id')->from('reaction')->where('post_id', $id);
+                $query->select('id')->from('reaction')->where('target_id', $id);
             })->delete();
-        DB::table('reaction')->where('post_id', $id)->delete();
+        DB::table('reaction')->where('target_id', $id)->delete();
         DB::table('comment_notification')
             ->whereIn('comment_id', function ($query) use ($id) {
                 $query->select('id')->from('comment_')->where('post_id', $id);
