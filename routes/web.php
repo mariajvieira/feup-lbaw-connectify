@@ -13,6 +13,8 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\GroupController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -112,3 +114,14 @@ Route::prefix('api')->group(function () {
     //Route::put('/user/{id}', [UserController::class, 'updateProfile']); 
     //Route::delete('/user/{id}', [UserController::class, 'deleteUser']); 
 });
+
+
+// Mostrar formulário de criação do grupo
+Route::get('/group/create', [GroupController::class, 'create'])->name('group.create');
+
+// Armazenar novo grupo
+//Route::post('/group/store', [GroupController::class, 'store'])->name('group.store');
+
+Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
+
+Route::post('/group', [GroupController::class, 'store'])->name('group.store');

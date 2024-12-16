@@ -175,6 +175,19 @@ class User extends Authenticatable
         return $this->hasMany(FriendRequest::class, 'receiver_id')
                     ->where('request_status', 'pending');
     }
+    // User.php
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_member', 'user_id', 'group_id');
+    }
+
+    // Relação com os grupos em que o usuário é proprietário
+    public function ownedGroups()
+    {
+        return $this->belongsToMany(Group::class, 'group_owner', 'user_id', 'group_id');
+    }
+
+
 }
 
 

@@ -55,6 +55,10 @@
                 <!-- Link para o Feed (posts públicos + amigos) -->
                 <a href="{{ route('feed') }}" class="button">Feed</a>
 
+                <!-- Botão para criar um novo grupo -->
+                <a href="{{ route('group.create') }}" class="button new-group-button">New Group</a>
+
+
                 <!-- Link para criar novo post -->
                 <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
 
