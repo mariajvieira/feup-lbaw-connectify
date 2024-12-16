@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
   addEventListeners();
   addReactionEventListeners();
@@ -392,3 +393,68 @@ function sendAjaxRequest(method, url, data, handler) {
   request.addEventListener('load', handler);
   request.send(JSON.stringify(data));
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  const saveButton = document.getElementById('saveButton');
+  
+  // Verifica se o botão existe na página
+  if (saveButton) {
+      saveButton.addEventListener('click', function () {
+          const postId = saveButton.getAttribute('data-post-id');
+          const icon = saveButton.querySelector('i'); // Seleciona o ícone dentro do botão
+
+          // Faz uma requisição para o servidor para salvar ou remover o post
+          fetch('/save-post', { // Ajuste a URL conforme necessário
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              },
+              body: JSON.stringify({ post_id: postId })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.saved) {
+                  // Muda o ícone e o texto do botão
+                  icon.classList.remove('fa-bookmark-o');
+                  icon.classList.add('fa-bookmark');
+                  saveButton.innerHTML = 'Saved';
+              } else {
+                  // Muda o ícone e o texto do botão
+                  icon.classList.remove('fa-bookmark');
+                  icon.classList.add('fa-bookmark-o');
+                  saveButton.innerHTML = 'Save';
+              }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+  }
+});
+
+document.getElementById('saveButton').addEventListener('click', function() {
+  var postId = this.getAttribute('data-post-id');
+  var icon = this.querySelector('i');
+  
+  // Enviar requisição AJAX para salvar/desmarcar o post
+  fetch('/save-post/' + postId, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({ post_id: postId })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.saved) {
+          icon.classList.remove('fa-bookmark-o');
+          icon.classList.add('fa-bookmark');
+      } else {
+          icon.classList.remove('fa-bookmark');
+          icon.classList.add('fa-bookmark-o');
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+});

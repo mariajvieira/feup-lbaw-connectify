@@ -85,10 +85,8 @@ Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit'
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 
 // Save and unsave post
-Route::middleware('auth')->group(function () {
-    Route::post('/posts/{id}/save', [PostController::class, 'save'])->name('posts.save');
-    Route::delete('/posts/{id}/unsave', [PostController::class, 'unsave'])->name('posts.unsave');
-});
+Route::post('/toggle-save-post/{postId}', [SavedPostController::class, 'toggleSavePost']);
+Route::post('/save-post', [SavedPostController::class, 'toggleSave'])->name('save-post');
 
 
 // Friendship Requests
@@ -131,3 +129,5 @@ Route::get('/group/create', [GroupController::class, 'create'])->name('group.cre
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
 
 Route::post('/group', [GroupController::class, 'store'])->name('group.store');
+
+Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
