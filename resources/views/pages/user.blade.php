@@ -44,16 +44,68 @@
     @endif
 </div>
 
-
-
-
-
-
-    <div class="edit-profile">
+<div class="edit-profile">
         @can('editProfile', $user)
             <a href="{{ route('user.edit', ['id' => $user->id]) }}" class="btn btn-primary">Edit Profile</a>
         @endcan
     </div>
+
+
+
+<style>
+    .container {
+        display: flex;
+        justify-content: space-between; /* Para garantir que as colunas tenham espaço entre si */
+        margin-top: 20px;
+    }
+    .column {
+        width: 45%; /* Define a largura das colunas */
+        padding: 15px;
+        box-sizing: border-box; /* Inclui padding e border dentro da largura */
+    }
+</style>
+
+<div class="container">
+    <div class="column">
+        <h3>Your groups:</h3>
+        @if($user->groups->isEmpty())
+            <p>Você não está em nenhum grupo ainda.</p>
+        @else
+            <ul class="list-group">
+                @foreach($user->groups as $group)
+                    <li class="list-group-item">
+                        <strong>{{ $group->group_name }}</strong><br>
+                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+    <div class="column">
+        <h3>Groups you own:</h3>
+        @if($user->ownedGroups->isEmpty())
+            <p>Você não possui nenhum grupo ainda.</p>
+        @else
+            <ul class="list-group">
+                @foreach($user->ownedGroups as $group)
+                    <li class="list-group-item">
+                        <strong>{{ $group->group_name }}</strong><br>
+                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
 
 <div class="pending-request">
     @if($user->id == Auth::id() && !$user->is_public)

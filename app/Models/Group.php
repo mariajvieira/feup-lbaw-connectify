@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-
 class Group extends Model
 {
     // Definir a tabela explicitamente, já que o nome da tabela não segue a convenção plural
@@ -21,13 +20,15 @@ class Group extends Model
         'is_public'      // Se o grupo é público
     ];
 
-    
-
     // Definir a relação com o usuário (proprietário do grupo)
     public function owner()
     {
-        return $this->belongsTo(User::class, 'owner_id'); // Relação com o usuário (owner_id)
+        return $this->belongsToMany(User::class, 'group_owner', 'group_id', 'user_id')->wherePivot('user_id', $this->owner_id)->limit(1);
     }
 
-    // Você pode adicionar outras relações, como posts, se necessário
+    // Relacionamento com os usuários do grupo
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'group_member', 'group_id', 'user_id');
+    }
 }
