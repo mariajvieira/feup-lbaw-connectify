@@ -52,6 +52,9 @@
                 <!-- Link para a Home (posts dos amigos) -->
                 <a href="{{ route('home') }}" class="button">Friends</a>
 
+                <!-- Link para a Tagged posts -->
+                <a href="{{ route('tagged.posts') }}" class="button">Tagged Posts</a>
+
                 <!-- Link para o Feed (posts públicos + amigos) -->
                 <a href="{{ route('feed') }}" class="button">Feed</a>
                  <!-- saved -->
@@ -62,7 +65,7 @@
 
 
                 <!-- Link para criar novo post -->
-                <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
+                <a href="{{ route('post.create') }}" class="button new-post-button" style=>New Post</a>
 
                 <!-- Link para o perfil do usuário -->
                 <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link" style="display: flex; align-items: center; text-decoration: none;">

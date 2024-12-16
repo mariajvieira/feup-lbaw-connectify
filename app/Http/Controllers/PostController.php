@@ -52,6 +52,22 @@ class PostController extends Controller
         
         // Salvar o post inicialmente para obter o post ID
         $post->save();
+
+        //Processamento das marcações de usuário
+        if (!empty($request->content)) {
+            preg_match_all('/@(\w+)/', $request->content, $matches);
+    
+            if (!empty($matches[1])) {
+                $usernames = $matches[1]; 
+                $taggedUsers = User::whereIn('username', $usernames)->get();
+    
+                foreach ($taggedUsers as $user) {
+                    $post->tags()->attach($user->id);
+                }
+            }
+        }
+
+
         
         // Processamento das imagens e armazenamento nos campos image1, image2, image3
         for ($i = 1; $i <= 3; $i++) {
@@ -205,7 +221,37 @@ class PostController extends Controller
         return view('pages.savedPosts', ['posts' => $savedPosts]);
 
     }
+
+
+    /**
+ * Retrieve posts where the authenticated user is tagged.
+ */
+    // public function getTaggedPosts()
+    // {
+    //     $userId = Auth::id();
+
+    //     $taggedPosts = Post::whereHas('tags', function ($query) use ($userId) {
+    //         $query->where('user_id', $userId);
+    //     })->with('user', 'tags')->orderBy('created_at', 'desc')->get();
+
+    //     return response()->json(['posts' => $taggedPosts], 200);
+    // }
+
+
     
+    public function showTaggedPosts()
+    {
+       
+        $userId = Auth::id();
+
+        $taggedPosts = Post::whereHas('tags', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->with('user', 'tags')->orderBy('created_at', 'desc')->get();
+    
+    
+        return view('pages.tagged', ['posts' => $taggedPosts]);
+
+    }
 
 
 

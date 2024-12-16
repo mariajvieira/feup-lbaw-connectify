@@ -131,3 +131,7 @@ Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
 Route::post('/group', [GroupController::class, 'store'])->name('group.store');
 
 Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
+
+
+//Tagged posts
+Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');

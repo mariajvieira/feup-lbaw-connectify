@@ -62,6 +62,11 @@ public function usersWhoSaved()
     return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
 }
 
+public function tags()
+{
+    return $this->belongsToMany(User::class, 'post_user', 'post_id', 'user_id');
+}
+
 
 
 
