@@ -34,4 +34,3 @@ class SavedPostController extends Controller
 }
 
     
-}

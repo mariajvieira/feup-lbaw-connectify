@@ -47,13 +47,19 @@
     @endphp
 
     <div class="reactions mt-3">
-        @foreach (['like', 'laugh', 'cry', 'applause', 'shocked'] as $reaction)
+    @foreach ([
+        'like' => 'fa-regular fa-heart',
+        'laugh' => 'fa-regular fa-face-laugh-squint',
+        'cry' => 'fa-regular fa-face-sad-cry',
+        'applause' => 'fa-solid fa-hands-clapping', 
+        'shocked' => 'fa-regular fa-face-surprise'
+        ] as $reaction => $icon)        
         <button 
             class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
             data-reaction-type="{{ $reaction }}" 
             data-post-id="{{ $post->id }}"
             data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}">
-            {{ ucfirst($reaction) }}
+            <i class="{{ $icon }}"></i>        
         </button>
         @endforeach
     </div>
