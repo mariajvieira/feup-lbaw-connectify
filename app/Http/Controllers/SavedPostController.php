@@ -1,50 +1,37 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SavedPost;
 use App\Models\Post;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class SavedPostController extends Controller
-{
-    /**
-     * Toggle a saved post.
-     */
-    public function toggle($id)
+{   
+
+    public function toggleSave(Request $request)
     {
-        $post = Post::find($id);
+        $user = auth()->user();
+        $postId = $request->input('post_id');
     
-        if (!$post) {
-            return response()->json(['error' => 'Post not found'], 404);
-        }
-    
-        $userId = auth()->id();
-    
-        // Verificar se o post já está salvo
-        $savedPost = SavedPost::where('user_id', $userId)->where('post_id', $id)->first();
+        // Verifica se o post já está salvo
+        $savedPost = SavedPost::where('user_id', $user->id)
+                              ->where('post_id', $postId)
+                              ->first();
     
         if ($savedPost) {
+            // Se já estiver salvo, remove da base de dados
             $savedPost->delete();
-            return response()->json(['message' => 'Post unsaved successfully.', 'status' => 'removed']);
+            return response()->json(['saved' => false]);
         } else {
+            // Caso contrário, salva o post
             SavedPost::create([
-                'user_id' => $userId,
-                'post_id' => $id,
+                'user_id' => $user->id,
+                'post_id' => $postId
             ]);
-            return response()->json(['message' => 'Post saved successfully.', 'status' => 'saved']);
+            return response()->json(['saved' => true]);
         }
     }
     
-public function isSaved($id)
-{
-    $userId = Auth::id();
-    $isSaved = SavedPost::where('user_id', $userId)->where('post_id', $id)->exists();
-
-    return response()->json(['isSaved' => $isSaved]);
 }
 
-
-
+    
 }

@@ -1,3 +1,4 @@
+
 <div class="post-item">
     <div class="post-header d-flex justify-content-between align-items-center">
         <div class="user-info">
@@ -84,17 +85,15 @@
             <button type="submit" class="btn btn-success mt-2">Post Comment</button>
         </form>
     </div>
+<!-- HTML do botão -->
+<button id="saveButton" class="btn btn-light" data-post-id="{{ $post->post_id }}">
+    <i class="fa {{ $post->isSavedByUser() ? 'fa-bookmark' : 'fa-bookmark-o' }}"></i>
+    Save
+</button>
+
+
+
 </div>
 
-{{-- Exemplo de botão para salvar post --}}
-<form action="{{ route('posts.save', $post->id) }}" method="POST">
-    @csrf
-    <button type="submit" class="btn btn-primary">Salvar Post</button>
-</form>
 
-{{-- Exemplo de botão para remover post salvo --}}
-<form action="{{ route('posts.unsave', $post->id) }}" method="POST">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="btn btn-danger">Remover dos Salvos</button>
-</form>
+

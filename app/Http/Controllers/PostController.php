@@ -193,6 +193,20 @@ class PostController extends Controller
         return redirect()->back()->with('success', 'Post removido dos salvos com sucesso!');
     }
     
+    public function showSavedPosts()
+    {
+        // Obter o usuário autenticado
+        $user = Auth::user();
+    
+        // Carregar os posts salvos relacionados ao usuário
+        $savedPosts = $user->savedPosts()->with('user')->get();
+    
+        // Retornar a view com os posts
+        return view('pages.savedPosts', ['posts' => $savedPosts]);
+
+    }
+    
+
 
 
 }

@@ -187,6 +187,12 @@ class User extends Authenticatable
         return $this->belongsToMany(Group::class, 'group_owner', 'user_id', 'group_id');
     }
 
+    public function savedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'saved_post', 'user_id', 'post_id');
+    }
+    
+
 
 }
 

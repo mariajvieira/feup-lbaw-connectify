@@ -48,4 +48,21 @@ class Post extends Model
     {
         return $this->hasMany(Comment::class, 'post_id', 'id');
     }
+    public function isSavedByUser()
+{
+    return SavedPost::where('user_id', auth()->id())
+                    ->where('post_id', $this->post_id)
+                    ->exists();}
+public function savedPosts()
+{
+    return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
+}
+public function usersWhoSaved()
+{
+    return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
+}
+
+
+
+
 }
