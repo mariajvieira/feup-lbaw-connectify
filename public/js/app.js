@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sendCreateCommentRequest(event);
     });
   });
+
 });
 
 function addEventListeners() {
@@ -46,6 +47,18 @@ function encodeForAjax(data) {
 }
 
 
+
+
+
+function updatePostList(posts) {
+  const postsContainer = document.querySelector('.posts-container');
+  postsContainer.innerHTML = ''; // Limpa os posts atuais
+
+  posts.forEach(post => {
+    const postElement = createPostElement(post);
+    postsContainer.appendChild(postElement);
+  });
+}
 
 function sendPostUpdateRequest() {
   const item = this.closest('.post-item');

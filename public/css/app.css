@@ -389,3 +389,20 @@ button.selected {
   color: #fff;
   border-color: #ed92f0;
 }
+
+body {
+  display: flex;
+  margin: 0;
+}
+
+.sidebar {
+  width: 20%;
+  padding: 10px;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ccc;
+}
+
+.results {
+  flex: 1;
+  padding: 10px;
+}
