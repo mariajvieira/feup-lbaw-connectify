@@ -103,17 +103,15 @@ class LoginController extends Controller
         $email = $request->input('email');
         $code = $request->input('code');
     
-        // Verifica se o código e o email coincidem com os armazenados na sessão
         if (session('reset_email') === $email && session('reset_code') == $code) {
-            // O código é válido, agora vamos exibir o formulário para o usuário colocar a nova senha
-            return view('auth.resetPassword', [
-                'email' => $email
-            ]);
+            // Code is valid; render the reset password form
+            return redirect()->route('resetPasswordPage')->with(['email' => $email]);
         }
     
-        // Se o código for inválido ou expirado, retorna um erro
+        // Code is invalid; redirect back with an error
         return back()->withErrors(['code' => 'Invalid or expired code.']);
     }
+    
     
 
     public function verifyCodePage()
@@ -126,9 +124,25 @@ class LoginController extends Controller
         return view('auth.forgotPassword');
     }
 
+    public function resetPasswordPage(Request $request)
+    {
+        if (!session('reset_email')) {
+            return redirect()->route('forgotPassword')->withErrors(['error' => 'Invalid session data.']);
+        }
+
+        return view('auth.resetPassword', [
+            'email' => session('reset_email'),
+        ]);
+    }
+
+
 
     public function resetPassword(Request $request)
     {
+
+        if (Auth::check()) {
+            DB::statement("SET app.current_user = ?", [Auth::user()->username]);
+        }
         // Valida os dados do formulário
         $request->validate([
             'email' => 'required|email|exists:users,email', // Verifica se o email existe na base de dados

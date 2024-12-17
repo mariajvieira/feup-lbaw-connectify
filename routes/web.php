@@ -63,8 +63,9 @@ Route::controller(LoginController::class)->group(function () {
     Route::get('verifyCodePage', 'verifyCodePage')->name('verifyCodePage');
     Route::post('verifyCode', 'verifyCode')->name('verifyCode');
     Route::get('forgotPassword', 'forgotPassword')->name('forgotPassword');;
+    Route::get('resetPasswordPage', 'resetPasswordPage')->name('resetPasswordPage');
     Route::post('resetPassword', 'resetPassword')->name('resetPassword');
-
+    
 });
 
 Route::controller(RegisterController::class)->group(function () {

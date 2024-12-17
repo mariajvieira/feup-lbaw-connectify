@@ -266,66 +266,29 @@ RETURNS TRIGGER AS $$
 DECLARE
     current_user_id INTEGER;
 BEGIN
-    -- Obtenha o ID do usuário logado
     SELECT id INTO current_user_id
     FROM users
-    WHERE username = current_user
+    WHERE username = current_setting('app.current_user', true)
     LIMIT 1;
 
-    -- Verifique se está atualizando o próprio perfil
-    IF NEW.id = current_user_id THEN
-        RETURN NEW;  -- Permite atualização do próprio perfil
+    IF NEW.password IS DISTINCT FROM OLD.password THEN
+        IF NEW.is_public IS DISTINCT FROM OLD.is_public
+            OR NEW.username IS DISTINCT FROM OLD.username
+            OR NEW.email IS DISTINCT FROM OLD.email THEN
+        ELSE
+            RETURN NEW; 
+        END IF;
     END IF;
-    -- Se o perfil for privado, verifique as condições
-    IF NEW.is_public == FALSE THEN
-            RAISE EXCEPTION 'AQUI';
-            IF NOT EXISTS (
-                SELECT 1 FROM friendship
-                WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-                OR (user_id2 = NEW.id AND user_id1 = current_user_id)
-            ) AND NOT EXISTS (
-                SELECT 1 FROM administrator
-                WHERE user_id = current_user_id
-            ) THEN
-                RAISE EXCEPTION 'Perfil privado. Acesso negado.';
-      END IF;
-    END IF;	
 
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-CREATE TRIGGER trg_enforce_profile_visibility
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION enforce_profile_visibility_update();
-
--- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
-CREATE OR REPLACE FUNCTION enforce_profile_visibility_update()
-RETURNS TRIGGER AS $$
-DECLARE
-    current_user_id INTEGER;
-BEGIN
-
-    SELECT id INTO current_user_id
-    FROM users
-    WHERE username = current_user
-    LIMIT 1;
-
+    IF NEW.id = current_user_id THEN
+        RETURN NEW; 
+    END IF;
 
     IF NEW.is_public = FALSE THEN
-
-        IF NEW.id = current_user_id THEN
-        RETURN NEW; 
-        END IF;
-
-        ELSE 
         IF NOT EXISTS (
             SELECT 1 FROM friendship
             WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-            OR (user_id2 = NEW.id AND user_id1 = current_user_id)
+               OR (user_id2 = NEW.id AND user_id1 = current_user_id)
         ) AND NOT EXISTS (
             SELECT 1 FROM administrator
             WHERE user_id = current_user_id
@@ -337,6 +300,30 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_profile_visibility
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION enforce_profile_visibility_update();
+
+
+
+-- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
+CREATE OR REPLACE FUNCTION enforce_friend_request_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+   IF EXISTS ( SELECT 1 FROM friend_request WHERE sender_id = NEW.sender_id AND receiver_id = NEW.receiver_id AND request_status NOT IN ('denied') ) THEN
+       RAISE EXCEPTION 'Not successful: cannot send more than one friend request to the same user.';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_friend_request_limit
+BEFORE INSERT ON friend_request
+FOR EACH ROW
+EXECUTE FUNCTION enforce_friend_request_limit();
+
 
 
 
