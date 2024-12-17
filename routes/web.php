@@ -59,9 +59,12 @@ Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
     Route::post('/logout', 'logout')->name('logout'); 
-    Route::post('sendEmail', 'sendEmail');
-    Route::post('verifyToken', 'verifyCode')->name('verifyCode');
+    Route::post('sendEmail', 'sendEmail')->name('sendEmail');
+    Route::get('verifyCodePage', 'verifyCodePage')->name('verifyCodePage');
+    Route::post('verifyCode', 'verifyCode')->name('verifyCode');
     Route::get('forgotPassword', 'forgotPassword')->name('forgotPassword');;
+    Route::post('resetPassword', 'resetPassword')->name('resetPassword');
+
 });
 
 Route::controller(RegisterController::class)->group(function () {

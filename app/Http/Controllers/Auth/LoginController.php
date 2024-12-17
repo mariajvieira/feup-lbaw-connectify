@@ -1,5 +1,4 @@
 <?php
-
  
 namespace App\Http\Controllers\Auth;
 
@@ -8,7 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class LoginController extends Controller
@@ -66,55 +66,96 @@ class LoginController extends Controller
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
-    
+        
         $email = $request->input('email');
-    
-        // Gera um código numérico de 6 dígitos
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'This email is not registered.']);
+        }
+        
+        // Gera um código de recuperação (número aleatório de 6 dígitos)
         $code = mt_rand(100000, 999999);
-    
-        // Guarda o código e o email na sessão (para validação posterior)
+        
+        // Salva o código e o e-mail na sessão
         session(['reset_code' => $code, 'reset_email' => $email]);
-    
-        // Envia o código por email
-        Mail::raw("O seu código de recuperação de palavra-passe é: $code", function ($message) use ($email) {
+        
+        // Envia o código por e-mail usando Mailtrap
+        Mail::raw("Your password recovery code is: $code", function ($message) use ($email) {
             $message->to($email, 'Connectify User')
                     ->from('connectify@example.com', 'Connectify')
-                    ->subject('Token for password recovery');
+                    ->subject('Code to password recovery');
         });
-    
-        return response()->json(['message' => 'Token sen successfully! Check your inbox.']);
+        
+        // Após enviar o código, redireciona para a página de verificação do código
+        return redirect()->route('verifyCodePage');
     }
-
+    
 
     public function verifyCode(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'code' => 'required|numeric',
-            'password' => 'required|min:8|confirmed',
         ]);
     
         $email = $request->input('email');
         $code = $request->input('code');
-        $newPassword = $request->input('password');
     
         // Verifica se o código e o email coincidem com os armazenados na sessão
         if (session('reset_email') === $email && session('reset_code') == $code) {
-            // Atualiza a palavra-passe do utilizador
-            User::where('email', $email)->update(['password' => Hash::make($newPassword)]);
-    
-            // Remove os dados da sessão
-            session()->forget(['reset_code', 'reset_email']);
-    
-            return response()->json(['message' => 'Password reset successfully!']);
+            // O código é válido, agora vamos exibir o formulário para o usuário colocar a nova senha
+            return view('auth.resetPassword', [
+                'email' => $email
+            ]);
         }
     
-        return response()->json(['error' => 'Invalid or expired code.'], 400);
-    }    
+        // Se o código for inválido ou expirado, retorna um erro
+        return back()->withErrors(['code' => 'Invalid or expired code.']);
+    }
+    
+
+    public function verifyCodePage()
+    {
+        return view('auth.verifyCode');
+    }
+    
 
     public function forgotPassword(Request $request) {
         return view('auth.forgotPassword');
     }
+
+
+    public function resetPassword(Request $request)
+    {
+        // Valida os dados do formulário
+        $request->validate([
+            'email' => 'required|email|exists:users,email', // Verifica se o email existe na base de dados
+            'password' => 'required|min:8|confirmed', // Valida a nova senha
+        ]);
+    
+        // Obtém o email e a nova senha do formulário
+        $email = $request->input('email');
+        $newPassword = $request->input('password');
+    
+        // Atualiza a senha do usuário
+        $user = User::where('email', $email)->first();
+        
+        if ($user) {
+            $user->password = Hash::make($newPassword);
+            $user->save();
+            
+            // Remove os dados da sessão
+            session()->forget(['reset_code', 'reset_email']);
+            
+            return redirect()->route('login')->with('status', 'Password reset successfully!');
+        }
+    
+        return redirect()->route('forgotPassword')->with('error', 'Email not found.');
+    }
+
+    
 
 }
 

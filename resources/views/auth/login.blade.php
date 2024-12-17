@@ -20,6 +20,7 @@
         </span>
     @endif
 
+
     <div class="mt-3">
         <a href="{{ route('forgotPassword') }}">Forgot your password?</a>
     </div>
@@ -39,6 +40,5 @@
         </p>
     @endif
 </form>
-
 
 @endsection
