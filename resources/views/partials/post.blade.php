@@ -82,18 +82,34 @@
     <!-- Exibir comentários já existentes -->
     <div class="comment-section mt-4">
         @foreach ($post->comments as $comment)
-        <div class="comment mt-2">
-            <p><strong>{{ $comment->user->username }}</strong>: {{ $comment->comment_content }}</p>
+            <div class="comment mt-2">
+            <p>
+                <strong>
+                    <a href="@if(auth()->check()) {{ route('user', ['id' => $comment->user->id]) }} @else {{ route('login') }} @endif"
+                        @if(!auth()->check()) 
+                            onclick="alert('You need to login to view profiles.'); window.location.href='{{ route('login') }}'; return false;"
+                        @endif
+                    >
+                        {{ $comment->user->username }}
+                    </a>
+                </strong>: {{ $comment->comment_content }}
+            </p>
 
             <!-- Botão para excluir comentário -->
-            @if ($comment->user_id === auth()->id())
-                <form class="delete-comment-form" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
-                </form>
-            @endif
-        </div>
+
+
+
+        @can('destroy', $comment)
+            <form class="delete-comment-form" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" onclick="return confirm('Are you sure you want to delete this comment?')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>                  
+            </form>
+        @endcan
+
+            </div>
         @endforeach
 
         <!-- Formulário de adicionar comentário -->

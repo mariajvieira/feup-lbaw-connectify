@@ -745,7 +745,7 @@ END $$ LANGUAGE plpgsql;
 
 -- Tran14
 CREATE OR REPLACE FUNCTION accept_join_group_request(
-    p_request_id INT  -- Declare request_id as a parameter
+    p_request_id INT  
 )
 RETURNS VOID AS $$
 DECLARE
@@ -918,44 +918,50 @@ INSERT INTO comment_ (post_id, user_id, comment_content)
 VALUES
     (1, 2, 'I loved that book too!'),
     (1, 3, 'Great choice!'),
+    (1, 7, 'My favourite!'),
+    (1, 4, 'Glad you followed my recommendation'),
     (2, 1, 'That looks amazing!'),
+    (2, 15, 'Can’t wait to see the final result!'),
+    (2, 5, 'I love working on projects like this with you!'),
     (3, 4, 'Your art is inspiring!'),
-    (4, 5, 'That’s a great gadget!'),
-    (5, 6, 'Mysteries are the best!'),
-    (6, 7, 'What a cute puppy!'),
-    (7, 8, 'Italy is wonderful!'),
-    (8, 9, 'That recipe sounds delicious!'),
-    (9, 10, 'Running is so rewarding!'),
-    (10, 1, 'What a nice playlist!'),
-    (1, 4, 'I can recommend a great series!'),
-    (2, 5, 'I love working on projects like this!'),
+    (3, 10, 'So cool!'),
     (3, 6, 'Art is truly a reflection of the soul!'),
-    (4, 7, 'What do you think about this tech?'),
-    (5, 8, 'Tell me more about the mystery!'),
+    (4, 5, 'LOVE!'),
+    (4, 7, 'wow, in the city of romance'),
+    (5, 6, 'I love fun facts!'),
+    (5, 8, 'So interesting!'),
+    (6, 7, 'What a cute puppy!'),
     (6, 9, 'Dogs are the best companions!'),
     (7, 10, 'Traveling is such a rewarding experience!'),
+    (7, 8, 'Italy is wonderful!'),
+    (8, 9, 'That recipe sounds delicious!'),
+    (8, 2, 'I have to try it!'),
     (8, 1, 'Food is an art form in itself!'),
-    (9, 2, 'Fitness is a journey, not a destination!'),
+    (9, 2, 'Congrats!'),
+    (9, 10, 'Running is so rewarding!'),
+    (10, 1, 'What’s your favoutite song!'),
     (10, 3, 'I love discovering new music!'),
-    (11, 4, 'I can recommend a great series!'),
-    (12, 5, 'I love working on projects like this!'),
-    (13, 6, 'Art is truly a reflection of the soul!'),
-    (14, 7, 'What do you think about this tech?'),
-    (15, 8, 'Tell me more about the mystery!'),
-    (16, 9, 'Dogs are the best companions!'),
-    (17, 10, 'Traveling is such a rewarding experience!'),
+    (11, 4, 'Any from Nicholas Spark is great!'),
+    (11, 9, 'Little women!'),
+    (13, 6, 'I’ll be there!'),
+    (14, 7, 'Love it'),
+    (15, 8, 'I’m jealous!!!'),
+    (16, 9, 'Happy birthday <3'),
+    (17, 10, 'wow'),
     (18, 1, 'Food is an art form in itself!'),
     (19, 2, 'Fitness is a journey, not a destination!'),
-    (20, 3, 'I love discovering new music!'),
-    (21, 4, 'I can recommend a great series!'),
-    (22, 5, 'I love working on projects like this!'),
-    (23, 6, 'Art is truly a reflection of the soul!'),
-    (24, 7, 'What do you think about this tech?'),
-    (25, 8, 'Tell me more about the mystery!'),
-    (26, 9, 'Dogs are the best companions!'),
-    (27, 10, 'Traveling is such a rewarding experience!'),
-    (28, 1, 'Food is an art form in itself!'),
-    (29, 2, 'Fitness is a journey, not a destination!');
+    (20, 3, 'omg i was there too!'),
+    (21, 4, 'Congratulations!!!!'),
+    (22, 5, 'So nice to meet youu'),
+    (24, 7, 'So beautiful!'),
+    (25, 8, 'That’s right!!'),
+    (26, 9, 'Dubai and NY!!!!'),
+    (26, 1, 'I agree, London is the best!'),
+    (27, 10, 'Family goals!'),
+    (28, 1, 'Not me xD'),
+    (29, 2, 'Great song!'),
+    (29, 30, 'My favourite is Hey Jude!');
+
 
 
 INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)

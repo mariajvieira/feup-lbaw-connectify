@@ -30,6 +30,7 @@ class PostController extends Controller
         return view('partials.create');
     }
 
+
     /**
      * Store a newly created post.
      */

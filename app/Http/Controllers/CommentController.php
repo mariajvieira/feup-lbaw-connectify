@@ -22,14 +22,16 @@ class CommentController extends Controller
         $comment->user_id = auth()->id();
         $comment->save();
 
-        return response()->json([
+        /*return response()->json([
             'id' => $comment->id,
             'comment_content' => $comment->comment_content,
             'user' => [
                 'username' => $comment->user->username,
             ],
             'post_id' => $comment->post_id,
-        ], 201);
+        ], 201);*/
+
+        return redirect()->route('home')->with('success', 'Comment posted successfully!');
     }
 
 //edit comment
@@ -68,14 +70,22 @@ class CommentController extends Controller
     public function destroy($commentId)
     {
         $comment = Comment::find($commentId);
+
+        if (!$comment) {
+            return redirect()->route('home')->with('error', 'Comemnt not found.');
+        }
+
         if ($comment && $comment->user_id === auth()->id()) {
             $comment->delete();
-            return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); // Definido explicitamente o status 200
+            //return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); // Definido explicitamente o status 200
+            return redirect()->route('home')->with('success', 'Comment successfully deleted!');
+
         }
         
-        return response()->json(['message' => 'Erro ao excluir comentário.'], 400); // Erro, código de status 400
+        return response()->json(['message' => 'Error deleting comment.'], 400); // Erro, código de status 400
     }
     
+
 
     public function searchComments(Request $request)
     {
