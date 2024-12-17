@@ -14,6 +14,7 @@ use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\SavedPostController;
 
 /*
 |--------------------------------------------------------------------------

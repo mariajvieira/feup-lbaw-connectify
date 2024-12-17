@@ -33,8 +33,6 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
         
-        // Mapeia o campo 'password' para 'password'
-        $credentials['password'] = $credentials['password'];
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             session(['id' => Auth::id()]);     
@@ -82,13 +80,13 @@ class LoginController extends Controller
         session(['reset_code' => $code, 'reset_email' => $email]);
         
         // Envia o código por e-mail usando Mailtrap
-        Mail::raw("Your password recovery code is: $code", function ($message) use ($email) {
+        Mail::raw("Dear $email,\n\nWe have received your request to reset your password for your Connectify account. Your password recovery code is: $code.\n\nIf you did not initiate this request, please disregard this email.\n\nBest regards,\nThe Connectify Support Team", function ($message) use ($email) {
             $message->to($email, 'Connectify User')
-                    ->from('connectify@example.com', 'Connectify')
-                    ->subject('Code to password recovery');
+                    ->from('support@connectify.com', 'Connectify Support')
+                    ->subject('Password Recovery Code');
         });
         
-        // Após enviar o código, redireciona para a página de verificação do código
+        
         return redirect()->route('verifyCodePage');
     }
     

@@ -75,14 +75,9 @@ class CommentController extends Controller
             return redirect()->route('home')->with('error', 'Comemnt not found.');
         }
 
-        if ($comment && $comment->user_id === auth()->id()) {
-            $comment->delete();
+        $comment->delete();
             //return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); // Definido explicitamente o status 200
-            return redirect()->route('home')->with('success', 'Comment successfully deleted!');
-
-        }
-        
-        return response()->json(['message' => 'Error deleting comment.'], 400); // Erro, código de status 400
+        return redirect()->route('home')->with('success', 'Comment successfully deleted!');
     }
     
 
