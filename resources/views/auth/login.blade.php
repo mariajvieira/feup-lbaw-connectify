@@ -20,6 +20,10 @@
         </span>
     @endif
 
+    <div class="mt-3">
+        <a href="{{ route('forgotPassword') }}">Forgot your password?</a>
+    </div>
+
     <label>
         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Remember Me
     </label>
@@ -28,11 +32,13 @@
         Login
     </button>
     <a class="button button-outline" href="{{ route('register') }}">Register</a>
+    
     @if (session('success'))
         <p class="success">
             {{ session('success') }}
         </p>
     @endif
 </form>
-@endsection
 
+
+@endsection
