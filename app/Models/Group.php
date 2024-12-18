@@ -16,7 +16,6 @@ class Group extends Model
         'group_name',    // Nome do grupo
         'description',   // Descrição do grupo
         'owner_id',      // ID do proprietário do grupo (assumindo que é um usuário)
-        'visibility',    // Visibilidade do grupo
         'is_public'      // Se o grupo é público
     ];
 
