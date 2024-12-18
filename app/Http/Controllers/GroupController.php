@@ -20,7 +20,6 @@ class GroupController extends Controller
         $validated = $request->validate([
             'group_name' => 'required|string|max:255',  // Nome do grupo
             'description' => 'nullable|string',         // Descrição
-            'visibility' => 'required|boolean',         // Visibilidade
             'is_public' => 'required|boolean',          // Se o grupo é público
         ]);
 
@@ -29,7 +28,6 @@ class GroupController extends Controller
             'group_name' => $validated['group_name'],
             'description' => $validated['description'],
             'owner_id' => Auth::id(),  // Usuário autenticado
-            'visibility' => $validated['visibility'],
             'is_public' => $validated['is_public'],
         ]);
 

@@ -15,6 +15,8 @@ use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SavedPostController;
+use App\Http\Controllers\ContactController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -142,3 +144,6 @@ Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('sav
 
 //Tagged posts
 Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');
+
+Route::get('/contact', [ContactController::class, 'showContactForm'])->name('contact');
+Route::post('/contact', [ContactController::class, 'sendContactEmail'])->name('contact.send');

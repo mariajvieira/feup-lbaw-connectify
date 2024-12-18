@@ -19,15 +19,6 @@
             <div class="error">{{ $message }}</div> 
         @enderror
 
-        <label for="visibility">Visibility</label>
-        <select name="visibility" id="visibility" required>
-            <option value="1" {{ old('visibility') == 1 ? 'selected' : '' }}>Visible</option>
-            <option value="0" {{ old('visibility') == 0 ? 'selected' : '' }}>Not Visible</option>
-        </select>
-        @error('visibility') 
-            <div class="error">{{ $message }}</div> 
-        @enderror
-
         <label for="is_public">Public</label>
         <select name="is_public" id="is_public" required>
             <option value="1" {{ old('is_public') == 1 ? 'selected' : '' }}>Yes</option>

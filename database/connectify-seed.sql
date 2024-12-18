@@ -55,7 +55,6 @@ CREATE TABLE group_ (
     owner_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     group_name TEXT NOT NULL,
     description TEXT,
-    visibility BOOLEAN NOT NULL,
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
 
@@ -415,7 +414,7 @@ CREATE OR REPLACE FUNCTION enforce_group_membership_control()
 RETURNS TRIGGER AS $$
 BEGIN
     IF (SELECT is_public FROM group_ WHERE id = NEW.group_id) = FALSE THEN
-        IF NEW.request_status = 'Pending' THEN
+        IF NEW.request_status = 'pending' THEN
             RAISE EXCEPTION 'Group membership requires owner approval.';
         END IF;
     END IF;
@@ -832,7 +831,7 @@ INSERT INTO administrator (user_id)
 VALUES
     (1), (3), (5), (9), (10), (18);
 
-INSERT INTO group_ (owner_id, group_name, description, visibility)
+INSERT INTO group_ (owner_id, group_name, description, is_public)
 VALUES
     (1, 'Book Lovers', 'A group for those who love reading books.', TRUE),
     (2, 'Construction Crew', 'Group for builders and construction enthusiasts.', TRUE),

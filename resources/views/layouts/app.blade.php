@@ -100,6 +100,8 @@
         
         <a href="{{ route('about') }}" style="text-decoration: none; color:rgb(2, 20, 39);">Help</a>
 
+        <a href="{{ route('contact') }}" style="text-decoration: none; color:rgb(2, 20, 39);">Contact Us</a>
+
     </footer>
 </body>
 </html>
