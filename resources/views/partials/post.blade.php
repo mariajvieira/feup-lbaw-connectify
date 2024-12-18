@@ -5,7 +5,14 @@
             <!-- Tornando o nome de usuário clicável e direcionando para o perfil do usuário -->
             <h5>
                 <strong>
-                    <a href="{{ route('user', ['id' => $post->user->id]) }}">@ {{ $post->user->username }}</a>
+                    <a 
+                        href="@if(auth()->check()) {{ route('user', ['id' => $post->user->id]) }} @else {{ route('login') }} @endif"
+                        @if(!auth()->check()) 
+                            onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                @else
+                        @endif
+                    >
+                        @ {{ $post->user->username }}
+                    </a>
                 </strong>
             </h5>
         </div>
@@ -13,11 +20,13 @@
         @can('edit', $post)
         <!-- Botões Editar e Deletar lado a lado -->
         <div class="post-actions d-flex align-items-center gap-2">
-            <a class="btn btn-primary" href="{{ route('post.edit', $post->id) }}">Edit</a>
+            <a class="btn btn-primary" href="{{ route('post.edit', $post->id) }}"><i class="fa-solid fa-pen"></i></a>
             <form action="{{ route('post.delete', $post->id) }}" method="POST" style="display: inline;">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
+                <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" onclick="return confirm('Are you sure you want to delete this post?')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>            
             </form>
         </div>
         @endcan
@@ -47,51 +56,88 @@
     @endphp
 
     <div class="reactions mt-3">
-        @foreach (['like', 'laugh', 'cry', 'applause', 'shocked'] as $reaction)
-        <button 
-            class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
-            data-reaction-type="{{ $reaction }}" 
-            data-post-id="{{ $post->id }}"
-            data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}">
-            {{ ucfirst($reaction) }}
-        </button>
+        @foreach ([
+            'like' => 'fa-regular fa-heart',
+            'laugh' => 'fa-regular fa-face-laugh-squint',
+            'cry' => 'fa-regular fa-face-sad-cry',
+            'applause' => 'fa-solid fa-hands-clapping', 
+            'shocked' => 'fa-regular fa-face-surprise'
+            ] as $reaction => $icon)
+            <button 
+                class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'selected' : '' }}" 
+                data-reaction-type="{{ $reaction }}" 
+                data-post-id="{{ $post->id }}"
+                @if (!auth()->check())
+                    onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                
+                @else
+                    data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}"
+                @endif
+            >
+                <i class="{{ $icon }}"></i>
+            </button>
         @endforeach
     </div>
+
 
     <!-- Exibir comentários já existentes -->
     <div class="comment-section mt-4">
         @foreach ($post->comments as $comment)
-        <div class="comment mt-2">
-            <p><strong>{{ $comment->user->username }}</strong>: {{ $comment->comment_content }}</p>
+            <div class="comment mt-2">
+            <p>
+                <strong>
+                    <a href="@if(auth()->check()) {{ route('user', ['id' => $comment->user->id]) }} @else {{ route('login') }} @endif"
+                        @if(!auth()->check()) 
+                            onclick="alert('You need to login to view profiles.'); window.location.href='{{ route('login') }}'; return false;"
+                        @endif
+                    >
+                        {{ $comment->user->username }}
+                    </a>
+                </strong>: {{ $comment->comment_content }}
+            </p>
 
             <!-- Botão para excluir comentário -->
-            @if ($comment->user_id === auth()->id())
-                <form class="delete-comment-form" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
-                </form>
-            @endif
-        </div>
+
+
+
+        @can('destroy', $comment)
+            <form class="delete-comment-form" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger d-flex align-items-center gap-2" onclick="return confirm('Are you sure you want to delete this comment?')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>                  
+            </form>
+        @endcan
+
+            </div>
         @endforeach
 
         <!-- Formulário de adicionar comentário -->
-        <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
-            @csrf
-            <div class="form-group">
-                <label for="comment">Add a Comment:</label>
-                <textarea id="comment" name="comment" class="form-control" rows="3" required></textarea>
+        @if (auth()->check())
+            <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
+                @csrf
+                <div class="form-group">
+                    <label for="comment">Add a Comment:</label>
+                    <textarea id="comment" name="comment" class="form-control" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success mt-2">Post Comment</button>
+            </form>
+        @else
+            <div class="alert alert-info">
+                <a href="{{ route('login') }}">Login</a> to add a comment.
             </div>
-            <button type="submit" class="btn btn-success mt-2">Post Comment</button>
-        </form>
+        @endif
+
     </div>
-<!-- HTML do botão -->
-<button id="saveButton" class="btn btn-light" data-post-id="{{ $post->post_id }}">
-    <i class="fa {{ $post->isSavedByUser() ? 'fa-bookmark' : 'fa-bookmark-o' }}"></i>
-    Save
-</button>
 
-
+    <button id="saveButton" class="btn btn-light" 
+        data-post-id="{{ $post->post_id }}"
+        @if (!auth()->check())
+            onclick="alert('You need to login to save posts.'); window.location.href='{{ route('login') }}'; return false;"        @endif
+        >
+        <i class="fa {{ $post->isSavedByUser() ? 'fa-bookmark' : 'fa-bookmark-o' }}"></i>
+        Save
+    </button>
 
 </div>
 

@@ -40,7 +40,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    profile_picture TEXT DEFAULT 'default.png',
+    profile_picture TEXT DEFAULT 'images/profile_pictures/default.png',
     password TEXT NOT NULL,
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
@@ -266,66 +266,29 @@ RETURNS TRIGGER AS $$
 DECLARE
     current_user_id INTEGER;
 BEGIN
-    -- Obtenha o ID do usuário logado
     SELECT id INTO current_user_id
     FROM users
-    WHERE username = current_user
+    WHERE username = current_setting('app.current_user', true)
     LIMIT 1;
 
-    -- Verifique se está atualizando o próprio perfil
-    IF NEW.id = current_user_id THEN
-        RETURN NEW;  -- Permite atualização do próprio perfil
+    IF NEW.password IS DISTINCT FROM OLD.password THEN
+        IF NEW.is_public IS DISTINCT FROM OLD.is_public
+            OR NEW.username IS DISTINCT FROM OLD.username
+            OR NEW.email IS DISTINCT FROM OLD.email THEN
+        ELSE
+            RETURN NEW; 
+        END IF;
     END IF;
-    -- Se o perfil for privado, verifique as condições
-    IF NEW.is_public == FALSE THEN
-            RAISE EXCEPTION 'AQUI';
-            IF NOT EXISTS (
-                SELECT 1 FROM friendship
-                WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-                OR (user_id2 = NEW.id AND user_id1 = current_user_id)
-            ) AND NOT EXISTS (
-                SELECT 1 FROM administrator
-                WHERE user_id = current_user_id
-            ) THEN
-                RAISE EXCEPTION 'Perfil privado. Acesso negado.';
-      END IF;
-    END IF;	
 
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-CREATE TRIGGER trg_enforce_profile_visibility
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION enforce_profile_visibility_update();
-
--- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
-CREATE OR REPLACE FUNCTION enforce_profile_visibility_update()
-RETURNS TRIGGER AS $$
-DECLARE
-    current_user_id INTEGER;
-BEGIN
-
-    SELECT id INTO current_user_id
-    FROM users
-    WHERE username = current_user
-    LIMIT 1;
-
+    IF NEW.id = current_user_id THEN
+        RETURN NEW; 
+    END IF;
 
     IF NEW.is_public = FALSE THEN
-
-        IF NEW.id = current_user_id THEN
-        RETURN NEW; 
-        END IF;
-
-        ELSE 
         IF NOT EXISTS (
             SELECT 1 FROM friendship
             WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-            OR (user_id2 = NEW.id AND user_id1 = current_user_id)
+               OR (user_id2 = NEW.id AND user_id1 = current_user_id)
         ) AND NOT EXISTS (
             SELECT 1 FROM administrator
             WHERE user_id = current_user_id
@@ -337,6 +300,30 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_profile_visibility
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION enforce_profile_visibility_update();
+
+
+
+-- TRIGGER02: Ensures users cannot send duplicate friend requests (BR02)
+CREATE OR REPLACE FUNCTION enforce_friend_request_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+   IF EXISTS ( SELECT 1 FROM friend_request WHERE sender_id = NEW.sender_id AND receiver_id = NEW.receiver_id AND request_status NOT IN ('denied') ) THEN
+       RAISE EXCEPTION 'Not successful: cannot send more than one friend request to the same user.';
+   END IF;
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_enforce_friend_request_limit
+BEFORE INSERT ON friend_request
+FOR EACH ROW
+EXECUTE FUNCTION enforce_friend_request_limit();
+
 
 
 
@@ -745,7 +732,7 @@ END $$ LANGUAGE plpgsql;
 
 -- Tran14
 CREATE OR REPLACE FUNCTION accept_join_group_request(
-    p_request_id INT  -- Declare request_id as a parameter
+    p_request_id INT  
 )
 RETURNS VOID AS $$
 DECLARE
@@ -790,60 +777,60 @@ END $$ LANGUAGE plpgsql;
 
 INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
-    ('alice_wonder', 'alice@example.com', 'alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
-    ('bob_builder', 'bob@example.com', 'bob.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
-    ('charlie_chaplin', 'charlie@example.com', 'charlie.jpg', 'securepassword3', FALSE),
-    ('daisy_duck', 'daisy@example.com', 'daisy.jpg', 'securepassword4', TRUE),
-    ('edgar_allan', 'edgar@example.com', 'edgar.jpg', 'securepassword5', TRUE),
-    ('fiona_fairy', 'fiona@example.com', 'fiona.jpg', 'securepassword6', FALSE),
-    ('george_gremlin', 'george@example.com', 'george.jpg', 'securepassword7', TRUE),
-    ('hannah_hacker', 'hannah@example.com', 'hannah.jpg', 'securepassword8', TRUE),
-    ('ian_icecream', 'ian@example.com', 'ian.jpg', 'securepassword9', TRUE),
-    ('jessica_jones', 'jessica@example.com', 'jessica.jpg', 'securepassword10', FALSE),
-    ('karl_kong', 'karl@example.com', 'karl.jpg', 'securepassword11', TRUE),
-    ('linda_lion', 'linda@example.com', 'linda.jpg', 'securepassword12', TRUE),
-    ('mike_mouse', 'mike@example.com', 'mike.jpg', 'securepassword13', TRUE),
-    ('nina_ninja', 'nina@example.com', 'nina.jpg', 'securepassword14', FALSE),
-    ('oliver_orange', 'oliver@example.com', 'oliver.jpg', 'securepassword15', TRUE),
-    ('peter_panda', 'peter@example.com', 'peter.jpg', 'securepassword16', TRUE),
-    ('quincy_quokka', 'quincy@example.com', 'quincy.jpg', 'securepassword17', TRUE),
-    ('rose_rabbit', 'rose@example.com', 'rose.jpg', 'securepassword18', TRUE),
-    ('sara_sparrow', 'sara@example.com', 'sara.jpg', 'securepassword19', FALSE),
-    ('tom_tiger', 'tom@example.com', 'tom.jpg', 'securepassword20', TRUE),
-    ('uma_unicorn', 'uma@example.com', 'uma.jpg', 'securepassword21', TRUE),
-    ('vicky_vulture', 'vicky@example.com', 'vicky.jpg', 'securepassword22', TRUE),
-    ('will_walrus', 'will@example.com', 'will.jpg', 'securepassword23', TRUE),
+    ('alice_wonder', 'alice@example.com', 'images/profile_pictures/alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
+    ('bob_builder', 'bob@example.com', 'images/profile_pictures/bob.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
+    ('charlie_chaplin', 'charlie@example.com', DEFAULT, 'securepassword3', FALSE),
+    ('daisy_duck', 'daisy@example.com', 'images/profile_pictures/daisy.jpg', 'securepassword4', TRUE),
+    ('edgar_allan', 'edgar@example.com', 'images/profile_pictures/edgar.jpg', 'securepassword5', TRUE),
+    ('fiona_fairy', 'fiona@example.com', DEFAULT, 'securepassword6', FALSE),
+    ('george_gremlin', 'george@example.com', 'images/profile_pictures/george.jpg', 'securepassword7', TRUE),
+    ('hannah_hacker', 'hannah@example.com', DEFAULT, 'securepassword8', TRUE),
+    ('ian_icecream', 'ian@example.com', 'images/profile_pictures/ian.jpg', 'securepassword9', TRUE),
+    ('jessica_jones', 'jessica@example.com', DEFAULT, 'securepassword10', FALSE),
+    ('karl_kong', 'karl@example.com', 'images/profile_pictures/karl.jpg', 'securepassword11', TRUE),
+    ('linda_lion', 'linda@example.com', 'images/profile_pictures/linda.jpg', 'securepassword12', TRUE),
+    ('mike_mouse', 'mike@example.com', DEFAULT, 'securepassword13', TRUE),
+    ('nina_ninja', 'nina@example.com', DEFAULT, 'securepassword14', FALSE),
+    ('oliver_orange', 'oliver@example.com', DEFAULT, 'securepassword15', TRUE),
+    ('peter_panda', 'peter@example.com', 'images/profile_pictures/peter.jpg', 'securepassword16', TRUE),
+    ('quincy_quokka', 'quincy@example.com', DEFAULT, 'securepassword17', TRUE),
+    ('rose_rabbit', 'rose@example.com', 'images/profile_pictures/rose.jpg', 'securepassword18', TRUE),
+    ('sara_sparrow', 'sara@example.com', 'images/profile_pictures/sara.jpg', 'securepassword19', FALSE),
+    ('tom_tiger', 'tom@example.com', DEFAULT, 'securepassword20', TRUE),
+    ('uma_unicorn', 'uma@example.com', DEFAULT, 'securepassword21', TRUE),
+    ('vicky_vulture', 'vicky@example.com', DEFAULT, 'securepassword22', TRUE),
+    ('will_walrus', 'will@example.com', 'images/profile_pictures/will.jpg', 'securepassword23', TRUE),
     ('xena_xerus', 'xena@example.com', 'xena.jpg', 'securepassword24', TRUE),
-    ('yara_yeti', 'yara@example.com', 'yara.jpg', 'securepassword25', TRUE),
-    ('zach_zebra', 'zach@example.com', 'zach.jpg', 'securepassword26', FALSE),
-    ('arnold_alligator', 'arnold@example.com', 'arnold.jpg', 'securepassword27', TRUE),
-    ('bianca_butterfly', 'bianca@example.com', 'bianca.jpg', 'securepassword28', TRUE),
-    ('clara_cat', 'clara@example.com', 'clara.jpg', 'securepassword29', TRUE),
-    ('david_dog', 'david@example.com', 'david.jpg', 'securepassword30', TRUE),
-    ('elaine_emu', 'elaine@example.com', 'elaine.jpg', 'securepassword31', TRUE),
-    ('frank_frog', 'frank@example.com', 'frank.jpg', 'securepassword32', TRUE),
-    ('gina_goose', 'gina@example.com', 'gina.jpg', 'securepassword33', TRUE),
-    ('harry_hedgehog', 'harry@example.com', 'harry.jpg', 'securepassword34', TRUE),
-    ('irene_ibis', 'irene@example.com', 'irene.jpg', 'securepassword35', TRUE),
-    ('john_jellyfish', 'john@example.com', 'john.jpg', 'securepassword36', TRUE),
-    ('kelly_kangaroo', 'kelly@example.com', 'kelly.jpg', 'securepassword37', TRUE),
-    ('leo_leopard', 'leo@example.com', 'leo.jpg', 'securepassword38', TRUE),
-    ('mona_monkey', 'mona@example.com', 'mona.jpg', 'securepassword39', TRUE),
-    ('nora_narwhal', 'nora@example.com', 'nora.jpg', 'securepassword40', TRUE),
-    ('olga_octopus', 'olga@example.com', 'olga.jpg', 'securepassword41', TRUE),
-    ('paul_parrot', 'paul@example.com', 'paul.jpg', 'securepassword42', TRUE),
-    ('quinn_quail', 'quinn@example.com', 'quinn.jpg', 'securepassword43', TRUE),
-    ('rachel_raccoon', 'rachel@example.com', 'rachel.jpg', 'securepassword44', TRUE),
-    ('sammy_seal', 'sammy@example.com', 'sammy.jpg', 'securepassword45', TRUE),
-    ('tina_tortoise', 'tina@example.com', 'tina.jpg', 'securepassword46', TRUE),
-    ('ursula_unicorn', 'ursula@example.com', 'ursula.jpg', 'securepassword47', TRUE),
-    ('vince_viper', 'vince@example.com', 'vince.jpg', 'securepassword48', TRUE),
-    ('willow_wolf', 'willow@example.com', 'willow.jpg', 'securepassword49', TRUE),
-    ('xander_xerus', 'xander@example.com', 'xander.jpg', 'securepassword50', TRUE);
+    ('yara_yeti', 'yara@example.com', DEFAULT, 'securepassword25', TRUE),
+    ('zach_zebra', 'zach@example.com', 'images/profile_pictures/zach.jpg', 'securepassword26', FALSE),
+    ('arnold_alligator', 'arnold@example.com', DEFAULT, 'securepassword27', TRUE),
+    ('bianca_butterfly', 'bianca@example.com', DEFAULT, 'securepassword28', TRUE),
+    ('clara_cat', 'clara@example.com', DEFAULT, 'securepassword29', TRUE),
+    ('david_dog', 'david@example.com', DEFAULT, 'securepassword30', TRUE),
+    ('elaine_emu', 'elaine@example.com', DEFAULT, 'securepassword31', TRUE),
+    ('frank_frog', 'frank@example.com', DEFAULT, 'securepassword32', TRUE),
+    ('gina_goose', 'gina@example.com', DEFAULT, 'securepassword33', TRUE),
+    ('harry_hedgehog', 'harry@example.com', DEFAULT, 'securepassword34', TRUE),
+    ('irene_ibis', 'irene@example.com', DEFAULT, 'securepassword35', TRUE),
+    ('john_jellyfish', 'john@example.com', DEFAULT, 'securepassword36', TRUE),
+    ('kelly_kangaroo', 'kelly@example.com', DEFAULT, 'securepassword37', TRUE),
+    ('leo_leopard', 'leo@example.com', DEFAULT, 'securepassword38', TRUE),
+    ('mona_monkey', 'mona@example.com', DEFAULT, 'securepassword39', TRUE),
+    ('nora_narwhal', 'nora@example.com', DEFAULT, 'securepassword40', TRUE),
+    ('olga_octopus', 'olga@example.com', DEFAULT, 'securepassword41', TRUE),
+    ('paul_parrot', 'paul@example.com', DEFAULT, 'securepassword42', TRUE),
+    ('quinn_quail', 'quinn@example.com', DEFAULT, 'securepassword43', TRUE),
+    ('rachel_raccoon', 'rachel@example.com',DEFAULT, 'securepassword44', TRUE),
+    ('sammy_seal', 'sammy@example.com', DEFAULT, 'securepassword45', TRUE),
+    ('tina_tortoise', 'tina@example.com', DEFAULT, 'securepassword46', TRUE),
+    ('ursula_unicorn', 'ursula@example.com', DEFAULT, 'securepassword47', TRUE),
+    ('vince_viper', 'vince@example.com',DEFAULT, 'securepassword48', TRUE),
+    ('willow_wolf', 'willow@example.com', DEFAULT, 'securepassword49', TRUE),
+    ('xander_xerus', 'xander@example.com', DEFAULT, 'securepassword50', TRUE);
 
 INSERT INTO administrator (user_id)
 VALUES
-    (1), (3), (5), (7), (9), (10), (12), (15), (18), (21);
+    (1), (3), (5), (9), (10), (18);
 
 INSERT INTO group_ (owner_id, group_name, description, visibility)
 VALUES
@@ -918,44 +905,50 @@ INSERT INTO comment_ (post_id, user_id, comment_content)
 VALUES
     (1, 2, 'I loved that book too!'),
     (1, 3, 'Great choice!'),
+    (1, 7, 'My favourite!'),
+    (1, 4, 'Glad you followed my recommendation'),
     (2, 1, 'That looks amazing!'),
+    (2, 15, 'Can’t wait to see the final result!'),
+    (2, 5, 'I love working on projects like this with you!'),
     (3, 4, 'Your art is inspiring!'),
-    (4, 5, 'That’s a great gadget!'),
-    (5, 6, 'Mysteries are the best!'),
-    (6, 7, 'What a cute puppy!'),
-    (7, 8, 'Italy is wonderful!'),
-    (8, 9, 'That recipe sounds delicious!'),
-    (9, 10, 'Running is so rewarding!'),
-    (10, 1, 'What a nice playlist!'),
-    (1, 4, 'I can recommend a great series!'),
-    (2, 5, 'I love working on projects like this!'),
+    (3, 10, 'So cool!'),
     (3, 6, 'Art is truly a reflection of the soul!'),
-    (4, 7, 'What do you think about this tech?'),
-    (5, 8, 'Tell me more about the mystery!'),
+    (4, 5, 'LOVE!'),
+    (4, 7, 'wow, in the city of romance'),
+    (5, 6, 'I love fun facts!'),
+    (5, 8, 'So interesting!'),
+    (6, 7, 'What a cute puppy!'),
     (6, 9, 'Dogs are the best companions!'),
     (7, 10, 'Traveling is such a rewarding experience!'),
+    (7, 8, 'Italy is wonderful!'),
+    (8, 9, 'That recipe sounds delicious!'),
+    (8, 2, 'I have to try it!'),
     (8, 1, 'Food is an art form in itself!'),
-    (9, 2, 'Fitness is a journey, not a destination!'),
+    (9, 2, 'Congrats!'),
+    (9, 10, 'Running is so rewarding!'),
+    (10, 1, 'What’s your favoutite song!'),
     (10, 3, 'I love discovering new music!'),
-    (11, 4, 'I can recommend a great series!'),
-    (12, 5, 'I love working on projects like this!'),
-    (13, 6, 'Art is truly a reflection of the soul!'),
-    (14, 7, 'What do you think about this tech?'),
-    (15, 8, 'Tell me more about the mystery!'),
-    (16, 9, 'Dogs are the best companions!'),
-    (17, 10, 'Traveling is such a rewarding experience!'),
+    (11, 4, 'Any from Nicholas Spark is great!'),
+    (11, 9, 'Little women!'),
+    (13, 6, 'I’ll be there!'),
+    (14, 7, 'Love it'),
+    (15, 8, 'I’m jealous!!!'),
+    (16, 9, 'Happy birthday <3'),
+    (17, 10, 'wow'),
     (18, 1, 'Food is an art form in itself!'),
     (19, 2, 'Fitness is a journey, not a destination!'),
-    (20, 3, 'I love discovering new music!'),
-    (21, 4, 'I can recommend a great series!'),
-    (22, 5, 'I love working on projects like this!'),
-    (23, 6, 'Art is truly a reflection of the soul!'),
-    (24, 7, 'What do you think about this tech?'),
-    (25, 8, 'Tell me more about the mystery!'),
-    (26, 9, 'Dogs are the best companions!'),
-    (27, 10, 'Traveling is such a rewarding experience!'),
-    (28, 1, 'Food is an art form in itself!'),
-    (29, 2, 'Fitness is a journey, not a destination!');
+    (20, 3, 'omg i was there too!'),
+    (21, 4, 'Congratulations!!!!'),
+    (22, 5, 'So nice to meet youu'),
+    (24, 7, 'So beautiful!'),
+    (25, 8, 'That’s right!!'),
+    (26, 9, 'Dubai and NY!!!!'),
+    (26, 1, 'I agree, London is the best!'),
+    (27, 10, 'Family goals!'),
+    (28, 1, 'Not me xD'),
+    (29, 2, 'Great song!'),
+    (29, 30, 'My favourite is Hey Jude!');
+
 
 
 INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)

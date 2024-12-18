@@ -13,7 +13,7 @@
     <!-- Styles -->
     <link href="{{ url('css/milligram.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script type="text/javascript" src="{{ url('js/app.js') }}" defer></script>
 </head>
 <body>
@@ -29,7 +29,7 @@
                     type="text" 
                     name="query" 
                     id="searchInput" 
-                    placeholder="Search posts, users..." 
+                    placeholder="Search posts, users, comments..." 
                     class="search-input" 
                     value="{{ request('query') }}" 
                     required>
@@ -52,6 +52,9 @@
                 <!-- Link para a Home (posts dos amigos) -->
                 <a href="{{ route('home') }}" class="button">Friends</a>
 
+                <!-- Link para a Tagged posts -->
+                <a href="{{ route('tagged.posts') }}" class="button">Tagged Posts</a>
+
                 <!-- Link para o Feed (posts públicos + amigos) -->
                 <a href="{{ route('feed') }}" class="button">Feed</a>
                  <!-- saved -->
@@ -62,7 +65,7 @@
 
 
                 <!-- Link para criar novo post -->
-                <a href="{{ route('post.create') }}" class="button new-post-button">New Post</a>
+                <a href="{{ route('post.create') }}" class="button new-post-button" style=>New Post</a>
 
                 <!-- Link para o perfil do usuário -->
                 <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link" style="display: flex; align-items: center; text-decoration: none;">

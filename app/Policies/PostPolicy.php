@@ -31,7 +31,7 @@ class PostPolicy
         return $post->user_id === $user->id || $user->isAdmin();  
     }
 
-    /**
+    /**reate
      * Determine if the user can delete the post.
      */
     public function delete(User $user, Post $post)

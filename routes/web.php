@@ -14,6 +14,7 @@ use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\SavedPostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,7 +60,13 @@ Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'authenticate');
     Route::post('/logout', 'logout')->name('logout'); 
-
+    Route::post('sendEmail', 'sendEmail')->name('sendEmail');
+    Route::get('verifyCodePage', 'verifyCodePage')->name('verifyCodePage');
+    Route::post('verifyCode', 'verifyCode')->name('verifyCode');
+    Route::get('forgotPassword', 'forgotPassword')->name('forgotPassword');;
+    Route::get('resetPasswordPage', 'resetPasswordPage')->name('resetPasswordPage');
+    Route::post('resetPassword', 'resetPassword')->name('resetPassword');
+    
 });
 
 Route::controller(RegisterController::class)->group(function () {
@@ -131,3 +138,7 @@ Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
 Route::post('/group', [GroupController::class, 'store'])->name('group.store');
 
 Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
+
+
+//Tagged posts
+Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');

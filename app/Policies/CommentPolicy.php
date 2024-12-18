@@ -10,21 +10,7 @@ use Illuminate\Auth\Access\Response;
 
 class CommentPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Comment $comment): bool
-    {
-        return true;
-    }
+    use HandlesAuthorization;
 
     /**
      * Determine whether the user can create models.
@@ -39,30 +25,18 @@ class CommentPolicy
      */
     public function edit(User $user, Comment $comment): bool
     {
-        return Auth::check() && $user->id == $comment->user_id;
+        return Auth::check() && ($user->id == $comment->user_id || $user->isAdmin());
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Comment $comment): bool
+    public function destroy(User $user, Comment $comment): bool
     {
-        return Auth::check() && $user->id == $comment->user_id;
+        return Auth::check() && ($user->id == $comment->user_id || $user->isAdmin());  
+
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Comment $comment): bool
-    {
-        //
-    }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Comment $comment): bool
-    {
-        //
-    }
+
 }

@@ -54,7 +54,12 @@
                         <ul class="user-list">
                             @foreach ($usersFullText as $user)
                                 <li>
-                                    <a href="{{ route('user', $user->id) }}">
+                                    <a 
+                                        href="@if(auth()->check()) {{ route('user', $user->id) }} @else {{ route('login') }} @endif"
+                                        @if(!auth()->check()) 
+                                            onclick="alert('You need to login view profiles.'); window.location.href='{{ route('login') }}'; return false;"               
+                                        @endif
+                                    >
                                         @ {{ $user->username }}
                                     </a>
                                 </li>
@@ -62,6 +67,7 @@
                         </ul>
                     @endif
                 </div>
+
             @elseif(request('tab') === 'posts')
                 <!-- Posts Tab -->
                 <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">

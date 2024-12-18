@@ -142,10 +142,6 @@ class User extends Authenticatable
     }
 
 
-    public function administrator()
-    {
-        return $this->hasOne(Administrator::class, 'user_id'); 
-    }
     
    public function isFriend(User $user)
     {
