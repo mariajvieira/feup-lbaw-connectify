@@ -62,10 +62,12 @@ public function usersWhoSaved()
     return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
 }
 
-public function tags()
+public function taggedUsers()
 {
-    return $this->belongsToMany(User::class, 'post_user', 'post_id', 'user_id');
+    return $this->belongsToMany(User::class, 'tagged_post', 'post_id', 'user_id')
+        ->withPivot('tagged_by', 'created_at'); // Inclui os campos adicionais do pivot
 }
+
 
 
 

@@ -39,6 +39,10 @@ class UserController extends Controller
             $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
+        else {
+            $user->profile_picture = 'images/profile_pictures/default.png';
+        }
+
         $user->save();
 
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Usuário criado com sucesso!');

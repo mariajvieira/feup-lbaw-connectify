@@ -72,6 +72,15 @@ CREATE TABLE post (
     CHECK ((content IS NOT NULL OR IMAGE1 IS NOT NULL) OR group_id IS NULL)
 );
 
+
+-- CREATE TABLE tagged_post (
+--     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE, -- id do user marcado
+--     post_id INT NOT NULL REFERENCES posts(id) ON UPDATE CASCADE, 
+--     -- tagged_by INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,  --id do user que marcou
+--     PRIMARY KEY (user_id, post_id)
+-- );
+
+
 CREATE TABLE saved_post (
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
@@ -1128,3 +1137,9 @@ VALUES
     (10, 2),
     (15, 3),
     (20, 4);
+
+-- INSERT INTO tagged_posts (user_id, post_id, tagged_by, created_at)
+--  VALUES
+-- (2, 1, 1), 
+-- (3, 1, 1), 
+-- (1, 2, 2); 
