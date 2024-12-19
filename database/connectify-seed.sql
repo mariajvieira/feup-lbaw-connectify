@@ -289,7 +289,7 @@ DECLARE
 BEGIN
     SELECT id INTO current_user_id
     FROM users
-    WHERE username = NEW.username  -
+    WHERE username = NEW.username
     LIMIT 1;
 
     IF NEW.password IS DISTINCT FROM OLD.password THEN
