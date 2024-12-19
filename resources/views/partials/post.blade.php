@@ -85,11 +85,7 @@
             <div class="comment mt-2">
             <p>
                 <strong>
-                    <a href="@if(auth()->check()) {{ route('user', ['id' => $comment->user->id]) }} @else {{ route('login') }} @endif"
-                        @if(!auth()->check()) 
-                            onclick="alert('You need to login to view profiles.'); window.location.href='{{ route('login') }}'; return false;"
-                        @endif
-                    >
+                    <a href="{{ route('user', ['id' => $comment->user->id]) }}">
                         {{ $comment->user->username }}
                     </a>
                 </strong>: {{ $comment->comment_content }}
@@ -130,6 +126,7 @@
 
     </div>
 
+    @if (auth()->check())
     <button id="saveButton" class="btn btn-light" 
         data-post-id="{{ $post->post_id }}"
         @if (!auth()->check())
@@ -138,6 +135,7 @@
         <i class="fa {{ $post->isSavedByUser() ? 'fa-bookmark' : 'fa-bookmark-o' }}"></i>
         Save
     </button>
+    @endif
 
 </div>
 
