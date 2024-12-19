@@ -45,6 +45,7 @@ CREATE TABLE users (
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
 
+
 CREATE TABLE administrator (
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id)
@@ -71,7 +72,6 @@ CREATE TABLE post (
     CHECK ((content IS NOT NULL OR IMAGE1 IS NOT NULL) OR group_id IS NULL)
 );
 
-
 -- CREATE TABLE tagged_post (
 --     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE, -- id do user marcado
 --     post_id INT NOT NULL REFERENCES posts(id) ON UPDATE CASCADE, 
@@ -79,6 +79,19 @@ CREATE TABLE post (
 --     PRIMARY KEY (user_id, post_id)
 -- );
 
+CREATE TABLE posts (
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
+    PRIMARY KEY (user_id, post_id)
+);
+
+CREATE TABLE tagged_post (
+    user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE, --user marcado
+    post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE, --post marcado
+    tagged_by INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE, 
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, post_id,tagged_by)
+);
 
 CREATE TABLE saved_post (
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
@@ -277,6 +290,7 @@ BEGIN
     SELECT id INTO current_user_id
     FROM users
     WHERE username = current_setting('app.current_user', true)
+    -- WHERE username = current_user
     LIMIT 1;
 
     IF NEW.password IS DISTINCT FROM OLD.password THEN
@@ -288,26 +302,60 @@ BEGIN
         END IF;
     END IF;
 
-    IF NEW.id = current_user_id THEN
-        RETURN NEW; 
+    IF NEW.id = OLD.id THEN
+        RAISE NOTICE 'Entrou na condição: o usuário está alterando o próprio perfil. NEW.id: %, current_user_id: % username %', NEW.id, current_user_id, username;
+        RETURN NEW; -- Permite a alteração
+    ELSIF EXISTS (
+        SELECT 1 
+        FROM administrator
+        WHERE user_id = current_user_id
+    ) THEN
+        RAISE NOTICE 'Um administrador está alterando o perfil.';
+        RETURN NEW; -- Permite a alteração
     END IF;
 
-    IF NEW.is_public = FALSE THEN
-        IF NOT EXISTS (
-            SELECT 1 FROM friendship
-            WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
-               OR (user_id2 = NEW.id AND user_id1 = current_user_id)
-        ) AND NOT EXISTS (
-            SELECT 1 FROM administrator
-            WHERE user_id = current_user_id
-        ) THEN
-            RAISE EXCEPTION 'Perfil privado. Acesso negado.';
-        END IF;
-    END IF;
+    RAISE EXCEPTION 'Apenas o próprio usuário ou administradores podem alterar este perfil.. NEW.id: %, current_user_id: %', NEW.id, current_user_id;
+    RETURN NULL;
 
-    RETURN NEW;
+
 END;
 $$ LANGUAGE plpgsql;
+    -- ELSE
+    --     IF EXISTS (
+    --         SELECT 1 
+    --         FROM administrator
+    --         WHERE user_id = current_user_id
+    --     ) THEN
+    --         RETURN NEW;
+    --     END IF;
+    -- END IF;
+
+
+    -- IF NEW.is_public = FALSE THEN
+    --     IF NOT EXISTS (
+    --         SELECT 1 FROM friendship
+    --         WHERE (user_id1 = NEW.id AND user_id2 = current_user_id) 
+    --            OR (user_id2 = NEW.id AND user_id1 = current_user_id)
+    --     ) AND NOT EXISTS (
+    --         SELECT 1 FROM administrator
+    --         WHERE user_id = current_user_id
+    --     )
+    --     THEN
+    --         RAISE EXCEPTION 'Entrou na condição: o usuário está alterando o próprio perfil. NEW.id: %, current_user_id: %', NEW.id, current_user_id;
+    --         -- RAISE EXCEPTION 'Perfil privado. Acesso negado.';
+    --     END IF;
+    -- END IF;
+    -- IF EXISTS (
+    --     SELECT 1 
+    --     FROM administrator
+    --     WHERE user_id = current_user_id
+    -- ) THEN
+    --     RETURN NEW;
+    -- END IF;
+    -- RAISE EXCEPTION 'Apenas o próprio usuário ou administradores podem alterar este perfil.';
+
+    -- RETURN NULL;
+
 
 CREATE TRIGGER trg_enforce_profile_visibility
 BEFORE UPDATE ON users

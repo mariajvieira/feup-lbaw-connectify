@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedPost;
 use App\Models\Comment;
+use App\Models\User;
 
 class PostController extends Controller
 {
@@ -249,7 +250,7 @@ class PostController extends Controller
         // Buscar posts onde o usuário foi marcado
         $taggedPosts = Post::whereHas('taggedUsers', function ($query) use ($userId) {
             $query->where('user_id', $userId);
-        })->with(['user', 'taggedUsers'])->orderBy('created_at', 'desc')->get();
+        })->with(['user', 'taggedUsers'])->get();
     
         return view('pages.tagged', ['posts' => $taggedPosts]);
     }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+// namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -100,6 +101,13 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
+        
+        
+
+        // DB::statement("SET app.current_user = '{$user->username}';");
+
+
+     // Verifica se o usuário foi encontrado
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);

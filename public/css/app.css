@@ -421,3 +421,15 @@ body {
   flex: 1;
   padding: 10px;
 }
+
+.post-list-container {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 20px; 
+}
+
+.post-list {
+  width: 100%;
+  max-width: 600px; 
+}
