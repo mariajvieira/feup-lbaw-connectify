@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   addEventListeners();
   addReactionEventListeners();
-  addCommentEventListeners(); // Nova função para adicionar os eventos de comentários
+  addCommentEventListeners(); 
 
   document.querySelectorAll('.add-comment-form').forEach(form => {
     form.addEventListener('submit', function(event) {
@@ -12,6 +12,56 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Seleciona todos os botões com a classe 'saveButton'
+  document.querySelectorAll('.saveButton').forEach(saveButton => {
+    saveButton.addEventListener('click', function () {
+      const postId = saveButton.getAttribute('data-post-id');
+      const icon = saveButton.querySelector('i');
+
+      // Desabilita o botão para evitar múltiplos cliques rápidos
+      saveButton.disabled = true;
+
+      // Envia a requisição para salvar ou remover o post
+      fetch('/save-post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ post_id: postId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Se a ação foi realizada com sucesso, atualiza o botão
+        if (data.saved) {
+          // Post foi salvo, atualiza o botão para "Saved"
+          icon.classList.remove('fa-bookmark-o');
+          icon.classList.add('fa-bookmark');
+          saveButton.innerHTML = 'Saved';
+        } else {
+          // Post foi removido dos favoritos, atualiza o botão para "Save"
+          icon.classList.remove('fa-bookmark');
+          icon.classList.add('fa-bookmark-o');
+          saveButton.innerHTML = 'Save';
+        }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        saveButton.innerHTML = 'Error';
+      })
+      .finally(() => {
+        // Reabilita o botão após a resposta ou erro, permitindo novos cliques
+        setTimeout(() => {
+          saveButton.disabled = false;
+        }, 1000);
+      });
+    });
+  });
+});
+
 
 function addEventListeners() {
   let postCheckers = document.querySelectorAll('.post-item input[type=checkbox]');
@@ -394,42 +444,7 @@ function sendAjaxRequest(method, url, data, handler) {
   request.send(JSON.stringify(data));
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const saveButton = document.getElementById('saveButton');
-  
-  // Verifica se o botão existe na página
-  if (saveButton) {
-      saveButton.addEventListener('click', function () {
-          const postId = saveButton.getAttribute('data-post-id');
-          const icon = saveButton.querySelector('i'); // Seleciona o ícone dentro do botão
 
-          // Faz uma requisição para o servidor para salvar ou remover o post
-          fetch('/save-post', { // Ajuste a URL conforme necessário
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-              },
-              body: JSON.stringify({ post_id: postId })
-          })
-          .then(response => response.json())
-          .then(data => {
-              if (data.saved) {
-                  // Muda o ícone e o texto do botão
-                  icon.classList.remove('fa-bookmark-o');
-                  icon.classList.add('fa-bookmark');
-                  saveButton.innerHTML = 'Saved';
-              } else {
-                  // Muda o ícone e o texto do botão
-                  icon.classList.remove('fa-bookmark');
-                  icon.classList.add('fa-bookmark-o');
-                  saveButton.innerHTML = 'Save';
-              }
-          })
-          .catch(error => console.error('Error:', error));
-      });
-  }
-});
 
 document.getElementById('saveButton').addEventListener('click', function() {
   var postId = this.getAttribute('data-post-id');

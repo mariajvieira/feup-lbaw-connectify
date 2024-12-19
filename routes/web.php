@@ -94,9 +94,7 @@ Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit'
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 
 // Save and unsave post
-Route::post('/toggle-save-post/{postId}', [SavedPostController::class, 'toggleSavePost']);
 Route::post('/save-post', [SavedPostController::class, 'toggleSave'])->name('save-post');
-
 
 // Friendship Requests
 Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');

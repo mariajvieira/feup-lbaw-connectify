@@ -4,11 +4,11 @@
 <div class="container">
     <h2>Saved Posts</h2>
 
-   @if($posts->isEmpty())
+    @if($posts->isEmpty())
         <p>No post saved yet.</p>
     @else
         <div class="post-list">
-            @include('pages.posts', ['posts' => $posts]) 
+            @include('pages.posts', ['posts' => $posts])
         </div>
     @endif
 </div>
