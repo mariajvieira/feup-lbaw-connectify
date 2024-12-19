@@ -41,7 +41,7 @@
         <!-- Visibilidade do Perfil -->
         <div class="form-group">
             <label for="is_public">
-            {{ $user->is_public ? 'Public Profile' : 'Private Profile' }}
+            Public Profile
         </label>
         <input type="hidden" name="is_public" value="0">
         <input type="checkbox" name="is_public" id="is_public" value="1" {{ $user->is_public ? 'checked' : '' }} />

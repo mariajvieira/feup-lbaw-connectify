@@ -287,10 +287,10 @@ RETURNS TRIGGER AS $$
 DECLARE
     current_user_id INTEGER;
 BEGIN
+    -- Obter o user_id da tabela 'users' com base no 'username' (ou qualquer outro critério que você use para identificar o usuário)
     SELECT id INTO current_user_id
     FROM users
-    WHERE username = current_setting('app.current_user', true)
-    -- WHERE username = current_user
+    WHERE username = NEW.username  -- Se você estiver usando 'username' para identificar o usuário
     LIMIT 1;
 
     IF NEW.password IS DISTINCT FROM OLD.password THEN
@@ -302,24 +302,25 @@ BEGIN
         END IF;
     END IF;
 
-    IF NEW.id = OLD.id THEN
-        RAISE NOTICE 'Entrou na condição: o usuário está alterando o próprio perfil. NEW.id: %, current_user_id: % username %', NEW.id, current_user_id, username;
+    -- Permite que o usuário edite seu próprio perfil
+    IF NEW.id = current_user_id THEN
+        RAISE NOTICE 'User editing own profile. NEW.id: %, current_user_id: %', NEW.id, current_user_id;
         RETURN NEW; -- Permite a alteração
     ELSIF EXISTS (
         SELECT 1 
         FROM administrator
         WHERE user_id = current_user_id
     ) THEN
-        RAISE NOTICE 'Um administrador está alterando o perfil.';
+        RAISE NOTICE 'Administrator editing profile.';
         RETURN NEW; -- Permite a alteração
     END IF;
 
-    RAISE EXCEPTION 'Apenas o próprio usuário ou administradores podem alterar este perfil.. NEW.id: %, current_user_id: %', NEW.id, current_user_id;
+    -- Caso contrário, não permite a atualização
+    RAISE EXCEPTION 'Only administrators and profile owner can edit this profile.';
     RETURN NULL;
-
-
 END;
 $$ LANGUAGE plpgsql;
+
     -- ELSE
     --     IF EXISTS (
     --         SELECT 1 
@@ -856,7 +857,7 @@ VALUES
     ('uma_unicorn', 'uma@example.com', DEFAULT, 'securepassword21', TRUE),
     ('vicky_vulture', 'vicky@example.com', DEFAULT, 'securepassword22', TRUE),
     ('will_walrus', 'will@example.com', 'images/profile_pictures/will.jpg', 'securepassword23', TRUE),
-    ('xena_xerus', 'xena@example.com', 'xena.jpg', 'securepassword24', TRUE),
+    ('xena_xerus', 'xena@example.com', 'images/profile_pictures/xena.jpg', 'securepassword24', TRUE),
     ('yara_yeti', 'yara@example.com', DEFAULT, 'securepassword25', TRUE),
     ('zach_zebra', 'zach@example.com', 'images/profile_pictures/zach.jpg', 'securepassword26', FALSE),
     ('arnold_alligator', 'arnold@example.com', DEFAULT, 'securepassword27', TRUE),
