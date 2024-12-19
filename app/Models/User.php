@@ -188,6 +188,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Post::class, 'saved_post', 'user_id', 'post_id');
     }
     
+    public function taggedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'tagged_post', 'user_id', 'post_id')
+                    ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
+    }
 
 
 }

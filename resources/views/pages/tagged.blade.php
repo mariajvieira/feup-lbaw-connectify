@@ -6,9 +6,10 @@
     @if($posts->isEmpty())
         <p>You haven't been tagged yet</p>
     @else
-        <strong>Marcados:</strong> 
+        <div class="post-list-container">
             <div class="post-list">
                 @include('pages.posts', ['posts' => $posts]) 
             </div>
+        </div>
     @endif
 @endsection

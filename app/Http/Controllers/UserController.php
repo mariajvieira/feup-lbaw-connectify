@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+// namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -37,6 +38,10 @@ class UserController extends Controller
 
         if ($request->hasFile('profile_picture')) {
             $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        else {
+            $user->profile_picture = 'images/profile_pictures/default.png';
         }
 
         $user->save();
@@ -96,6 +101,13 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
+        
+        
+
+        // DB::statement("SET app.current_user = '{$user->username}';");
+
+
+     // Verifica se o usuário foi encontrado
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);

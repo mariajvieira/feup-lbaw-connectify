@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedPost;
 use App\Models\Comment;
+use App\Models\User;
 
 class PostController extends Controller
 {
@@ -63,7 +64,9 @@ class PostController extends Controller
                 $taggedUsers = User::whereIn('username', $usernames)->get();
     
                 foreach ($taggedUsers as $user) {
-                    $post->tags()->attach($user->id);
+                    $post->taggedUsers()->syncWithoutDetaching([
+                        $user->id => ['tagged_by' => Auth::id(), 'created_at' => now()],
+                    ]);
                 }
             }
         }
@@ -242,17 +245,16 @@ class PostController extends Controller
     
     public function showTaggedPosts()
     {
-       
         $userId = Auth::id();
-
-        $taggedPosts = Post::whereHas('tags', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })->with('user', 'tags')->orderBy('created_at', 'desc')->get();
     
+        // Buscar posts onde o usuário foi marcado
+        $taggedPosts = Post::whereHas('taggedUsers', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->with(['user', 'taggedUsers'])->get();
     
         return view('pages.tagged', ['posts' => $taggedPosts]);
-
     }
+    
 
 
 

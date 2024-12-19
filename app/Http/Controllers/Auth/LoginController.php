@@ -37,6 +37,9 @@ class LoginController extends Controller
             $request->session()->regenerate();
             session(['id' => Auth::id()]);     
             session()->save();     
+
+            // $user = Auth::user();
+            // \DB::statement("SET app.current_user = ?", [Auth::user()->username]);
             return redirect('/home');
 
         }
