@@ -13,6 +13,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+window.addEventListener('DOMContentLoaded', function () {
+  var header = document.querySelector('header');
+  var mainContent = document.querySelector('main');
+  var headerHeight = header.offsetHeight;
+  mainContent.style.paddingTop = headerHeight + 'px';
+});
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
   // Seleciona todos os botões com a classe 'saveButton'
@@ -231,7 +239,7 @@ function createPostElement(post) {
 }
 
 function addReactionEventListeners() {
-  const reactionButtons = document.querySelectorAll('.reactions button');
+  const reactionButtons = document.querySelectorAll('.reaction-button');
   reactionButtons.forEach(button => {
     button.addEventListener('click', react);
   });
@@ -241,39 +249,39 @@ function react(event) {
   const button = event.target;
   const reactionType = button.getAttribute('data-reaction-type');
   const postId = button.getAttribute('data-post-id');
-  const reactionId = button.getAttribute('data-reaction-id'); // Obter o ID da reação, se houver
+  let reactionId = button.getAttribute('data-reaction-id'); // Obter o ID da reação, se houver
 
   if (reactionId) {
-    if (button.classList.contains('selected')) {
+    if (button.classList.contains('btn-outline-danger')) {
       // Caso a mesma reação esteja selecionada, apagá-la
       fetch(`/reaction/${reactionId}`, {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
         },
-    })
-    .then(response => {
+      })
+      .then(response => {
         if (!response.ok) {
-            return response.json().then(errorData => {
-                throw new Error(errorData.error || 'Erro ao apagar a reação');
-            });
+          return response.json().then(errorData => {
+            throw new Error(errorData.error || 'Erro ao apagar a reação');
+          });
         }
-    
         return response.json();
-    })
-    .then(data => {
+      })
+      .then(data => {
         if (data.message === 'Reação removida com sucesso.') {
-            button.classList.remove('selected');
-            button.removeAttribute('data-reaction-id');
-            alert(data.message);
+          button.classList.remove('btn-outline-danger');
+          button.classList.add('btn-outline-secondary');
+          button.removeAttribute('data-reaction-id');
+          alert(data.message);
         } else {
-            console.error('Erro ao apagar a reação:', data.error);
+          console.error('Erro ao apagar a reação:', data.error);
         }
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error('Erro ao apagar a reação:', error);
-    });    
+      });
     } else {
       // Caso outra reação seja clicada, substituir a existente
       fetch(`/post/${postId}/reaction`, {
@@ -288,21 +296,25 @@ function react(event) {
           reaction_type: reactionType,
         }),
       })
-        .then(response => response.json())
-        .then(data => {
-          if (data.message === 'Reação registada com sucesso.') {
-            // Remover todas as outras seleções e adicionar a nova
-            const parentReactions = button.closest('.reactions');
-            const buttons = parentReactions.querySelectorAll('button');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-            button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
-            alert(data.message);
-          } else {
-            console.error('Erro ao registar a reação:', data.error);
-          }
-        })
-        .catch(error => console.error('Erro ao registar a reação:', error));
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === 'Reação registada com sucesso.') {
+          // Remover todas as outras seleções e adicionar a nova
+          const parentReactions = button.closest('.d-flex'); // Encontrar o contêiner de reações
+          const buttons = parentReactions.querySelectorAll('button');
+          buttons.forEach(btn => {
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-outline-secondary');
+          });
+          button.classList.remove('btn-outline-secondary');
+          button.classList.add('btn-outline-danger');
+          button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
+          alert(data.message);
+        } else {
+          console.error('Erro ao registar a reação:', data.error);
+        }
+      })
+      .catch(error => console.error('Erro ao registar a reação:', error));
     }
   } else {
     // Se não existe reação, criar uma nova
@@ -318,23 +330,28 @@ function react(event) {
         reaction_type: reactionType,
       }),
     })
-      .then(response => response.json())
-      .then(data => {
-        if (data.message === 'Reação registada com sucesso.') {
-          // Remover todas as outras seleções e adicionar a nova
-          const parentReactions = button.closest('.reactions');
-          const buttons = parentReactions.querySelectorAll('button');
-          buttons.forEach(btn => btn.classList.remove('selected'));
-          button.classList.add('selected');
-          button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
-          alert(data.message);
-        } else {
-          console.error('Erro ao registar a reação:', data.error);
-        }
-      })
-      .catch(error => console.error('Erro ao registar a reação:', error));
+    .then(response => response.json())
+    .then(data => {
+      if (data.message === 'Reação registada com sucesso.') {
+        // Remover todas as outras seleções e adicionar a nova
+        const parentReactions = button.closest('.d-flex'); // Encontrar o contêiner de reações
+        const buttons = parentReactions.querySelectorAll('button');
+        buttons.forEach(btn => {
+          btn.classList.remove('btn-outline-danger');
+          btn.classList.add('btn-outline-secondary');
+        });
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-outline-danger');
+        button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
+        alert(data.message);
+      } else {
+        console.error('Erro ao registar a reação:', data.error);
+      }
+    })
+    .catch(error => console.error('Erro ao registar a reação:', error));
   }
 }
+
 
 function addCommentEventListeners() {
   document.querySelectorAll('.create-comment-btn').forEach(button => {

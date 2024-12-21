@@ -11,97 +11,106 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Styles -->
-    <link href="{{ url('css/milligram.min.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script type="text/javascript" src="{{ url('js/app.js') }}" defer></script>
+
+    <style>
+        .text-custom {
+            color:rgb(8, 57, 105) !important;
+        }
+        .btn-custom {
+        background-color: rgb(8, 57, 105) !important;
+        color: white !important;
+        }
+
+        .btn-custom:hover {
+            background-color: rgb(8, 57, 105) !important;
+            color: white !important;
+        }
+    </style>
 </head>
 <body>
-    <main>
-    <header>
-    <h1>
-        <a href="{{ Auth::check() ? route('home') : route('welcome') }}">Connectify</a>
-    </h1>
-    <div class="header-actions">
-        <!-- Barra de busca -->
-            <form action="{{ route('search') }}" method="GET" class="search-form">
-                <input 
-                    type="text" 
-                    name="query" 
-                    id="searchInput" 
-                    placeholder="Search posts, users, comments..." 
-                    class="search-input" 
-                    value="{{ request('query') }}" 
-                    required>
-            </form>
-
-            <script type="text/javascript">
-                document.getElementById('searchInput').addEventListener('keydown', function(event) {
-                    if (event.key === 'Enter') {
-                        document.getElementById('searchForm').submit();
-                    }
-                });
-            </script>
-
-        <div class="user-actions">
-            @auth
-
-                @can('createUser', App\Models\User::class)
-                    <a href="{{ route('user.create') }}" class="button new-user-button">New User</a>
-                @endcan
-                <!-- Link para a Home (posts dos amigos) -->
-                <a href="{{ route('home') }}" class="button">Friends</a>
-
-                <!-- Link para a Tagged posts -->
-                <a href="{{ route('tagged.posts') }}" class="button">Tagged Posts</a>
-
-                <!-- Link para o Feed (posts públicos + amigos) -->
-                <a href="{{ route('feed') }}" class="button">Feed</a>
-                 <!-- saved -->
-                <a href="{{ route('saved.posts') }}" class="button saved-posts-button">Saved</a>
-
-                <!-- Botão para criar um novo grupo -->
-                <a href="{{ route('group.create') }}" class="button new-group-button">New Group</a>
-
-
-                <!-- Link para criar novo post -->
-                <a href="{{ route('post.create') }}" class="button new-post-button" style=>New Post</a>
-
-                <!-- Link para o perfil do usuário -->
-                <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="username-link" style="display: flex; align-items: center; text-decoration: none;">
-                    <img src="{{ asset(Auth::user()->profile_picture) }}"
-                        style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; object-fit: cover;">
-                    <span>{{ Auth::user()->username }}</span>
-                </a>
-
-
-                <!-- Logout -->
-                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="logout-link">Logout</button>
+    <header class="bg-white shadow-sm fixed-top">
+        <div class="container d-flex justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center">
+                <h1 class="mb-0 me-3">
+                    <a href="{{ Auth::check() ? route('home') : route('welcome') }}" class="text-decoration-none text-custom">
+                        Connectify
+                    </a>
+                </h1>
+                <!-- Barra de busca -->
+                <form action="{{ route('search') }}" method="GET" class="d-flex">
+                    <input 
+                        type="text" 
+                        name="query" 
+                        id="searchInput" 
+                        placeholder="Search posts, users, comments..." 
+                        class="form-control me-2" 
+                        value="{{ request('query') }}" 
+                        required>
                 </form>
-            @else
-                <!-- Links para visitantes -->
-                <a href="{{ route('login') }}" class="button login-button">Login</a>
-                <a href="{{ route('register') }}" class="button register-button">Register</a>
-            @endauth
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                @auth
+                    @can('createUser', App\Models\User::class)
+                        <a href="{{ route('user.create') }}" class="btn btn-custom">New User</a>
+                    @endcan
+                    <a href="{{ route('home') }}" class="btn btn-custom">Friends</a>
+                    <a href="{{ route('feed') }}" class="btn btn-custom">
+                        <i class="fa-solid fa-house me-2"></i>
+                    </a>
+                    <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="d-flex align-items-center text-custom text-decoration-none">
+                        <img src="{{ asset(Auth::user()->profile_picture) }}" class="rounded-circle me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                        <span>{{ Auth::user()->username }}</span>
+                    </a>
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-custom">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+                        </button>
+                    </form>
+
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-primary">Register</a>
+                @endauth
+            </div>
+        </div>
+        <div style="background-color:rgb(8, 57, 105); height: 3px;"></div>
+    </header>
+
+    <div class="container-fluid mt-5 pt-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 position-fixed top-40 start-0 vh-100 p-3" style="z-index: 1030;">
+                @auth
+                <div class="mb-3">
+                    <a href="{{ route('tagged.posts') }}" class="btn btn-custom w-100 mb-2">Tagged Posts</a>
+                    <a href="{{ route('saved.posts') }}" class="btn btn-custom w-100 mb-2">Saved</a>
+                    <a href="{{ route('group.create') }}" class="btn btn-custom w-100 mb-2">New Group</a>
+                    <a href="{{ route('post.create') }}" class="btn btn-custom w-100 mb-2">New Post</a>
+                </div>
+                @endauth
+            </div>
+
+            <!-- Content Area -->
+            <main class="col-md-6 col-lg-8 offset-md-3 offset-lg-2">
+                <section id="content">
+                    @yield('content')
+                </section>
+            </main>
         </div>
     </div>
-</header>
 
-        <section id="content">
-            @yield('content')
-        </section>
-    </main>
-
-    <footer style="text-align: center; padding: 20px; background-color: #f8f9fa;">
+    <footer class="text-center py-3 mt-auto bg-light">
         <p>Connectify 2024</p>
-        <a href="{{ route('about') }}" style="text-decoration: none; color:rgb(2, 20, 39);">About Us</a>
-        
-        <a href="{{ route('about') }}" style="text-decoration: none; color:rgb(2, 20, 39);">Help</a>
-
-        <a href="{{ route('contact') }}" style="text-decoration: none; color:rgb(2, 20, 39);">Contact Us</a>
-
+        <a href="{{ route('about') }}" class="text-decoration-none text-dark">About Us</a> |
+        <a href="{{ route('about') }}" class="text-decoration-none text-dark">Help</a> |
+        <a href="{{ route('contact') }}" class="text-decoration-none text-dark">Contact Us</a>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,15 +1,69 @@
-/* header */
+/* Ajustes para componentes */
+#searchInput {
+  border-radius: 25px 0 0 25px;
+}
+
+.username-link img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Post Item */
+.post-item {
+  background-color: #f0f8ff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.post-item:hover {
+  background-color: #d1e7f5;
+}
+
+/* Botões customizados */
+.btn-primary:hover {
+  background-color: #022c58;
+  transform: scale(1.05);
+}
+
+
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 100px;  /* Ajuste conforme o tamanho do seu cabeçalho */
+}
+
+main {
+  margin-top: 500rem;  /* Ajuste conforme a altura do cabeçalho */
+}
+
+.post-item {
+  max-width: 800px;  /* Define a largura máxima */
+  margin: 0 auto;    /* Centraliza o contêiner */
+}
+
+
+/*
 header {
   display: flex;
-  justify-content: space-between; /* Espaço entre os elementos */
+  justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
   background-color: #f8f9fa;
   border-bottom: 1px solid #022c58;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 100px; /* Adicionando o espaço entre o header e o conteúdo abaixo */
-  width: 100%; /* Header ocupa toda a largura */
-  position: fixed; /* Fixa o header no topo */
+  margin-bottom: 100px;
+  width: 100%; 
+  position: fixed; 
   top: 0;
   left: 0;
   z-index: 1000; 
@@ -20,8 +74,8 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Altura mínima de 100% da janela */
-  padding-top: 200px; /* Ajuste conforme a altura do seu header */
+  min-height: 100vh;
+  padding-top: 200px;
 
 }
 
@@ -74,13 +128,13 @@ header h1 a:hover {
 
 @media (max-width: 768px) {
   header {
-    flex-direction: column; /* Organiza a header em coluna em telas pequenas */
+    flex-direction: column;
     align-items: flex-start;
   }
 
   .header-actions {
     justify-content: flex-start;
-    gap: 10px; /* Diminui o gap em telas pequenas */
+    gap: 10px; 
     margin-top: 10px;
   }
 
@@ -107,13 +161,13 @@ header h1 a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
     text-align: center; 
-    max-width: 900px; /* Largura máxima */
-    margin: 0 auto; /* Centraliza os posts horizontalmente */
+    max-width: 900px; 
+    margin: 0 auto; 
   }
   
 
   .post-date {
-    font-size: 10px; /* Reduz a fonte para posts pequenos */
+    font-size: 10px; 
   }
 
   .btn {
@@ -126,7 +180,6 @@ header h1 a:hover {
   }
 }
 
-/* user actions */
 .user-actions {
   display: flex;
   align-items: center;
@@ -181,7 +234,6 @@ header h1 a:hover {
   text-decoration: underline;
 }
 
-/* post item */
 .post-item {
   background-color: #f0f8ff;
   border-radius: 10px;
@@ -226,33 +278,31 @@ header h1 a:hover {
 
 .post-images {
   display: flex;
-  flex-wrap: wrap; /* Permite quebrar linha se houver muitas imagens */
-  gap: 10px; /* Espaço entre as imagens */
-  justify-content: center; /* Centraliza as imagens */
+  flex-wrap: wrap; 
+  gap: 10px; 
+  justify-content: center; 
 }
 
-/* post-image img */
 .post-image img {
-  width: 100%; /* A imagem ocupa toda a largura da caixa */
+  width: 100%; 
   border-radius: 8px;
   height: auto;
   object-fit: cover;
 }
 
 .post-content {
-  font-size: 18px; /* Aumenta o tamanho da fonte */
-  font-weight: 500; /* Faz o texto parecer mais forte */
+  font-size: 18px;
+  font-weight: 500; 
   color: #333;
   margin: 15px 0;
-  line-height: 1.6; /* Melhora a legibilidade */
+  line-height: 1.6; 
 }
 
 
 .post-item:hover {
-  background-color: #d1e7f5; /* Efeito no hover */
+  background-color: #d1e7f5; 
 }
 
-/* post actions buttons */
 .btn {
   font-size: 14px;
   padding: 8px 16px;
@@ -285,7 +335,6 @@ header h1 a:hover {
   transform: scale(1.05);
 }
 
-/* dropdown */
 .dropdown button {
   font-size: 14px;
   color: #0056b3;
@@ -306,7 +355,7 @@ header h1 a:hover {
   background-color: #f1f1f1;
 }
 
-/* profile container */
+
 .profile-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -344,7 +393,6 @@ header h1 a:hover {
   text-align: right;
 }
 
-/* create post form */
 .create-post-form {
   max-width: 800px;
   margin: 30px auto;
@@ -433,3 +481,4 @@ body {
   width: 100%;
   max-width: 600px; 
 }
+*/
