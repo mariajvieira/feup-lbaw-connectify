@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Post;
 
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -30,8 +30,10 @@ class HomeController extends Controller
         // Obtém os posts do próprio usuário e dos seus amigos
         $posts = $user->visiblePosts();  // Chamando a função visiblePosts() que retorna os posts
     
-        // Retorna a view com os posts
-        return view('pages.home', compact('posts'));
+        // Obtém os grupos do usuário
+        $groups = $user->groups; // Assumindo que a relação 'groups' foi definida corretamente no modelo User
+
+        // Retorna a view com os posts e grupos
+        return view('pages.home', compact('posts', 'groups'));
     }
-       
 }

@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', function () {
       // Desabilita o botão para evitar múltiplos cliques rápidos
       saveButton.disabled = true;
 
+      // Verifica se o post já está salvo (ícone 'fa-bookmark' significa que o post está salvo)
+      const isSaved = icon.classList.contains('fa-bookmark');
+
       // Envia a requisição para salvar ou remover o post
       fetch('/save-post', {
         method: 'POST',
@@ -39,7 +42,10 @@ document.addEventListener('DOMContentLoaded', function () {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({ post_id: postId })
+        body: JSON.stringify({
+          post_id: postId,
+          action: isSaved ? 'remove' : 'save'  // Se estiver salvo, envia 'remove', caso contrário envia 'save'
+        })
       })
       .then(response => response.json())
       .then(data => {
@@ -69,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
 
 
 function addEventListeners() {
@@ -460,33 +467,3 @@ function sendAjaxRequest(method, url, data, handler) {
   request.addEventListener('load', handler);
   request.send(JSON.stringify(data));
 }
-
-
-
-document.getElementById('saveButton').addEventListener('click', function() {
-  var postId = this.getAttribute('data-post-id');
-  var icon = this.querySelector('i');
-  
-  // Enviar requisição AJAX para salvar/desmarcar o post
-  fetch('/save-post/' + postId, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ post_id: postId })
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.saved) {
-          icon.classList.remove('fa-bookmark-o');
-          icon.classList.add('fa-bookmark');
-      } else {
-          icon.classList.remove('fa-bookmark');
-          icon.classList.add('fa-bookmark-o');
-      }
-  })
-  .catch(error => {
-      console.error('Error:', error);
-  });
-});

@@ -51,21 +51,21 @@ class UserController extends Controller
 
 
     public function getProfile($id)
-{
-    // Carregar o usuário, os grupos em que ele é membro e os grupos em que ele é proprietário
-    $user = User::with(['groups', 'ownedGroups'])->find($id);
-
-    // Verifica se o usuário foi encontrado
-    if (!$user) {
-        return redirect()->route('home')->with('error', 'Usuário não encontrado');
+    {
+        // Carregar o usuário, os grupos em que ele é membro e os grupos em que ele é proprietário
+        $user = User::with(['groups', 'ownedGroups'])->find($id);
+    
+        // Verifica se o usuário foi encontrado
+        if (!$user) {
+            return redirect()->route('home')->with('error', 'Usuário não encontrado');
+        }
+    
+        // Carregar os posts do usuário, ordenados por data
+        $posts = $user->posts()->orderBy('post_date', 'desc')->get();
+    
+        // Retornar a view com o usuário, seus grupos e seus posts
+        return view('pages.user', compact('user', 'posts'));
     }
-
-    // Carregar os posts do usuário, ordenados por data
-    $posts = $user->posts()->orderBy('post_date', 'desc')->get();
-
-    // Retornar a view com o usuário, seus grupos e seus posts
-    return view('pages.user', compact('user', 'posts'));
-}
 
 
     // Edit user profile
