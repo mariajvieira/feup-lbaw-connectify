@@ -131,16 +131,14 @@
 
     </div>
 
+
     @if (auth()->check())
-    <button id="saveButton" class="btn btn-light" 
-        data-post-id="{{ $post->post_id }}"
-        @if (!auth()->check())
-            onclick="alert('You need to login to save posts.'); window.location.href='{{ route('login') }}'; return false;"        @endif
-        >
+    <button class="saveButton btn btn-light" data-post-id="{{ $post->id }}">
         <i class="fa {{ $post->isSavedByUser() ? 'fa-bookmark' : 'fa-bookmark-o' }}"></i>
-        Save
+        {{ $post->isSavedByUser() ? 'Saved' : 'Save' }}
     </button>
-    @endif
+@endif
+
 
 </div>
 
