@@ -34,6 +34,7 @@ class GroupController extends Controller
         // Adicionar o proprietário à tabela de membros (group_member)
         $group->users()->attach(Auth::id());
 
+        $group->owner()->attach(Auth::id());
         // Redirecionar para a página do grupo
         return redirect()->route('group.show', $group->id);
     }
@@ -41,8 +42,10 @@ class GroupController extends Controller
     // Mostrar um grupo específico
     public function show($id)
     {
-        $group = Group::findOrFail($id);
-        return view('pages.group', compact('group'));
+        $group = Group::with('owner', 'users')->findOrFail($id); // Carrega também o proprietário e os usuários
+        $members = $group->users;
+
+        return view('pages.group', compact('group', 'members'));
     }
 
     // Mostrar todos os grupos no feed principal

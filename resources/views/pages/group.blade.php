@@ -12,5 +12,14 @@
     @elseif($group->users->contains(Auth::user()->id))
         <p>You are a member of this group!</p>
     @endif
+
+    <h3>Group Members:</h3>
+    <ul>
+        <li><strong>Owner:</strong> {{ $group->owner->name }} ({{ $group->owner->email }})</li>
+        @foreach($members as $member)
+            <li>{{ $member->name }} ({{ $member->email }})</li>
+        @endforeach
+        <!-- Exibir o proprietário corretamente -->
+    </ul>
 </div>
 @endsection
