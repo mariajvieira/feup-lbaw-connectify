@@ -66,4 +66,25 @@ class GroupController extends Controller
         // Retorna a view com todos os grupos e posts
         return view('pages.home', compact('posts', 'allGroups'));
     }
+
+    // Função para permitir que o usuário entre em um grupo público
+    public function joinPublicGroup($groupId)
+{
+    $group = Group::findOrFail($groupId);
+
+    // Verifica se o grupo é público
+    if (!$group->is_public) {
+        return response()->json(['message' => 'This is not a public group'], 400);
+    }
+
+    // Adiciona o usuário ao grupo, se não for o dono do grupo e não for membro
+    if (!$group->users->contains(Auth::user()->id)) {
+        $group->users()->attach(Auth::id());
+
+        return response()->json(['message' => 'Successfully joined the group!'], 200);
+    }
+
+    return response()->json(['message' => 'You are already a member of this group.'], 400);
+}
+
 }

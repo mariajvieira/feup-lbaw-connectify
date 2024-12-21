@@ -21,4 +21,6 @@ class SavedPost extends Model
     public $incrementing = false; // Indica que a chave primária não é auto-incrementada
 
     protected $primaryKey = ['user_id', 'post_id']; // Define a chave primária composta
+
+    
 }

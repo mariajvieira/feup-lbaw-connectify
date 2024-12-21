@@ -146,6 +146,10 @@ Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
 Route::get('/groups/{id}', [GroupController::class, 'show'])->name('group.show');
 Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
+
+//Join public group
+Route::post('/groups/{groupId}/join', [GroupController::class, 'joinPublicGroup'])->name('groups.join');
+
 //Tagged posts
 Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');
 
