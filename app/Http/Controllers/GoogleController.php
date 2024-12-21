@@ -21,7 +21,6 @@ class GoogleController extends Controller
         
         // If the user does not exist, create one
         if (!$user) {
-
             // Store the provided name, email, and Google ID in the database
             $new_user = User::create([
                 'username' => $this->generateUniqueUsername($google_user->getName()),
