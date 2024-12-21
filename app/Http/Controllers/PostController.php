@@ -256,6 +256,76 @@ class PostController extends Controller
     }
     
 
+    
+    public function getReactionsCount($id)
+    {
+        $post = Post::find($id);
+    
+        if (!$post) {
+            return response()->json(['error' => 'Post não encontrado.'], 404);
+        }
+    
+        // Contar o número de reações por tipo, garantindo que target_type seja 'post'
+        $reactionsCount = $post->reactions()
+            ->where('target_type', 'post') // Adiciona a condição target_type = 'post'
+            ->select('reaction_type', DB::raw('count(*) as total'))
+            ->groupBy('reaction_type')
+            ->pluck('total', 'reaction_type')
+            ->toArray();
+    
+        return response()->json($reactionsCount, 200);
+    }
+    
+    public function showReactions($postId)
+    {
+        $post = Post::find($postId);
+        
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+    
+        // Carregue as reações relacionadas ao post
+        $reactions = $post->reactions()->with('user')->get();
+    
+        // Get reaction icon for each reaction type
+        foreach ($reactions as $reaction) {
+            $reaction->icon = $this->getReactionIcon($reaction->reaction_type);
+        }
+    
+        return response()->json([
+            'reactions' => $reactions
+        ]);
+    }
+    
+    public function showReactionsPage($postId)
+    {
+        $post = Post::findOrFail($postId);
+    
+        // Carregar as reações com o usuário associado
+        $reactions = $post->reactions()->with('user')->get();
+    
+        // Add reaction icons to each reaction
+        foreach ($reactions as $reaction) {
+            $reaction->icon = $this->getReactionIcon($reaction->reaction_type);
+        }
+    
+        return view('pages.reactions', compact('post', 'reactions'));
+    }
+    
+
+    function getReactionIcon($type)
+    {
+        $icons = [
+            'like' => 'fa-heart',
+            'laugh' => 'fa-face-laugh-squint',
+            'cry' => 'fa-face-sad-cry',
+            'applause' => 'fa-hands-clapping',
+            'shocked' => 'fa-face-surprise'
+        ];
+
+        return $icons[$type] ?? 'fa-smile'; // Ícone padrão
+    }
+
 
 
 }

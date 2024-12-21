@@ -6,11 +6,7 @@
             <h5>
                 <strong>
                     <a 
-                        href="@if(auth()->check()) {{ route('user', ['id' => $post->user->id]) }} @else {{ route('login') }} @endif"
-                        @if(!auth()->check()) 
-                            onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                @else
-                        @endif
-                    >
+                        href=" {{ route('user', ['id' => $post->user->id]) }}">
                         @ {{ $post->user->username }}
                     </a>
                 </strong>
@@ -73,11 +69,20 @@
                     data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}"
                 @endif
             >
-                <i class="{{ $icon }}"></i>
+                <i class="{{ $icon }}"></i> 
+                <span class="reaction-count">{{ $post->reactions->where('reaction_type', $reaction)->count() }}</span>
+
             </button>
         @endforeach
     </div>
 
+
+    <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
+        <a href="{{ route('post.reactions', $post->id) }}">
+            {{ $post->reactions->count() }} 
+            {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
+        </a>
+    </span>
 
     <!-- Exibir comentários já existentes -->
     <div class="comment-section mt-4">

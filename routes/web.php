@@ -85,6 +85,7 @@ Route::get('user/{id}/pending-requests', [UserController::class, 'listPendingReq
 Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('user.friends');
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
+Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
 
 
 // Posts
