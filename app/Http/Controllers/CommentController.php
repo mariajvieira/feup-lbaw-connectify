@@ -35,7 +35,7 @@ class CommentController extends Controller
     }
 
 //edit comment
-    public function editComment(Request $request, $commentId)
+    public function updateComment(Request $request, $commentId)
     {
 
         $comment = Comment::find($commentId);

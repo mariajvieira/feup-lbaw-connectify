@@ -115,6 +115,7 @@ Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('r
 // Comments
 Route::post('/post/{id}/comment', [CommentController::class, 'store'])->name('comment.store');
 Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('comment.destroy');
+Route::put('/comments/{id}/edit', [CommentController::class, 'updateComment'])->name('comment.edit');
 
 
 // API Routes
