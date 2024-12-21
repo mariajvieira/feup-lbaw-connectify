@@ -10,7 +10,7 @@
     @if($group->is_public && !$group->users->contains(Auth::user()->id))
         <button id="join-group" data-group-id="{{ $group->id }}" class="btn btn-primary">Join this Public Group</button>
     @elseif($group->users->contains(Auth::user()->id))
-        <p>You are already a member of this group.</p>
+        <p>You are a member of this group!!.</p>
     @endif
 </div>
 @endsection
