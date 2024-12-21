@@ -140,7 +140,12 @@ Route::post('/group', [GroupController::class, 'store'])->name('group.store');
 
 Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
 
-
+// Go to the group page
+Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota para o feed principal
+Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show'); // Rota para exibir os detalhes de um grupo específico
+Route::get('/groups/{id}', [GroupController::class, 'show'])->name('group.show');
+Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
+Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 //Tagged posts
 Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');
 

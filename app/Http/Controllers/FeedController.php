@@ -2,25 +2,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class FeedController extends Controller
 {
-    /**
-     * Exibe os posts públicos e os dos amigos.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function index()
     {
         // Obtém o usuário logado
         $user = auth()->user();
-    
-        // Obtém os posts visíveis (do próprio usuário, amigos e públicos)
-        $posts = $user->Friends_Public_Posts();  // Chamando a função visiblePosts() que retorna os posts
-    
-        // Retorna a view com os posts
-        return view('pages.home', compact('posts'));
+
+        // Busca os posts visíveis (do próprio usuário, amigos e públicos)
+        $posts = $user->Friends_Public_Posts(); 
+
+        // Busca os grupos aos quais o usuário pertence como membro ou proprietário
+        $groupsAsMember = $user->groups;  // Grupos onde o usuário é membro
+        $ownedGroups = $user->ownedGroups;  // Grupos onde o usuário é proprietário
+
+        // Combina os grupos de membros e administradores
+        $groups = $groupsAsMember->merge($ownedGroups);
+
+        // Retorna a view com os dados (posts e grupos relevantes)
+        return view('pages.feed', compact('posts', 'groups'));
     }
 }

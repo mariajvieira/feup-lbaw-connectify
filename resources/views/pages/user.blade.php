@@ -1,10 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="container">
+    <div class="row">
+        <!-- Coluna para os grupos -->
+        <div class="col-md-3">
+            @include('partials.group-list', ['groups' => $user->groups])
+        </div>
 <div class="profile-container">
 <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; border: 1px solid #ddd; padding: 5px;">
     <h2>@ {{ $user->username }}</h2>
 
+
+    
 
     <div class="profile-info">
         @if($user->id==Auth::id())
@@ -62,74 +70,6 @@
         box-sizing: border-box; /* Inclui padding e border dentro da largura */
     }
 </style>
-
-<div class="container">
-    <!-- Grupos aos quais pertence -->
-    <div class="column">
-        <h3>Groups:</h3>
-        @if($user->id === auth()->id())
-            @if($user->groups->isEmpty())
-                <p>You don't belong to any group yet.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($user->groups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'No description available' }}</small>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        @else
-            @if($user->groups->isEmpty())
-                <p>This user doesn't belong to any group yet.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($user->groups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'No description available' }}</small>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        @endif
-    </div>
-
-    <!-- Grupos que o utilizador possui -->
-    <div class="column">
-        @if($user->id === auth()->id())
-        <h3>Groups you own:</h3>
-            @if($user->ownedGroups->isEmpty())
-                <p>You don't own any group yet.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($user->ownedGroups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'No description available' }}</small>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        @else
-        <h3>Groups this user owns:</h3>
-            @if($user->ownedGroups->isEmpty())
-                <p>This user doesn't own any group yet.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($user->ownedGroups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'No description available' }}</small>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        @endif
-    </div>
-</div>
-
 
 
 

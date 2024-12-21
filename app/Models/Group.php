@@ -6,28 +6,48 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    // Definir a tabela explicitamente, já que o nome da tabela não segue a convenção plural
+    // Definir a tabela explicitamente
     protected $table = 'group_'; // Tabela que você está usando
 
     public $timestamps = false;
-    
+
     // Definir os campos que podem ser preenchidos
     protected $fillable = [
         'group_name',    // Nome do grupo
         'description',   // Descrição do grupo
-        'owner_id',      // ID do proprietário do grupo (assumindo que é um usuário)
+        'owner_id',      // ID do proprietário do grupo
         'is_public'      // Se o grupo é público
     ];
 
-    // Definir a relação com o usuário (proprietário do grupo)
+    /**
+     * Relacionamento com o proprietário do grupo (um-para-um)
+     */
     public function owner()
     {
-        return $this->belongsToMany(User::class, 'group_owner', 'group_id', 'user_id')->wherePivot('user_id', $this->owner_id)->limit(1);
+        return $this->belongsTo(User::class, 'owner_id');  // Agora é um relacionamento 'belongsTo'
     }
 
-    // Relacionamento com os usuários do grupo
+    /**
+     * Relacionamento com os usuários do grupo (muitos-para-muitos)
+     */
     public function users()
     {
         return $this->belongsToMany(User::class, 'group_member', 'group_id', 'user_id');
+    }
+
+    /**
+     * Verificar se o usuário é membro do grupo
+     */
+    public function isMember(User $user)
+    {
+        return $this->users()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Verificar se o usuário é o proprietário do grupo
+     */
+    public function isOwner(User $user)
+    {
+        return $this->owner_id == $user->id;
     }
 }
