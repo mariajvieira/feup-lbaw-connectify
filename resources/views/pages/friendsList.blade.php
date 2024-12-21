@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 friendsList.innerHTML = '';
 
                 if (friends.length === 0) {
-                    friendsList.innerHTML = '<p>Você ainda não tem amigos.</p>';
+                    friendsList.innerHTML = '<p>You have no friends yet/p>';
                     return;
                 }
                 console.log(friends)

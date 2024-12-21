@@ -42,6 +42,7 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     profile_picture TEXT DEFAULT 'images/profile_pictures/default.png',
     password TEXT NOT NULL,
+    google_id VARCHAR,
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
 

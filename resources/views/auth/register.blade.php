@@ -38,4 +38,7 @@
     </button>
     <a class="button button-outline" href="{{ route('login') }}">Login</a>
 </form>
+
+<a href="{{ route('google-auth') }}">Continue with Google</a>
+
 @endsection

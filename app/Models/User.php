@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'is_public',
         "profile_picture",
+        'google_id'
     ];
 
     /**
