@@ -14,7 +14,7 @@
         </form>
     </div>
     <div class="results">
-    <!-- Tabs -->
+        <!-- Tabs -->
         <ul class="nav nav-tabs" id="searchTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link {{ request('tab') === 'users' || !request('tab') ? 'active' : '' }}" 
@@ -40,6 +40,14 @@
                     Comments
                 </a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ request('tab') === 'groups' ? 'active' : '' }}" 
+                id="groups-tab" 
+                href="?query={{ $query }}&tab=groups" 
+                role="tab">
+                    Groups
+                </a>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -54,12 +62,10 @@
                         <ul class="user-list">
                             @foreach ($usersFullText as $user)
                                 <li>
-                                    <a 
-                                        href="@if(auth()->check()) {{ route('user', $user->id) }} @else {{ route('login') }} @endif"
-                                        @if(!auth()->check()) 
-                                            onclick="alert('You need to login view profiles.'); window.location.href='{{ route('login') }}'; return false;"               
-                                        @endif
-                                    >
+                                    <a href="@if(auth()->check()) {{ route('user', $user->id) }} @else {{ route('login') }} @endif"
+                                       @if(!auth()->check()) 
+                                           onclick="alert('You need to login to view profiles.'); window.location.href='{{ route('login') }}'; return false;"               
+                                       @endif>
                                         @ {{ $user->username }}
                                     </a>
                                 </li>
@@ -67,7 +73,6 @@
                         </ul>
                     @endif
                 </div>
-
             @elseif(request('tab') === 'posts')
                 <!-- Posts Tab -->
                 <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
@@ -108,7 +113,25 @@
                         </ul>
                     @endif
                 </div>
-
+            @elseif(request('tab') === 'groups')
+                <!-- Groups Tab -->
+                <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+                    <h3>Groups</h3>
+                    @if($groupsFullText->isEmpty())
+                        <p>No groups found.</p>
+                    @else
+                        <ul class="group-list">
+                            @foreach ($groupsFullText as $group)
+                                <li>
+                                    <a href="{{ route('group.show', $group->id) }}">
+                                        {{ $group->name }}
+                                    </a>
+                                    <p>{{ $group->description }}</p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
             @endif
         </div>
     </div>

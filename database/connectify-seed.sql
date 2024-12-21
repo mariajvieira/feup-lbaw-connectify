@@ -248,6 +248,7 @@ CREATE INDEX idx_post_content ON post USING GIN (tsvectors);
 
 
 -- Group FTS index
+
 DROP FUNCTION IF EXISTS group_search_update() CASCADE;
 
 ALTER TABLE group_
@@ -278,6 +279,34 @@ FOR EACH ROW
 EXECUTE FUNCTION group_search_update();
 
 CREATE INDEX idx_group_description ON group_ USING GIN (tsvectors);
+
+-- Comment FTS index
+
+DROP FUNCTION IF EXISTS comment_search_update() CASCADE;
+
+ALTER TABLE comment_
+ADD COLUMN IF NOT EXISTS tsvectors TSVECTOR;
+
+CREATE FUNCTION comment_search_update() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN 
+        NEW.tsvectors := to_tsvector('portuguese', NEW.comment_content);
+    ELSIF TG_OP = 'UPDATE' THEN 
+        IF NEW.comment_content <> OLD.comment_content THEN
+            NEW.tsvectors := to_tsvector('portuguese', NEW.comment_content); 
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER comment_search_update
+BEFORE INSERT OR UPDATE ON comment_
+FOR EACH ROW
+EXECUTE FUNCTION comment_search_update();
+
+CREATE INDEX idx_comment_content ON comment_ USING GIN (tsvectors);
+
 
 -- Triggers 
 
