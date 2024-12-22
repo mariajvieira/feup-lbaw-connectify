@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
 
 class GroupController extends Controller
 {
@@ -113,4 +115,21 @@ class GroupController extends Controller
 
         return redirect()->route('group.show', $group->id)->with('error', 'You are not a member of this group.');
     }
+    public function removeMember($groupId, $userId)
+    {
+        $group = Group::findOrFail($groupId);
+        $user = User::findOrFail($userId);
+    
+        // Verifica se o usuário não é o owner do grupo
+        if ($group->owner_id == $user->id) {
+            return redirect()->route('group.show', $groupId)->with('error', 'You cannot remove the owner of the group.');
+        }
+    
+        // Remove o usuário do grupo
+        $group->users()->detach($userId); // Usa o relacionamento correto (users)
+    
+        return redirect()->route('group.show', $groupId)->with('success', 'Member removed successfully.');
+    }
+    
+
 }

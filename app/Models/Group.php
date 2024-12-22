@@ -50,4 +50,16 @@ class Group extends Model
     {
         return $this->owner_id == $user->id;
     }
+    public function showMembers($groupId)
+{
+    // Encontra o grupo ou falha
+    $group = Group::findOrFail($groupId);
+
+    // Carrega os membros associados ao grupo
+    $members = $group->users; // Assumindo que 'users' é o relacionamento Many-to-Many
+
+    // Passa os dados para a view
+    return view('group.members', compact('group', 'members'));
+}
+
 }

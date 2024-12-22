@@ -150,6 +150,7 @@ Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota pa
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show'); // Rota para exibir os detalhes de um grupo específico
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 
+
 //Join public group
 Route::post('/groups/{groupId}/join', [GroupController::class, 'joinPublicGroup'])->name('groups.join');
 
@@ -167,8 +168,10 @@ Route::controller(GoogleController::class)->group(function () {
 });
 
 // Delete user
-
 Route::delete('/delete-account/{userId?}', [DeleteAccountController::class, 'deleteAccount'])->name('delete.account');
-
 Route::get('/group/{groupId}/members', [GroupController::class, 'viewMembers'])->name('group.members');
 Route::get('/groups/{groupId}/leave', [GroupController::class, 'leaveGroup'])->name('group.leave');
+
+//Remove group member as owner
+Route::delete('/group/{group}/remove/{user}', [GroupController::class, 'removeMember'])->name('group.removeMember');
+Route::get('/group/{group}/members', [GroupController::class, 'showMembers'])->name('group.members');
