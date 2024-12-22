@@ -172,6 +172,17 @@ Route::delete('/delete-account/{userId?}', [DeleteAccountController::class, 'del
 Route::get('/group/{groupId}/members', [GroupController::class, 'viewMembers'])->name('group.members');
 Route::get('/groups/{groupId}/leave', [GroupController::class, 'leaveGroup'])->name('group.leave');
 
-//Remove group member as owner
+//Remove group member (owner)
 Route::delete('/group/{group}/remove/{user}', [GroupController::class, 'removeMember'])->name('group.removeMember');
 Route::get('/group/{group}/members', [GroupController::class, 'showMembers'])->name('group.members');
+
+// Add friend to group (owner)
+
+// Página principal do grupo
+Route::get('group/{groupId}', [GroupController::class, 'show'])->name('group.show');
+
+// Página de membros do grupo
+Route::get('group/{groupId}/members', [GroupController::class, 'viewMembers'])->name('group.members');
+
+// Rota para adicionar amigos ao grupo
+Route::post('group/{groupId}/addFriend', [GroupController::class, 'addFriendToGroup'])->name('group.addFriend');
