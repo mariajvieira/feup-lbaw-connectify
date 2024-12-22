@@ -133,6 +133,41 @@
         </div>
     @endif
 
+
+
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <h3 class="mb-3">Your groups:</h3>
+            @if($user->groups->isEmpty())
+                <p>You don't belong to any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->groups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+        <div class="col-md-8 offset-md-2">
+            <h3 class="mb-3">Groups you own:</h3>
+            @if($user->ownedGroups->isEmpty())
+                <p>You don't  own any group yet.</p>
+            @else
+                <ul class="list-group">
+                    @foreach($user->ownedGroups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
     <!-- Posts Section -->
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
