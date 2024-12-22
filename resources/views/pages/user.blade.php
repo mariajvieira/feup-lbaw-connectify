@@ -3,16 +3,11 @@
 @section('content')
 <div class="container">
     <div class="row">
-        <!-- Coluna para os grupos -->
-        <div class="col-md-3">
-            @include('partials.group-list', ['groups' => $user->groups])
-        </div>
+
 <div class="profile-container">
 <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px; display: block; border: 1px solid #ddd; padding: 5px;">
     <h2>@ {{ $user->username }}</h2>
 
-
-    
 
     <div class="profile-info">
         @if($user->id==Auth::id())

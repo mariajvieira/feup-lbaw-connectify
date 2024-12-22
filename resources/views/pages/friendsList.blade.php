@@ -4,7 +4,7 @@
 <div class="container">
     <h3>My Friends</h3>
     <ul id="friends-list">
-        <!-- A lista será preenchida dinamicamente via JavaScript -->
+
     </ul>
 </div>
 

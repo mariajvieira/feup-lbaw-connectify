@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Group;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-    // Mostrar o formulário para criar um grupo
     public function create()
     {
         return view('partials.creategroup');
@@ -45,25 +44,21 @@ class GroupController extends Controller
         return view('pages.group', compact('group'));
     }
 
-    // Mostrar todos os grupos no feed principal
+    use Illuminate\Support\Facades\Log;
+
     public function index()
     {
-        // Obtém o usuário logado
         $user = auth()->user();
-        
-        // Obtém os grupos aos quais o usuário pertence como membro
-        $groupsAsMember = $user->groups;  // Relacionamento com a tabela pivot 'group_member'
-        
-        // Obtém os grupos onde o usuário é proprietário
-        $ownedGroups = $user->ownedGroups;  // Relacionamento com a tabela pivot 'group_owner'
-
-        // Combina os grupos de membros e administradores
+    
+        $groupsAsMember = $user->groups;
+        Log::info('Groups as member:', $groupsAsMember->toArray());
+    
+        $ownedGroups = $user->ownedGroups;
+        Log::info('Owned groups:', $ownedGroups->toArray());
+    
         $allGroups = $groupsAsMember->merge($ownedGroups);
-
-        // Obtém os posts visíveis do usuário e dos seus amigos
-        $posts = $user->visiblePosts(); 
-
-        // Retorna a view com todos os grupos e posts
-        return view('pages.home', compact('posts', 'allGroups'));
+        Log::info('All groups:', $allGroups->toArray());
+    
+        return view('layouts.app', compact('allGroups'));
     }
 }

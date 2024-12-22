@@ -41,7 +41,7 @@
                     </a>
                 </h1>
                 <!-- Barra de busca -->
-                <form action="{{ route('search') }}" method="GET" class="d-flex">
+                <form action="{{ route('search') }}" method="GET" class="d-flex ms-auto">
                     <input 
                         type="text" 
                         name="query" 
@@ -49,8 +49,10 @@
                         placeholder="Search posts, users, comments..." 
                         class="form-control me-2" 
                         value="{{ request('query') }}" 
+                        style="width: 400px; border-radius: 25px;" 
                         required>
                 </form>
+
             </div>
             <div class="d-flex align-items-center gap-3">
                 @auth
@@ -93,7 +95,11 @@
                     <a href="{{ route('post.create') }}" class="btn btn-custom w-100 mb-2">New Post</a>
                 </div>
                 @endauth
+
+                @include('partials.group-list', ['groups' => $allGroups])
+
             </div>
+
 
             <!-- Content Area -->
             <main class="col-md-6 col-lg-8 offset-md-3 offset-lg-2">
@@ -103,6 +109,7 @@
             </main>
         </div>
     </div>
+
 
     <footer class="text-center py-3 mt-auto bg-light">
         <p>Connectify 2024</p>
