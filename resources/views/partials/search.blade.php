@@ -96,52 +96,76 @@
                     </div>
                 @elseif(request('tab') === 'comments')
                     <!-- Comments Tab -->
-                    <div class="tab-pane fade" id="comments" role="tabpanel" aria-labelledby="comments-tab">
-                        <h3 class="h5">Comments</h3>
-                        @if($commentsFullText->isEmpty())
-                            <p>No comments found.</p>
-                        @else
-                            <ul class="list-group">
-                                @foreach ($commentsFullText as $comment)
-                                    <li class="list-group-item">
-                                        <p>
-                                            <strong>
+                    <div class="tab-pane fade {{ request('tab') === 'comments' ? 'show active' : '' }}" id="comments" role="tabpanel" aria-labelledby="comments-tab">
+                    <h3 class="h5">Comments</h3>
+                    @if($commentsFullText->isEmpty())
+                        <p>No comments found.</p>
+                    @else
+                        <ul class="list-group">
+                            @foreach ($commentsFullText as $comment)
+                                <li class="list-group-item">
+                                    <p>
+                                        <strong>
+                                            @if($comment->user)
                                                 <a href="{{ route('user', ['id' => $comment->user->id]) }}">
                                                     {{ $comment->user->username }}
                                                 </a>
-                                            </strong>: 
-                                            {{ $comment->comment_content }}
-                                        </p>
-                                        <p>
-                                            <small>
-                                                On post: <a href="{{ route('post', ['id' => $comment->post_id]) }}">{{ $comment->post->content }}</a>
-                                            </small>
-                                        </p>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
+                                            @else
+                                                <span>User not found</span>
+                                            @endif
+                                        </strong>: 
+                                        {{ $comment->comment_content }}
+                                    </p>
+                                    <p>
+                                        <small>
+                                            @if($comment->post)
+                                                On post: 
+                                                <a href="{{ route('post', ['id' => $comment->post_id]) }}">
+                                                    {{ $comment->post->content }}
+                                                </a>
+                                            @else
+                                                <span>Post not found</span>
+                                            @endif
+                                        </small>
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
                 @elseif(request('tab') === 'groups')
-                    <!-- Groups Tab -->
-                    <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
-                        <h3 class="h5">Groups</h3>
-                        @if($groupsFullText->isEmpty())
-                            <p>No groups found.</p>
+    <!-- Groups Tab -->
+    <div class="tab-pane fade {{ request('tab') === 'groups' ? 'show active' : '' }}" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+        <h3 class="h5">Groups</h3>
+        @if($groupsFullText->isEmpty())
+            <p>No groups found.</p>
+        @else
+            <ul class="list-group">
+                @foreach ($groupsFullText as $group)
+                    <li class="list-group-item">
+                        @if($group)
+                            <!-- Nome do Grupo e Link -->
+                            <a href="{{ route('group.show', $group->id) }}" class="text-decoration-none text-custom fw-bold">
+                                {{ $group->name }}
+                            </a>
+                            <!-- Descrição opcional -->
+                            @if($group->description)
+                                <p class="mb-0 text-muted">{{ $group->description }}</p>
+                            @endif
                         @else
-                            <ul class="list-group">
-                                @foreach ($groupsFullText as $group)
-                                    <li class="list-group-item">
-                                        <a href="{{ route('group.show', $group->id) }}">
-                                            {{ $group->name }}
-                                        </a>
-                                        <p>{{ $group->description }}</p>
-                                    </li>
-                                @endforeach
-                            </ul>
+                            <p>Group not found</p>
                         @endif
-                    </div>
-                @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+@endif
+
+                    
+        
+
+
             </div>
         </div>
     </div>
