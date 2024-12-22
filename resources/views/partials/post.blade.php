@@ -46,12 +46,33 @@
         @endif
     </div>
 
-    <span class="post-date text-muted small">Published at: {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</span>
 
     @php
         $userReaction = $post->reactions()->where('user_id', auth()->id())->first();
     @endphp
-
+    <!-- Reactions à direita do post -->
+    <div class="post-reactions d-flex justify-content-end ms-3">
+        @foreach ([
+            'like' => 'fa-regular fa-heart',
+            'laugh' => 'fa-regular fa-face-laugh-squint',
+            'cry' => 'fa-regular fa-face-sad-cry',
+            'applause' => 'fa-solid fa-hands-clapping', 
+            'shocked' => 'fa-regular fa-face-surprise'
+            ] as $reaction => $icon)
+            <button 
+                class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'btn-outline-danger' : 'btn-outline-secondary' }} btn"
+                data-reaction-type="{{ $reaction }}" 
+                data-post-id="{{ $post->id }}"
+                @if (!auth()->check())
+                    onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                
+                @else
+                    data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}"
+                @endif
+            >
+                <i class="{{ $icon }}"></i> 
+            </button>
+        @endforeach
+    </div>
 
     <div>
     <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
@@ -86,10 +107,9 @@
     <!-- Save -->
     @if (auth()->check())
     <div class="post" data-id="{{ $post->id }}">
-        <p>{{ $post->content }}</p>
 
         <!-- Botões de salvar ou removido -->
-        <button class="save-post-btn" 
+        <button class="save-post-btn btn-custom" 
                 data-post-id="{{ $post->id }}"
                 data-saved="{{ Auth::user()->savedPosts->contains($post) ? 'true' : 'false' }}">
             <i class="fa{{ Auth::user()->savedPosts->contains($post) ? 's' : 'r' }} fa-bookmark"></i>
@@ -99,27 +119,8 @@
 @endif
 
 
-    <!-- Reactions à direita do post -->
-    <div class="post-reactions d-flex justify-content-end ms-3">
-        @foreach ([
-            'like' => 'fa-regular fa-heart',
-            'laugh' => 'fa-regular fa-face-laugh-squint',
-            'cry' => 'fa-regular fa-face-sad-cry',
-            'applause' => 'fa-solid fa-hands-clapping', 
-            'shocked' => 'fa-regular fa-face-surprise'
-            ] as $reaction => $icon)
-            <button 
-                class="reaction-button {{ $userReaction && $userReaction->reaction_type === $reaction ? 'btn-outline-danger' : 'btn-outline-secondary' }} btn"
-                data-reaction-type="{{ $reaction }}" 
-                data-post-id="{{ $post->id }}"
-                @if (!auth()->check())
-                    onclick="alert('You need to login to react.'); window.location.href='{{ route('login') }}'; return false;"                
-                @else
-                    data-reaction-id="{{ $userReaction && $userReaction->reaction_type === $reaction ? $userReaction->id : '' }}"
-                @endif
-            >
-                <i class="{{ $icon }}"></i> 
-            </button>
-        @endforeach
-    </div>
+
+
+    <span class="post-date text-muted small">Published at: {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</span>
+
 </div>

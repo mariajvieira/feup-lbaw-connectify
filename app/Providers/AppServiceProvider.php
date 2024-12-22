@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View; 
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 
@@ -34,5 +36,19 @@ class AppServiceProvider extends ServiceProvider
             'post' => 'App\Models\Post',
             'comment' => 'App\Models\Comment',
         ]);
+
+
+        View::composer(['layouts.app'], function ($view) {
+            if (Auth::check()) {
+                $user = Auth::user();
+                $groupsAsMember = $user->groups;
+                $ownedGroups = $user->ownedGroups;
+                $allGroups = $groupsAsMember->merge($ownedGroups);
+                $view->with('allGroups', $allGroups);
+            } else {
+                $view->with('allGroups', collect()); // Caso não esteja autenticado, usa uma coleção vazia
+            }
+
+        });
     }
 }

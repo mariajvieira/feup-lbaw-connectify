@@ -3,16 +3,17 @@
 
 
 @section('content')
-<div class="container">
-    <h2>Saved Posts</h2>
-
-    @if($posts->isEmpty())
-        <p>No post saved yet.</p>
-    @else
-        <div class="post-list">
+<div class="row mt-4">
+    <div class="col-md-8 offset-md-2">
+        <h5 class="mb-3">Saved Posts</h5>
+        @if($posts->isEmpty())
+            <p>No post saved yet.</p>
+        @else
+        <div class="mb-4">
             @include('pages.posts', ['posts' => $posts])
         </div>
-    @endif
+        @endif
+    </div>
 </div>
 
 @if ($errors->any())

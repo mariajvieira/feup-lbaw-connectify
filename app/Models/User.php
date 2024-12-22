@@ -203,11 +203,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Group::class, 'group_member', 'user_id', 'group_id');
     }
 
-    // Relação com os grupos em que o usuário é proprietário
     public function ownedGroups()
     {
-        return $this->belongsToMany(Group::class, 'group_owner', 'user_id', 'group_id');
+        return $this->hasMany(Group::class, 'owner_id');  // Note que a chave estrangeira é 'owner_id'
     }
+
 
     // Relacionamento com posts salvos
     public function savedPosts()

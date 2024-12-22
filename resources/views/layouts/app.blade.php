@@ -41,7 +41,7 @@
                     </a>
                 </h1>
                 <!-- Barra de busca -->
-                <form action="{{ route('search') }}" method="GET" class="d-flex">
+                <form action="{{ route('search') }}" method="GET" class="d-flex ms-auto">
                     <input 
                         type="text" 
                         name="query" 
@@ -49,14 +49,13 @@
                         placeholder="Search users, posts, comments, groups..." 
                         class="form-control me-2" 
                         value="{{ request('query') }}" 
+                        style="width: 400px; border-radius: 25px;" 
                         required>
                 </form>
+
             </div>
             <div class="d-flex align-items-center gap-3">
                 @auth
-                    @can('createUser', App\Models\User::class)
-                        <a href="{{ route('user.create') }}" class="btn btn-custom">New User</a>
-                    @endcan
                     <a href="{{ route('home') }}" class="btn btn-custom">Friends</a>
                     <a href="{{ route('feed') }}" class="btn btn-custom">
                         <i class="fa-solid fa-house me-2"></i>
@@ -73,8 +72,8 @@
                     </form>
 
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
-                    <a href="{{ route('register') }}" class="btn btn-outline-primary">Register</a>
+                    <a href="{{ route('login') }}" class="btn btn-custom">Login</a>
+                    <a href="{{ route('register') }}" class="btn btn-custom">Register</a>
                 @endauth
             </div>
         </div>
@@ -89,11 +88,18 @@
                 <div class="mb-3">
                     <a href="{{ route('tagged.posts') }}" class="btn btn-custom w-100 mb-2">Tagged Posts</a>
                     <a href="{{ route('saved.posts') }}" class="btn btn-custom w-100 mb-2">Saved</a>
+                    @can('createUser', App\Models\User::class)
+                        <a href="{{ route('user.create') }}" class="btn btn-custom w-100 mb-2">New User</a>
+                    @endcan
                     <a href="{{ route('group.create') }}" class="btn btn-custom w-100 mb-2">New Group</a>
                     <a href="{{ route('post.create') }}" class="btn btn-custom w-100 mb-2">New Post</a>
                 </div>
                 @endauth
+
+                @include('partials.group-list', ['groups' => $allGroups])
+
             </div>
+
 
             <!-- Content Area -->
             <main class="col-md-6 col-lg-8 offset-md-3 offset-lg-2">
@@ -103,6 +109,7 @@
             </main>
         </div>
     </div>
+
 
     <footer class="text-center py-3 mt-auto bg-light">
         <p>Connectify 2024</p>

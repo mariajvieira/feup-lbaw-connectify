@@ -34,7 +34,9 @@ class GroupController extends Controller
         // Adicionar o proprietário à tabela de membros (group_member)
         $group->users()->attach(Auth::id());
 
-        $group->owner()->attach(Auth::id());
+        // Não é necessário o 'attach()' para o proprietário, pois já foi feito no 'owner_id'
+        // $group->owner()->attach(Auth::id()); // Remover esta linha
+
         // Redirecionar para a página do grupo
         return redirect()->route('group.show', $group->id);
     }
@@ -72,22 +74,21 @@ class GroupController extends Controller
 
     // Função para permitir que o usuário entre em um grupo público
     public function joinPublicGroup($groupId)
-{
-    $group = Group::findOrFail($groupId);
+    {
+        $group = Group::findOrFail($groupId);
 
-    // Verifica se o grupo é público
-    if (!$group->is_public) {
-        return response()->json(['message' => 'This is not a public group'], 400);
+        // Verifica se o grupo é público
+        if (!$group->is_public) {
+            return response()->json(['message' => 'This is not a public group'], 400);
+        }
+
+        // Adiciona o usuário ao grupo, se não for o dono do grupo e não for membro
+        if (!$group->users->contains(Auth::user()->id)) {
+            $group->users()->attach(Auth::id());
+
+            return response()->json(['message' => 'Successfully joined the group!'], 200);
+        }
+
+        return response()->json(['message' => 'You are already a member of this group.'], 400);
     }
-
-    // Adiciona o usuário ao grupo, se não for o dono do grupo e não for membro
-    if (!$group->users->contains(Auth::user()->id)) {
-        $group->users()->attach(Auth::id());
-
-        return response()->json(['message' => 'Successfully joined the group!'], 200);
-    }
-
-    return response()->json(['message' => 'You are already a member of this group.'], 400);
-}
-
 }

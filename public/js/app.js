@@ -247,12 +247,11 @@ function addReactionEventListeners() {
     button.addEventListener('click', react);
   });
 }
-
 function react(event) {
   const button = event.target;
   const reactionType = button.getAttribute('data-reaction-type');
   const postId = button.getAttribute('data-post-id');
-  let reactionId = button.getAttribute('data-reaction-id'); // Obter o ID da reação, se houver
+  let reactionId = button.getAttribute('data-reaction-id'); 
 
   if (reactionId) {
     if (button.classList.contains('btn-outline-danger')) {
@@ -277,7 +276,6 @@ function react(event) {
           button.classList.remove('btn-outline-danger');
           button.classList.add('btn-outline-secondary');
           button.removeAttribute('data-reaction-id');
-          alert(data.message);
         } else {
           console.error('Erro ao apagar a reação:', data.error);
         }
@@ -312,7 +310,6 @@ function react(event) {
           button.classList.remove('btn-outline-secondary');
           button.classList.add('btn-outline-danger');
           button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
-          alert(data.message);
         } else {
           console.error('Erro ao registar a reação:', data.error);
         }
@@ -346,7 +343,6 @@ function react(event) {
         button.classList.remove('btn-outline-secondary');
         button.classList.add('btn-outline-danger');
         button.setAttribute('data-reaction-id', data.reaction_id); // Atualizar o ID da reação
-        alert(data.message);
       } else {
         console.error('Erro ao registar a reação:', data.error);
       }

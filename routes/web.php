@@ -83,6 +83,7 @@ Route::get('/user/create', [UserController::class, 'createUser'])->name('user.cr
 Route::post('/user/create', [UserController::class, 'storeUser'])->name('user.store');
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
+Route::put('/user/{id}/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');
 Route::get('user/{id}/pending-requests', [UserController::class, 'listPendingRequests'])->name('user.listRequests');
 Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('user.friends');
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
@@ -137,18 +138,13 @@ Route::get('/group/create', [GroupController::class, 'create'])->name('group.cre
 
 // Armazenar novo grupo
 //Route::post('/group/store', [GroupController::class, 'store'])->name('group.store');
-
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
-
 Route::post('/group', [GroupController::class, 'store'])->name('group.store');
-
 Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
 
 // Go to the group page
 Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota para o feed principal
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show'); // Rota para exibir os detalhes de um grupo específico
-Route::get('/groups/{id}', [GroupController::class, 'show'])->name('group.show');
-Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 
 //Join public group

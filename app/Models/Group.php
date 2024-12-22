@@ -24,7 +24,7 @@ class Group extends Model
      */
     public function owner()
     {
-        return $this->belongsTo(User::class, 'owner_id');  // Agora é um relacionamento 'belongsTo'
+        return $this->belongsTo(User::class, 'owner_id');  // Relacionamento belongsTo
     }
 
     /**
