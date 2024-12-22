@@ -194,7 +194,7 @@ class User extends Authenticatable
                     ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
     }
 
-
+    
 }
 
 

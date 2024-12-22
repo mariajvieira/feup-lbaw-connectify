@@ -72,5 +72,9 @@ public function taggedUsers()
                 ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
 }
 
+public function savedByUsers()
+{
+    return $this->belongsToMany(User::class, 'saved_posts');
+}
 
 }

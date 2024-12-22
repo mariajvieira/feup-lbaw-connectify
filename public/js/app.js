@@ -18,63 +18,66 @@ window.addEventListener('DOMContentLoaded', function () {
   mainContent.style.paddingTop = headerHeight + 'px';
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.saveButton').forEach(saveButton => {
-    saveButton.addEventListener('click', function () {
-      const postId = saveButton.getAttribute('data-post-id');
-      const icon = saveButton.querySelector('i');
+document.addEventListener('DOMContentLoaded', function() {
+  // Adicionar eventos aos botões de salvar
+  document.querySelectorAll('.save-post-btn').forEach(button => {
+      button.addEventListener('click', function() {
+          const postId = button.getAttribute('data-post-id');
+          const isSaved = button.getAttribute('data-saved') === 'true';
 
-      // Desabilita o botão para evitar múltiplos cliques rápidos
-      saveButton.disabled = true;
-
-      // Verifica se o post já está salvo (baseado na classe do ícone)
-      const isSaved = icon.classList.contains('fa-solid');
-
-      // Define a ação com base no estado atual
-      const action = isSaved ? 'remove' : 'save';
-
-      // Envia a requisição AJAX
-      fetch('/save-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-          post_id: postId,
-          action: action // 'save' ou 'remove'
-        })
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Erro na resposta do servidor');
-          }
-          return response.json(); // Transforma a resposta JSON
-        })
-        .then(data => {
-          if (data.saved) {
-            // Atualiza o botão e o ícone para indicar que o post foi salvo
-            icon.classList.remove('fa-regular');
-            icon.classList.add('fa-solid');
-            saveButton.innerHTML = '<i class="fa-solid fa-bookmark"></i> Saved';
+          if (isSaved) {
+              removeSavePost(postId, button);
           } else {
-            // Atualiza o botão e o ícone para indicar que o post foi removido
-            icon.classList.remove('fa-solid');
-            icon.classList.add('fa-regular');
-            saveButton.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save';
+              savePost(postId, button);
           }
-        })
-        .catch(error => {
-          console.error('Erro na requisição:', error);
-          alert('Erro ao processar a requisição.');
-        })
-        .finally(() => {
-          // Reabilita o botão após a resposta
-          saveButton.disabled = false;
-        });
-    });
+      });
   });
 });
+
+// Função para salvar o post
+function savePost(postId, button) {
+  fetch('/save-post', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ post_id: postId })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.saved) {
+          button.innerHTML = '<i class="fa-solid fa-bookmark"></i> Saved';
+          button.setAttribute('data-saved', 'true');
+      }
+  })
+  .catch(error => {
+      console.error('Erro ao salvar o post:', error);
+  });
+}
+
+// Função para remover o post salvo
+function removeSavePost(postId, button) {
+  fetch('/remove-save-post', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ post_id: postId })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (!data.saved) {
+          button.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save';
+          button.setAttribute('data-saved', 'false');
+      }
+  })
+  .catch(error => {
+      console.error('Erro ao remover o post salvo:', error);
+  });
+}
+
 
 function addEventListeners() {
   let postCheckers = document.querySelectorAll('.post-item input[type=checkbox]');
