@@ -362,55 +362,149 @@ function addCommentEventListeners() {
   });
 }
 
-function sendCreateCommentRequest(event) {
-  const form = event.target.closest('.create-comment');
-  const postId = form.getAttribute('data-post-id');
-  const commentContent = form.querySelector('textarea[name=comment-content]').value;
 
-  const data = {
-      comment: commentContent,
-      post_id: postId,
+document.addEventListener('DOMContentLoaded', function () {
+  // Adiciona evento de submit ao formulário de comentário
+  const commentForms = document.querySelectorAll('.add-comment-form');
+  commentForms.forEach(function (form) {
+      form.addEventListener('submit', postComment);
+  });
+});
+
+function postComment(e) {
+  e.preventDefault(); // Impede o envio normal do formulário
+
+  const form = e.target;
+  const postId = form.dataset.postId;
+  const commentContent = form.querySelector('#comment').value;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', form.action, true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+  xhr.onload = function () {
+      if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          if (response.id) {
+              // Limpa o campo de comentário após o envio
+              form.querySelector('#comment').value = '';
+              
+              // Atualiza a lista de comentários
+              updateCommentList(postId);
+          }
+      }
   };
 
-  sendAjaxRequest('POST', form.action, data, commentAddedHandler.bind(null, form));
+  xhr.send(`_token=${encodeURIComponent(document.querySelector('meta[name="csrf-token"]').getAttribute('content'))}&comment=${encodeURIComponent(commentContent)}`);
 }
 
-function commentAddedHandler(form) {
-  if (this.status !== 201) {
-      console.error('Erro ao adicionar o comentário');
-      return;
+function updateCommentList(postId) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/post/${postId}/comments`, true);
+
+  xhr.onload = function () {
+      if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          const commentListContainer = document.querySelector('.comment-section .comments-list');
+          
+          // Limpa os comentários atuais
+          commentListContainer.innerHTML = '';
+          
+          // Adiciona os comentários atualizados
+          response.comments.forEach(comment => {
+              const commentHtml = `
+                  <div class="comment mt-2" id="comment-${comment.id}">
+                      <strong>${comment.username}:</strong> ${comment.comment_content}
+                  </div>
+              `;
+              commentListContainer.insertAdjacentHTML('beforeend', commentHtml);
+          });
+      }
+  };
+
+  xhr.send();
+}
+
+// Exclusão de comentário
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('delete-comment')) {
+      e.preventDefault();
+      
+      var confirmed = confirm('Are you sure you want to delete this comment? This action cannot be undone.');
+      if (confirmed) {
+          var form = e.target.closest('form');
+          var xhr = new XMLHttpRequest();
+          xhr.open(form.method, form.action, true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          
+          var formData = new FormData(form);
+          var queryString = new URLSearchParams(formData).toString();
+          
+          xhr.onload = function() {
+              if (xhr.status === 200) {
+                  var commentElement = form.closest('.comment');
+                  commentElement.remove();
+                  alert('The comment has been excluded successfully.');
+              } else {
+                  alert('Error excluding comment.');
+              }
+          };
+          
+          xhr.send(queryString);
+      }
   }
+});
 
-  const comment = JSON.parse(this.responseText);
-  const commentsContainer = form.closest('.comments');
-  const newComment = document.createElement('div');
-  newComment.classList.add('comment-item');
-  newComment.setAttribute('data-id', comment.id);
-  newComment.innerHTML = `
-      <span>${comment.user.name}: ${comment.content}</span>
-      <button class="delete-comment-btn">Delete</button>
-  `;
+// Edição de comentário
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('edit-comment')) {
+      var commentId = e.target.dataset.commentId;
+      var commentContent = e.target.closest('.comment').querySelector('.comment-text').textContent.trim();
+      
+      var editField = `<input type="text" class="form-control edit-comment-field" value="${commentContent}" />`;
+      e.target.closest('.comment').querySelector('.comment-text').innerHTML = editField;
 
-  commentsContainer.appendChild(newComment);
-
-  newComment.querySelector('.delete-comment-btn').addEventListener('click', sendDeleteCommentRequest);
-}
-
-function sendDeleteCommentRequest(event) {
-  const commentId = event.target.closest('.comment-item').getAttribute('data-id');
-  sendAjaxRequest('DELETE', `/api/comments/${commentId}`, null, commentDeletedHandler);
-}
-
-function commentDeletedHandler() {
-  if (this.status !== 200) {
-      console.error('Erro ao deletar o comentário');
-      return;
+      e.target.innerHTML = '<i class="fa-solid fa-save"></i> ';
+      e.target.classList.remove('edit-comment');
+      e.target.classList.add('save-comment');
   }
+});
 
-  const comment = JSON.parse(this.responseText);
-  const commentElement = document.querySelector(`.comment-item[data-id="${comment.id}"]`);
-  commentElement.remove();
-}
+// Salvar edição do comentário
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('save-comment')) {
+      var button = e.target;
+      var commentId = button.dataset.commentId;
+      var newContent = button.closest('.comment').querySelector('.edit-comment-field').value;
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', '/comments/' + commentId + '/edit', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      
+      var formData = new URLSearchParams();
+      formData.append('_token', '{{ csrf_token() }}');
+      formData.append('content', newContent);
+      
+      xhr.onload = function() {
+          if (xhr.status === 200) {
+              button.closest('.comment').querySelector('.comment-text').innerHTML = newContent;
+              
+              button.innerHTML = '<i class="fa-solid fa-pen"></i>';
+              button.classList.remove('save-comment');
+              button.classList.add('edit-comment');
+          } else {
+              alert('Erro ao salvar o comentário: ' + xhr.responseText);
+          }
+      };
+      
+      xhr.send(formData.toString());
+  }
+});
+
+
+
+
 document.addEventListener('DOMContentLoaded', function () {
   // Verifica se o botão "Join this Public Group" existe
   const joinButton = document.getElementById('join-group');
@@ -446,9 +540,9 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 });
-// Código JavaScript no app.js
 
-// Espera o DOM estar pronto
+
+
 document.addEventListener('DOMContentLoaded', function () {
   const deleteAccountBtn = document.getElementById('deleteAccountBtn');
   const confirmDeleteModal = document.getElementById('confirmDeleteModal');

@@ -36,10 +36,10 @@ class CommentController extends Controller
         return redirect()->route('home')->with('success', 'Comment posted successfully!');
     }
 
-//edit comment
-    public function updateComment(Request $request, $commentId)
-    {
 
+//edit comment
+    public function update(Request $request, $commentId)
+    {
         $comment = Comment::find($commentId);
         $this->authorize('edit', $comment);
 
@@ -47,11 +47,15 @@ class CommentController extends Controller
             return response()->json(['message' => 'Comment not found'], 404);
         }
 
+        $request->validate([
+            'content' => 'required|string|max:255',
+        ]);
         $comment->comment_content = $request->input('content'); 
         $comment->save();
 
         return response()->json(['message' => 'Comment updated successfully'], 200);
     }
+
 
 // Get post comments
     public function getComments($postId)
@@ -78,8 +82,7 @@ class CommentController extends Controller
         }
 
         $comment->delete();
-            //return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); // Definido explicitamente o status 200
-        return redirect()->route('home')->with('success', 'Comment successfully deleted!');
+        return response()->json(['message' => 'Comentário excluído com sucesso.'], 200); 
     }
     
 
