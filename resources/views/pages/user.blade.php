@@ -63,7 +63,8 @@
         <div class="col-md-8">
             <div>
                 <div class="card-body text-center">
-                    <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+                    <img src="{{ route('profile.picture', parameters: ['id' => $user->id]) }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+
                     <h2 class="card-title">@ {{ $user->username }}</h2>
 
                     <div class="mb-3">
@@ -151,6 +152,56 @@
             </div>
         </div>
     @endif
+
+
+
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <h3 class="mb-3">Groups:</h3>
+            @if($user->groups->isEmpty())
+                @if(auth()->check() && auth()->user()->id === $user->id)
+                    <p>You don't belong to any group yet.</p>
+                @else
+                    <p>This user doesn't belong to any group yet.</p>
+                @endif
+            @else
+                <ul class="list-group">
+                    @foreach($user->groups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+
+        <div class="col-md-8 offset-md-2">
+            @if(auth()->check() && auth()->user()->id === $user->id)
+                <h3 class="mb-3">Groups you own:</h3>
+            @else
+            <h3 class="mb-3">Groups @ {{ $user->username }} owns:</h3> 
+            @endif
+
+            @if($user->ownedGroups->isEmpty())
+                @if(auth()->check() && auth()->user()->id === $user->id)
+                    <p>You don't own any group yet.</p>
+                @else
+                    <p>This user doesn't own any group yet.</p>
+                @endif
+            @else
+                <ul class="list-group">
+                    @foreach($user->ownedGroups as $group)
+                        <li class="list-group-item">
+                            <strong>{{ $group->group_name }}</strong><br>
+                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
 
     <!-- Posts Section -->
     <div class="row mt-4">

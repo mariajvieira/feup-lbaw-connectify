@@ -91,4 +91,26 @@ class GroupController extends Controller
 
         return response()->json(['message' => 'You are already a member of this group.'], 400);
     }
+
+    public function viewMembers($groupId)
+    {
+        $group = Group::with('users')->findOrFail($groupId); // Carregar os usuários do grupo
+        $members = $group->users;
+
+        return view('pages.group_members', compact('group', 'members'));
+    }
+
+    public function leaveGroup($groupId)
+    {
+        $group = Group::findOrFail($groupId);
+
+        // Verifica se o usuário é membro do grupo
+        if ($group->users->contains(Auth::id())) {
+            $group->users()->detach(Auth::id()); // Remove o usuário do grupo
+
+            return redirect()->route('group.show', $group->id)->with('message', 'You have left the group successfully.');
+        }
+
+        return redirect()->route('group.show', $group->id)->with('error', 'You are not a member of this group.');
+    }
 }
