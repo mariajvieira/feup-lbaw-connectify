@@ -73,13 +73,6 @@ CREATE TABLE post (
     CHECK ((content IS NOT NULL OR IMAGE1 IS NOT NULL) OR group_id IS NULL)
 );
 
--- CREATE TABLE tagged_post (
---     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE, -- id do user marcado
---     post_id INT NOT NULL REFERENCES posts(id) ON UPDATE CASCADE, 
---     -- tagged_by INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,  --id do user que marcou
---     PRIMARY KEY (user_id, post_id)
--- );
-
 CREATE TABLE posts (
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     post_id INT NOT NULL REFERENCES post(id) ON UPDATE CASCADE,
@@ -312,48 +305,6 @@ CREATE INDEX idx_comment_content ON comment_ USING GIN (tsvectors);
 -- Triggers 
 
 -- TRIGGER01: Enforces that only approved friends can view private profiles (BR01, BR07)
-CREATE OR REPLACE FUNCTION enforce_profile_visibility_update()
-RETURNS TRIGGER AS $$
-DECLARE
-    current_user_id INTEGER;
-BEGIN
-    SELECT id INTO current_user_id
-    FROM users
-    WHERE username = NEW.username
-    LIMIT 1;
-
-    IF NEW.password IS DISTINCT FROM OLD.password THEN
-        IF NEW.is_public IS DISTINCT FROM OLD.is_public
-            OR NEW.username IS DISTINCT FROM OLD.username
-            OR NEW.email IS DISTINCT FROM OLD.email THEN
-        ELSE
-            RETURN NEW; 
-        END IF;
-    END IF;
-
-    IF NEW.id = current_user_id THEN
-        RAISE NOTICE 'User editing own profile. NEW.id: %, current_user_id: %', NEW.id, current_user_id;
-        RETURN NEW; -- Permite a alteração
-    ELSIF EXISTS (
-        SELECT 1 
-        FROM administrator
-        WHERE user_id = current_user_id
-    ) THEN
-        RAISE NOTICE 'Administrator editing profile.';
-        RETURN NEW; -- Permite a alteração
-    END IF;
-
-    RAISE EXCEPTION 'Only administrators and profile owner can edit this profile.';
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-CREATE TRIGGER trg_enforce_profile_visibility
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION enforce_profile_visibility_update();
 
 
 
@@ -826,32 +777,32 @@ END $$ LANGUAGE plpgsql;
 
 INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
-    ('alice_wonder', 'alice@example.com', 'images/profile_pictures/alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
-    ('bob_builder', 'bob@example.com', 'images/profile_pictures/bob.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
+    ('alice_wonder', 'alice@example.com', 'images/profile_pictures/1.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
+    ('bob_builder', 'bob@example.com', 'images/profile_pictures/2.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
     ('charlie_chaplin', 'charlie@example.com', DEFAULT, 'securepassword3', FALSE),
-    ('daisy_duck', 'daisy@example.com', 'images/profile_pictures/daisy.jpg', 'securepassword4', TRUE),
-    ('edgar_allan', 'edgar@example.com', 'images/profile_pictures/edgar.jpg', 'securepassword5', TRUE),
+    ('daisy_duck', 'daisy@example.com', 'images/profile_pictures/4.jpg', 'securepassword4', TRUE),
+    ('edgar_allan', 'edgar@example.com', 'images/profile_pictures/5.jpg', 'securepassword5', TRUE),
     ('fiona_fairy', 'fiona@example.com', DEFAULT, 'securepassword6', FALSE),
-    ('george_gremlin', 'george@example.com', 'images/profile_pictures/george.jpg', 'securepassword7', TRUE),
+    ('george_gremlin', 'george@example.com', 'images/profile_pictures/7.jpg', 'securepassword7', TRUE),
     ('hannah_hacker', 'hannah@example.com', DEFAULT, 'securepassword8', TRUE),
-    ('ian_icecream', 'ian@example.com', 'images/profile_pictures/ian.jpg', 'securepassword9', TRUE),
+    ('ian_icecream', 'ian@example.com', 'images/profile_pictures/9.jpg', 'securepassword9', TRUE),
     ('jessica_jones', 'jessica@example.com', DEFAULT, 'securepassword10', FALSE),
-    ('karl_kong', 'karl@example.com', 'images/profile_pictures/karl.jpg', 'securepassword11', TRUE),
-    ('linda_lion', 'linda@example.com', 'images/profile_pictures/linda.jpg', 'securepassword12', TRUE),
+    ('karl_kong', 'karl@example.com', 'images/profile_pictures/11.jpg', 'securepassword11', TRUE),
+    ('linda_lion', 'linda@example.com', 'images/profile_pictures/12.jpg', 'securepassword12', TRUE),
     ('mike_mouse', 'mike@example.com', DEFAULT, 'securepassword13', TRUE),
     ('nina_ninja', 'nina@example.com', DEFAULT, 'securepassword14', FALSE),
     ('oliver_orange', 'oliver@example.com', DEFAULT, 'securepassword15', TRUE),
-    ('peter_panda', 'peter@example.com', 'images/profile_pictures/peter.jpg', 'securepassword16', TRUE),
+    ('peter_panda', 'peter@example.com', 'images/profile_pictures/16.jpg', 'securepassword16', TRUE),
     ('quincy_quokka', 'quincy@example.com', DEFAULT, 'securepassword17', TRUE),
-    ('rose_rabbit', 'rose@example.com', 'images/profile_pictures/rose.jpg', 'securepassword18', TRUE),
-    ('sara_sparrow', 'sara@example.com', 'images/profile_pictures/sara.jpg', 'securepassword19', FALSE),
+    ('rose_rabbit', 'rose@example.com', 'images/profile_pictures/18.jpg', 'securepassword18', TRUE),
+    ('sara_sparrow', 'sara@example.com', 'images/profile_pictures/19.jpg', 'securepassword19', FALSE),
     ('tom_tiger', 'tom@example.com', DEFAULT, 'securepassword20', TRUE),
     ('uma_unicorn', 'uma@example.com', DEFAULT, 'securepassword21', TRUE),
     ('vicky_vulture', 'vicky@example.com', DEFAULT, 'securepassword22', TRUE),
-    ('will_walrus', 'will@example.com', 'images/profile_pictures/will.jpg', 'securepassword23', TRUE),
-    ('xena_xerus', 'xena@example.com', 'images/profile_pictures/xena.jpg', 'securepassword24', TRUE),
+    ('will_walrus', 'will@example.com', 'images/profile_pictures/23.jpg', 'securepassword23', TRUE),
+    ('xena_xerus', 'xena@example.com', 'images/profile_pictures/24.jpg', 'securepassword24', TRUE),
     ('yara_yeti', 'yara@example.com', DEFAULT, 'securepassword25', TRUE),
-    ('zach_zebra', 'zach@example.com', 'images/profile_pictures/zach.jpg', 'securepassword26', FALSE),
+    ('zach_zebra', 'zach@example.com', 'images/profile_pictures/26.jpg', 'securepassword26', FALSE),
     ('arnold_alligator', 'arnold@example.com', DEFAULT, 'securepassword27', TRUE),
     ('bianca_butterfly', 'bianca@example.com', DEFAULT, 'securepassword28', TRUE),
     ('clara_cat', 'clara@example.com', DEFAULT, 'securepassword29', TRUE),

@@ -110,10 +110,11 @@ class UserController extends Controller
         $request->validate([
             'username' => 'sometimes|string|max:250|unique:users,username,' . $user->id,
             'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
-            'user_password' => 'nullable|min:8|confirmed',
+            'password' => 'nullable|min:8|confirmed',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
+
 
         // Atualizando os dados do usuário
         if ($request->has('username')) {
@@ -124,8 +125,8 @@ class UserController extends Controller
             $user->email = $request->email;
         }
 
-        if ($request->has('user_password')) {
-            $user->user_password = Hash::make($request->user_password); 
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->password); 
         }
 
         if ($request->hasFile('profile_picture')) {
@@ -138,8 +139,8 @@ class UserController extends Controller
     
             // Processando e movendo a nova imagem para o diretório público
             $profile_picture = $request->file('profile_picture');
-            $profile_picturePath = 'images/profile_pictures/' . $user->username . '.' . $profile_picture->getClientOriginalExtension();
-            $profile_picture->move(public_path('images/profile_pictures'), $user->username . '.' . $profile_picture->getClientOriginalExtension());
+            $profile_picturePath = 'images/profile_pictures/' . $user->id . '.' . $profile_picture->getClientOriginalExtension();
+            $profile_picture->move(public_path('images/profile_pictures'), $user->id . '.' . $profile_picture->getClientOriginalExtension());
             
             // Atualizando o caminho da imagem no banco de dados
             $user->profile_picture = $profile_picturePath;
@@ -155,6 +156,28 @@ class UserController extends Controller
 
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Perfil atualizado com sucesso!');
     }
+
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+    
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['error' => 'The old password does not match.'], 400);
+        }
+    
+        // Validação das novas senhas
+        $request->validate([
+            'new_password' => 'required|min:8|confirmed', 
+        ], [
+            'new_password.confirmed' => 'The new password and confirmation do not match.',
+        ]);
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+    
+        return redirect()->route('user', ['id' => $user->id])->with('success', 'Password updated successfully.');
+    }
+    
 
     //List users pending firendship request
     public function listPendingRequests()

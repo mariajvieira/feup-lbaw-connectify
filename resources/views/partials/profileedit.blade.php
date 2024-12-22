@@ -49,7 +49,7 @@
     </form>
 
     <!-- Formulário para alterar senha -->
-    <form action="" method="POST" class="border p-4 rounded shadow-sm mt-4">
+    <form action="{{ route('user.updatePassword', ['id' => $user->id]) }}" method="POST" class="border p-4 rounded shadow-sm mt-4">
         @csrf
         @method('PUT')
 

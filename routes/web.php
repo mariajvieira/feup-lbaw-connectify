@@ -82,6 +82,7 @@ Route::get('/user/create', [UserController::class, 'createUser'])->name('user.cr
 Route::post('/user/create', [UserController::class, 'storeUser'])->name('user.store');
 Route::get('/user/{id}', [UserController::class, 'getProfile'])->name('user');
 Route::get('/user/{id}/edit', [UserController::class, 'editProfile'])->name('user.edit');
+Route::put('/user/{id}/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');
 Route::get('user/{id}/pending-requests', [UserController::class, 'listPendingRequests'])->name('user.listRequests');
 Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('user.friends');
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');

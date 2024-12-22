@@ -67,11 +67,8 @@
     <!-- Pending Requests -->
     @if($user->id == Auth::id() && !$user->is_public)
         <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h5>Pending Requests</h5>
-                    </div>
+            <div class="col-md-8 offset-md-2">
+                    <h5 class="mb-3">Friend Requests</h5>
                     <div class="card-body">
                         @if($user->pendingRequests->isEmpty())
                             <p class="text-muted">No pending requests.</p>
@@ -95,7 +92,6 @@
                             </ul>
                         @endif
                     </div>
-                </div>
             </div>
         </div>
     @endif
