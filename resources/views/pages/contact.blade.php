@@ -65,7 +65,7 @@
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary w-100" style="margin-top: 20px;">Send Message</button>
+        <button type="submit" class="btn btn-custom w-100" style="margin-top: 20px;">Send Message</button>
     </form>
 </div>
 

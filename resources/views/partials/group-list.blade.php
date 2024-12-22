@@ -1,7 +1,7 @@
-<h5>Groups</h5>
+
 @if($groups->isEmpty())
-    <p>No groups found.</p>
 @else
+<h5>Groups</h5>
     @foreach ($groups as $group)
         <div class="group-item mb-1">
             <button 

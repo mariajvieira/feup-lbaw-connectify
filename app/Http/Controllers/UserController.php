@@ -183,7 +183,7 @@ public function showFriendsPage($id)
 {
     $user = User::findOrFail($id);
 
-    if ($user->id !== auth()->id()) {
+    if (!auth()->id()) {
         abort(403, 'Acesso não autorizado.');
     }
 
