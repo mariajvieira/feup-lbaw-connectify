@@ -13,14 +13,10 @@
         <p>You are a member of this group!</p>
     @endif
 
-    <h3>Group Members:</h3>
-    <ul>
-        <li><strong>Owner:</strong> {{ $group->owner->name }} ({{ $group->owner->email }})</li>
-        @foreach($members as $member)
-            <li>{{ $member->name }} ({{ $member->email }})</li>
-        @endforeach
-        <!-- Exibir o proprietário corretamente -->
-    </ul>
+    <!-- Botão para visualizar os membros, que deve ser exibido se o usuário for membro do grupo -->
+    @if($group->users->contains(Auth::user()->id))
+        <a href="{{ route('group.members', $group->id) }}" class="btn btn-secondary">View Members</a>
+    @endif
 </div>
 
 @if ($errors->any())

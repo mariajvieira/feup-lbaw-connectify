@@ -91,4 +91,12 @@ class GroupController extends Controller
 
         return response()->json(['message' => 'You are already a member of this group.'], 400);
     }
+
+    public function viewMembers($groupId)
+    {
+        $group = Group::with('users')->findOrFail($groupId); // Carregar os usuários do grupo
+        $members = $group->users;
+
+        return view('pages.group_members', compact('group', 'members'));
+    }
 }
