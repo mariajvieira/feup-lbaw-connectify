@@ -16,7 +16,7 @@
             <label for="profile_picture" class="form-label">Profile Picture:</label>
             @if (!empty($user->profile_picture))
                 <div style="margin-bottom: 10px;">
-                    <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" class="rounded-circle mb-4" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+                <img src="{{ route('profile.picture', parameters: ['id' => $user->id]) }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
                 </div>
             @endif
             <input type="file" name="profile_picture" id="profile_picture" class="form-control" />

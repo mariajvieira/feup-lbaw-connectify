@@ -119,9 +119,10 @@ Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('r
 
 
 // Comments
-Route::post('/post/{id}/comment', [CommentController::class, 'store'])->name('comment.store');
+Route::post('/post/{postId}/comment', [CommentController::class, 'store'])->name('comment.store');
 Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('comment.destroy');
-Route::put('/comments/{id}/edit', [CommentController::class, 'update'])->name('comment.update');
+Route::get('/post/{postId}/comments', [CommentController::class, 'getComments']);
+Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
 
 
@@ -130,10 +131,6 @@ Route::prefix('api')->group(function () {
     // Posts API Routes
     Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
     Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
-    
-    // User API Routes
-    //Route::put('/user/{id}', [UserController::class, 'updateProfile']); 
-    //Route::delete('/user/{id}', [UserController::class, 'deleteUser']); 
 });
 
 

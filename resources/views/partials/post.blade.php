@@ -93,22 +93,22 @@
     </span>
     </div>
 
-    <div class="comment-section mt-4">
+    <div class="comments-list comment-section mt-4">
         @foreach ($post->comments as $comment)
             @include('partials.comment', ['comment' => $comment])
         @endforeach
 
         @if (auth()->check())
             <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
-                @csrf
-                <div class="form-group d-flex align-items-center">
-                    <textarea id="comment" name="comment" class="form-control me-2" rows="1" required placeholder="Add a comment..."></textarea>
-                    <button type="submit" class="btn btn-custom">Post</button>
-                </div>
+            @csrf
+            <div class="form-group d-flex align-items-center">
+                <textarea id="comment" name="comment" class="form-control me-2" rows="1" required placeholder="Add a comment..."></textarea>
+                <button type="submit" class="btn btn-custom post-comment">Post</button>
+            </div>
             </form>
         @else
             <div class="alert alert-info">
-                <a href="{{ route('login') }}">Login</a> to add a comment.
+            <a href="{{ route('login') }}">Login</a> to add a comment.
             </div>
         @endif  
     </div>

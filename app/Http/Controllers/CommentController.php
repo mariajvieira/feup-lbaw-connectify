@@ -14,63 +14,50 @@ class CommentController extends Controller
         $request->validate([
             'comment' => 'required|string|max:255',
         ]);
-
-        if (!Post::find($postId)) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
+    
         $comment = new Comment();
-        $comment->comment_content = $request->comment;
         $comment->post_id = $postId;
         $comment->user_id = auth()->id();
+        $comment->comment_content = $request->comment;
         $comment->save();
-
-        /*return response()->json([
-            'id' => $comment->id,
-            'comment_content' => $comment->comment_content,
-            'user' => [
-                'username' => $comment->user->username,
-            ],
-            'post_id' => $comment->post_id,
-        ], 201);*/
-
-        return redirect()->route('home')->with('success', 'Comment posted successfully!');
+    
+        $comment->load('user'); // Carregar os dados do usuário
+    
+        return response()->json([
+            'message' => 'Comment posted successfully.',
+            'comment' => $comment
+        ]);
     }
 
 
 //edit comment
     public function update(Request $request, $commentId)
     {
-        $comment = Comment::find($commentId);
-        $this->authorize('edit', $comment);
-
-        if (!$comment) {
-            return response()->json(['message' => 'Comment not found'], 404);
-        }
-
-        $request->validate([
-            'content' => 'required|string|max:255',
+        $validated = $request->validate([
+            'content' => 'required|string|min:1|max:255', 
         ]);
-        $comment->comment_content = $request->input('content'); 
+    
+        $comment = Comment::findOrFail($commentId);
+    
+        $comment->comment_content = $validated['content'];
         $comment->save();
-
-        return response()->json(['message' => 'Comment updated successfully'], 200);
+    
+        return response()->json([
+            'success' => true,
+            'content' => $comment->comment_content,
+        ]);
     }
+
 
 
 // Get post comments
     public function getComments($postId)
     {
-        $post = Post::find($postId);
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
-
-        $comments = Comment::where('post_id', $postId)
-            ->select('id', 'comment_content as content', 'commentDate', 'user_id as userId')
-            ->orderBy('commentDate', 'desc')
-            ->get();
-
-        return response()->json($comments, 200);
+        $comments = Comment::where('post_id', $postId)->get();
+    
+        return response()->json([
+            'comments' => $comments
+        ]);
     }
 
     public function destroy($commentId)

@@ -139,25 +139,22 @@ class UserController extends Controller
         }
     
         if ($request->hasFile('profile_picture')) {
-            // Apagando a imagem anterior, caso não seja a imagem padrão
             if ($user->profile_picture && $user->profile_picture !== 'profile_pictures/default.png') {
-                // Apagar imagem antiga
                 $oldFilePath = storage_path('app/' . $user->profile_picture);
                 if (file_exists($oldFilePath)) {
                     unlink($oldFilePath);
                 }
             }
     
-            // Processando e movendo a nova imagem para o diretório de storage
             $profile_picture = $request->file('profile_picture');
-            $profile_picturePath = 'images/profile_pictures/' . $user->id . '.' . $profile_picture->getClientOriginalExtension();
+            $profile_picturePath = 'images/profile_pictures/' . $user->id . '.' . 'jpg';
     
-            // Salvando a imagem na pasta storage/app/images (não pública)
             $profile_picture->storeAs('images/profile_pictures', $user->id . '.' . $profile_picture->getClientOriginalExtension(), 'local');
     
-            // Atualizando o caminho da imagem no banco de dados
             $user->profile_picture = $profile_picturePath;
         }
+
+
     
         if ($request->has('is_public')) {
             $user->is_public = $request->is_public;
@@ -218,12 +215,8 @@ class UserController extends Controller
     public function showFriendsPage($id)
     {
         $user = User::findOrFail($id);
-
-        if (!auth()->id()) {
-            abort(403, 'Acesso não autorizado.');
-        }
-
-        return view('pages.friendsList', ['user' => $user]);
+        $friends = $user->friends; 
+        return view('pages.friendsList', compact('user', 'friends'));
     }
 
     public function getFriends($id)
