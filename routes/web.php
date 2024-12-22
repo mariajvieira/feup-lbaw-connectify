@@ -96,6 +96,8 @@ Route::post('/post/store', [PostController::class, 'store'])->name('post.store')
 
 // Save and unsave post
 Route::post('/save-post', [SavedPostController::class, 'toggleSave'])->name('save-post');
+Route::post('/save-post', [SavedPostController::class, 'toggleSave'])->name('posts.toggleSave');
+
 
 // Friendship Requests
 Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');

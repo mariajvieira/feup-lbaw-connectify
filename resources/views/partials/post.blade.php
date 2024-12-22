@@ -82,12 +82,15 @@
         @endif  
     </div>
 
+
+    <!-- Save -->
     @if (auth()->check())
     <button class="saveButton btn btn-custom" data-post-id="{{ $post->id }}">
-        <i class="{{ $post->isSavedByUser() ? 'fa-solid fa-bookmark':'fa-regular fa-bookmark'}}"></i>
+        <i class="{{ $post->isSavedByUser() ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark' }}"></i>
         {{ $post->isSavedByUser() ? 'Saved' : 'Save' }}
     </button>
-    @endif
+@endif
+
 
     <!-- Reactions à direita do post -->
     <div class="post-reactions d-flex justify-content-end ms-3">
