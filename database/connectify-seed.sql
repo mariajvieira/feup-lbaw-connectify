@@ -46,7 +46,6 @@ CREATE TABLE users (
     is_public BOOLEAN DEFAULT TRUE NOT NULL
 );
 
-
 CREATE TABLE administrator (
     user_id INT NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
     PRIMARY KEY (user_id)
@@ -418,22 +417,26 @@ FOR EACH ROW
 EXECUTE FUNCTION enforce_post_content();
 
 
--- TRIGGER05: Anonymizes user data upon account deletion, retaining content (BR05)
+-- Função para anonimizar os dados do usuário após a exclusão
 CREATE OR REPLACE FUNCTION anonymize_user_data()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE comment_ SET user_id = NULL WHERE user_id = OLD.user_id;
-    UPDATE reaction SET user_id = NULL WHERE user_id = OLD.user_id;
-    UPDATE post SET user_id = NULL WHERE user_id = OLD.user_id; 
+    -- Atualiza os registros nas tabelas 'comment_', 'reaction' e 'post' para anonimizar o 'user_id'
+    UPDATE comment_ SET user_id = 0 WHERE user_id = OLD.id;  -- Usando OLD.id
+    UPDATE reaction SET user_id = 0 WHERE user_id = OLD.id;  -- Usando OLD.id
+    UPDATE post SET user_id = 0 WHERE user_id = OLD.id;      -- Usando OLD.id
     
+    -- Retorna o registro OLD após a execução
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
+-- Trigger para executar a função de anonimização após a exclusão de um usuário
 CREATE TRIGGER trg_anonymize_user_data
 AFTER DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION anonymize_user_data();
+
 
 
 -- TRIGGER06: Ensures users can only post in groups they belong to (BR11)
@@ -823,9 +826,11 @@ BEGIN
 END $$ LANGUAGE plpgsql;
 
 
-
+INSERT INTO users (id,username, email, profile_picture, password, is_public)
+VALUES (0,'anonymous', 'anonym@us',DEFAULT, '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', FALSE);
 INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
+    
     ('alice_wonder', 'alice@example.com', 'images/profile_pictures/alice.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
     ('bob_builder', 'bob@example.com', 'images/profile_pictures/bob.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
     ('charlie_chaplin', 'charlie@example.com', DEFAULT, 'securepassword3', FALSE),

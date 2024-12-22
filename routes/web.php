@@ -17,6 +17,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SavedPostController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\DeleteAccountController;
 
 
 /*
@@ -165,3 +166,7 @@ Route::controller(GoogleController::class)->group(function () {
     Route::get('auth/google', 'redirect')->name('google-auth');
     Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
 });
+
+// Delete user
+
+Route::delete('/delete-account', [DeleteAccountController::class, 'deleteAccount'])->name('delete.account');
