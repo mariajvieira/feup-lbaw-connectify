@@ -45,23 +45,19 @@ class RegisterController extends Controller
         }
 
         try {
-            // Criação do usuário
             $user = User::create([
                 'username' => $request->username,
                 'email' => $request->email,
-                'profile_picture' => 'images/profile_pictures/default.png',
-                'password' => Hash::make($request->password),  // Criptografar o campo 'password'
+                'profile_picture' => 'profile_pictures/default.png',
+                'password' => Hash::make($request->password), 
             ]);
         } catch (\Exception $e) {
-            // Tratar erro de criação do usuário
             return back()->withErrors(['error' => $e->getMessage()]);
         }
 
-        // Autenticação do usuário após o registro
-        Auth::login($user); // Usar o usuário recém-criado
+        Auth::login($user); 
         $request->session()->regenerate();
 
-        // Redirecionar para a página inicial com uma mensagem de sucesso
         return redirect()->route('home')
             ->withSuccess('Você se registrou e fez login com sucesso!');
     }
