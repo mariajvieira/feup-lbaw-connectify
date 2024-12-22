@@ -168,7 +168,7 @@ Route::controller(GoogleController::class)->group(function () {
 
 // Delete user
 
-Route::delete('/delete-account', [DeleteAccountController::class, 'deleteAccount'])->name('delete.account');
+Route::delete('/delete-account/{userId?}', [DeleteAccountController::class, 'deleteAccount'])->name('delete.account');
 
 Route::get('/group/{groupId}/members', [GroupController::class, 'viewMembers'])->name('group.members');
 Route::get('/groups/{groupId}/leave', [GroupController::class, 'leaveGroup'])->name('group.leave');

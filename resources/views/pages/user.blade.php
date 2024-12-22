@@ -1,39 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-
-<!-- Botão para Excluir Conta -->
-<button type="button" class="btn btn-danger" id="deleteAccountBtn">
-    Apagar Conta
-</button>
-
-<!-- Modal de Confirmação -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmDeleteModalLabel">Tem certeza?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar" id="closeModalBtn">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Você tem certeza que deseja apagar a sua conta? Essa ação não pode ser desfeita.
-            </div>
-            <div class="modal-footer">
-                <!-- Botão Cancelar -->
-                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-                <!-- Botão Confirmar -->
-                <form action="{{ route('delete.account') }}" method="POST" id="deleteAccountForm">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Sim, apagar conta</button>
-                </form>
+@if($user->id == 0)
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card-body text-center">
+                    <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+                    <h2 class="card-title">This account no longer exists</h2>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
+@else
 
 
 
@@ -133,6 +112,51 @@
         </div>
     @endif
 
+<!-- Botão para Excluir Conta -->
+<!-- Caso o usuário seja um administrador, ele verá a opção de excluir a conta de outro usuário -->
+{{-- Exibe o perfil do usuário --}}
+@if($user->id == Auth::id() || Auth::user()->isAdmin())
+    {{-- O botão de exclusão será visível para o próprio usuário ou para um administrador --}}
+    <div class="d-flex justify-content-center mt-3">
+        <form action="{{ route('delete.account', ['userId' => $user->id]) }}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button type="submit" onclick="return confirm('Are you sure you want to delete the account?')" class="btn btn-danger">
+                Delete Account
+            </button>
+        </form>
+    </div>
+@endif
+
+
+
+<!-- Modal de Confirmação 
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Tem certeza?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar" id="closeModalBtn">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Você tem certeza que deseja apagar a sua conta? Essa ação não pode ser desfeita.
+            </div>
+            <div class="modal-footer">
+                
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                
+                <form action="{{ route('delete.account') }}" method="POST" id="deleteAccountForm">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Sim, apagar conta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+-->
 
 
     <div class="row mt-4">
@@ -247,4 +271,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endif
 @endsection
