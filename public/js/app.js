@@ -446,3 +446,33 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 });
+// Código JavaScript no app.js
+
+// Espera o DOM estar pronto
+document.addEventListener('DOMContentLoaded', function () {
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  
+  // Função para abrir o modal
+  function openModal() {
+      confirmDeleteModal.classList.add('show'); // Exibe o modal
+      confirmDeleteModal.style.display = 'block'; // Exibe o modal (sem jQuery)
+  }
+
+  // Função para fechar o modal
+  function closeModal() {
+      confirmDeleteModal.classList.remove('show'); // Esconde o modal
+      confirmDeleteModal.style.display = 'none'; // Esconde o modal (sem jQuery)
+  }
+
+  // Adicionando o evento de clique no botão para abrir o modal
+  deleteAccountBtn.addEventListener('click', openModal);
+
+  // Adicionando o evento de clique no botão de cancelar para fechar o modal
+  cancelBtn.addEventListener('click', closeModal);
+
+  // Adicionando o evento de clique no botão de fechar (X) para fechar o modal
+  closeModalBtn.addEventListener('click', closeModal);
+});

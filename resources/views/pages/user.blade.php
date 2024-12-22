@@ -1,6 +1,42 @@
 @extends('layouts.app')
 
 @section('content')
+
+<!-- Botão para Excluir Conta -->
+<button type="button" class="btn btn-danger" id="deleteAccountBtn">
+    Apagar Conta
+</button>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Tem certeza?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar" id="closeModalBtn">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Você tem certeza que deseja apagar a sua conta? Essa ação não pode ser desfeita.
+            </div>
+            <div class="modal-footer">
+                <!-- Botão Cancelar -->
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                <!-- Botão Confirmar -->
+                <form action="{{ route('delete.account') }}" method="POST" id="deleteAccountForm">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Sim, apagar conta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 <div class="container mt-5">
     <!-- Profile Section -->
     <div class="row justify-content-center">

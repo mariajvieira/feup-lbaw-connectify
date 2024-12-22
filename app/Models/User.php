@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,7 +8,6 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-
 
 class User extends Authenticatable
 {
@@ -27,7 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_public',
-        "profile_picture",
+        'profile_picture',
         'google_id'
     ];
 
@@ -50,12 +48,45 @@ class User extends Authenticatable
         return $this->password;
     }
 
+    /**
+     * Relação com os posts do usuário
+     */
     public function posts()
     {
         return $this->hasMany(Post::class);
     }
 
+    /**
+     * Relação com os comentários do usuário
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 
+    /**
+     * Relação com as reações do usuário
+     */
+    public function reactions()
+    {
+        return $this->hasMany(Reaction::class);
+    }
+
+    // Exemplo de método para anonimizar os dados
+    public function anonymizeData()
+    {
+        // ID do usuário anônimo
+        $anonymousUserId = 0; // ID do usuário anônimo que você criou
+
+        // Anonimizar os dados relacionados ao usuário
+        $this->comments()->update(['user_id' => $anonymousUserId]); // Anonimizar os comentários
+        $this->reactions()->update(['user_id' => $anonymousUserId]); // Anonimizar as reações
+        $this->posts()->update(['user_id' => $anonymousUserId]); // Anonimizar os posts
+    }
+
+    /**
+     * Get the visible posts for the user
+     */
     public function visiblePosts()
     {
         $userId = auth()->id();
@@ -112,9 +143,7 @@ class User extends Authenticatable
             return $posts;
     }
 
-
-
-
+    // Relação com os amigos
     public function friends()
     {
         // Amizades onde o usuário é o user_id1
@@ -126,25 +155,20 @@ class User extends Authenticatable
         return $friends1->union($friends2);
     }
 
-    public function friendships(): HasMany
-    {
-        return $this->hasMany(Friendship::class, 'user_id1', 'user_id')
-            ->orWhere('user_id2', $this->user_id);
-    }
-
+    // Verifica se o usuário é administrador
     public function isAdmin()
     {
         return Administrator::where('user_id', $this->id)->exists(); 
     }
 
+    // Verifica se o perfil do usuário é público
     public function isPublic()
     {
         return $this->is_public;
     }
 
-
-    
-   public function isFriend(User $user)
+    // Verifica se o usuário é amigo de outro
+    public function isFriend(User $user)
     {
         return DB::table('friendship')
             ->where(function ($query) use ($user) {
@@ -173,6 +197,7 @@ class User extends Authenticatable
                     ->where('request_status', 'pending');
     }
 
+    // Relacionamento com grupos
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'group_member', 'user_id', 'group_id');
@@ -184,19 +209,18 @@ class User extends Authenticatable
     }
 
 
+    // Relacionamento com posts salvos
     public function savedPosts()
     {
         return $this->belongsToMany(Post::class, 'saved_post', 'user_id', 'post_id');
     }
     
+    // Relacionamento com posts onde o usuário é marcado
     public function taggedPosts()
     {
         return $this->belongsToMany(Post::class, 'tagged_post', 'user_id', 'post_id')
                     ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
     }
-
-    
 }
-
 
 
