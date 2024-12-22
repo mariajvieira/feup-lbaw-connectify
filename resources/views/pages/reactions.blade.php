@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('content')
 <div class="container">
     @include('partials.post', ['post' => $post]) 
@@ -22,4 +23,16 @@
 
     <a href="{{ route('home') }}" class="btn btn-primary mt-3">Back to Posts</a>
 </div>
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
 @endsection

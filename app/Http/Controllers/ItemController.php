@@ -38,6 +38,9 @@ class ItemController extends Controller
     {
         // Find the item.
         $item = Item::find($id);
+        if (!$item) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
 
         // Check if the current user is authorized to update this item.
         $this->authorize('update', $item);
@@ -57,6 +60,9 @@ class ItemController extends Controller
     {
         // Find the item.
         $item = Item::find($id);
+        if (!$item) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
 
         // Check if the current user is authorized to delete this item.
         $this->authorize('delete', $item);

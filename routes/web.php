@@ -16,6 +16,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SavedPostController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\GoogleController;
 
 
 /*
@@ -115,6 +116,7 @@ Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('r
 // Comments
 Route::post('/post/{id}/comment', [CommentController::class, 'store'])->name('comment.store');
 Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('comment.destroy');
+Route::put('/comments/{id}/edit', [CommentController::class, 'updateComment'])->name('comment.edit');
 
 
 // API Routes
@@ -156,3 +158,10 @@ Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('t
 
 Route::get('/contact', [ContactController::class, 'showContactForm'])->name('contact');
 Route::post('/contact', [ContactController::class, 'sendContactEmail'])->name('contact.send');
+
+
+// Google Auth
+Route::controller(GoogleController::class)->group(function () {
+    Route::get('auth/google', 'redirect')->name('google-auth');
+    Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
+});

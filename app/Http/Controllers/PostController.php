@@ -71,6 +71,9 @@ class PostController extends Controller
             }
         }
 
+        if(empty($request->content) && empty($request->image1) && empty($request->image2) && empty($request->image3)){
+            return redirect()->route('home')->with('error', 'The post must contain content or an image.');
+        }
 
         
         // Processamento das imagens e armazenamento nos campos image1, image2, image3

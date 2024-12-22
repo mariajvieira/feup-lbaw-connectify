@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('content')
 <div class="group-details-container">
     <h1>{{ $group->group_name }}</h1>
@@ -22,4 +23,14 @@
         <!-- Exibir o proprietário corretamente -->
     </ul>
 </div>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 @endsection
