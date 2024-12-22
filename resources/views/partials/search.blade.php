@@ -68,7 +68,10 @@
                             <ul class="list-group">
                                 @foreach ($usersFullText as $user)
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <a class="text-decoration-none text-custom" href="@if(auth()->check()) {{ route('user', $user->id) }} @else {{ route('login') }} @endif"
+                                        <a class="text-decoration-none text-custom" 
+                                            href="@if(auth()->check()) {{ route('user', $user->id) }} 
+                                            @else {{ route('login') }} 
+                                            @endif" 
                                             @if(!auth()->check()) 
                                                 onclick="alert('You need to login to view profiles.'); window.location.href='{{ route('login') }}'; return false;"               
                                             @endif>
