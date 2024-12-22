@@ -15,7 +15,9 @@ class CommentController extends Controller
             'comment' => 'required|string|max:255',
         ]);
 
-
+        if (!Post::find($postId)) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
         $comment = new Comment();
         $comment->comment_content = $request->comment;
         $comment->post_id = $postId;

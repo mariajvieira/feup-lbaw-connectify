@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+<!-- @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,6 +100,7 @@
             $.ajax({
                 url: '/comments/' + commentId + '/edit',  // A rota para atualizar o comentário
                 type: 'PUT',
+
                 data: {
                     _token: '{{ csrf_token() }}',
                     content: newContent
