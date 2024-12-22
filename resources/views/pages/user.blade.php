@@ -139,7 +139,11 @@
         <div class="col-md-8 offset-md-2">
             <h3 class="mb-3">Groups:</h3>
             @if($user->groups->isEmpty())
-                <p>You don't belong to any group yet.</p>
+                @if(auth()->check() && auth()->user()->id === $user->id)
+                    <p>You don't belong to any group yet.</p>
+                @else
+                    <p>This user doesn't belong to any group yet.</p>
+                @endif
             @else
                 <ul class="list-group">
                     @foreach($user->groups as $group)
@@ -151,10 +155,20 @@
                 </ul>
             @endif
         </div>
+
         <div class="col-md-8 offset-md-2">
-            <h3 class="mb-3">Groups you own:</h3>
+            @if(auth()->check() && auth()->user()->id === $user->id)
+                <h3 class="mb-3">Groups you own:</h3>
+            @else
+            <h3 class="mb-3">Groups @ {{ $user->username }} owns:</h3> 
+            @endif
+
             @if($user->ownedGroups->isEmpty())
-                <p>You don't  own any group yet.</p>
+                @if(auth()->check() && auth()->user()->id === $user->id)
+                    <p>You don't own any group yet.</p>
+                @else
+                    <p>This user doesn't own any group yet.</p>
+                @endif
             @else
                 <ul class="list-group">
                     @foreach($user->ownedGroups as $group)
@@ -167,6 +181,7 @@
             @endif
         </div>
     </div>
+
 
     <!-- Posts Section -->
     <div class="row mt-4">
