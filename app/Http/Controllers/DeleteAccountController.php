@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -7,105 +6,125 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Administrator;
 use App\Models\Group;
+use App\Models\User; // Importar o modelo de User para verificar as contas
 
 class DeleteAccountController extends Controller
 {
-    // Método para excluir a conta do usuário autenticado
-    public function deleteAccount(Request $request)
+    // Método para excluir a conta do usuário autenticado ou de outro usuário (se for administrador)
+    public function deleteAccount(Request $request, $userId = null)
     {
         $user = Auth::user();
     
         if ($user) {
-            // Verificar se o usuário é um administrador
-            if ($user->isAdmin()) {
-                Administrator::where('user_id', $user->id)->delete();
+            // Se o ID do usuário não for fornecido, o usuário está tentando excluir a própria conta
+            $targetUserId = $userId ?? $user->id;
+
+            // Verificar se o usuário é um administrador e está tentando excluir a conta de outro usuário
+            if ($user->isAdmin() && $targetUserId != $user->id) {
+                $targetUser = User::find($targetUserId);
+                
+                if ($targetUser) {
+                    // Lógica para apagar a conta de outro usuário
+                    $newOwnerId = 0; // Usar 0 ou outro ID genérico para a transferência de propriedade
+
+                    // Remover dados do usuário a ser excluído
+                    DB::table('friend_request_notification')->whereIn('friend_request_id', function ($query) use ($targetUser) {
+                        $query->select('id')
+                              ->from('friend_request')
+                              ->where('sender_id', $targetUser->id)
+                              ->orWhere('receiver_id', $targetUser->id);
+                    })->delete();
+
+                    DB::table('friend_request')->where('sender_id', $targetUser->id)->orWhere('receiver_id', $targetUser->id)->delete();
+                    DB::table('friendship')->where('user_id1', $targetUser->id)->orWhere('user_id2', $targetUser->id)->delete();
+                    $targetUser->savedPosts()->detach();
+                    $targetUser->posts()->each(function ($post) {
+                        $post->savedPosts()->detach();
+                    });
+
+                    // Remover as referências em "comment_notification" e "reaction_notification"
+                    DB::table('comment_notification')->whereIn('notification_id', function ($query) use ($targetUser) {
+                        $query->select('id')->from('notification')->where('user_id', $targetUser->id);
+                    })->delete();
+
+                    DB::table('reaction_notification')->whereIn('notification_id', function ($query) use ($targetUser) {
+                        $query->select('id')->from('notification')->where('user_id', $targetUser->id);
+                    })->delete();
+
+                    DB::table('notification')->where('user_id', $targetUser->id)->delete();
+
+                    // Remover referências de grupo e transferir a propriedade
+                    DB::table('join_group_request')->where('user_id', $targetUser->id)->delete();
+                    DB::table('group_member')->where('user_id', $targetUser->id)->delete();
+                    DB::table('group_owner')->where('user_id', $targetUser->id)->delete();
+                    Group::where('owner_id', $targetUser->id)->update(['owner_id' => $newOwnerId]);
+
+                    // Transferir posts e anonimizar comentários e reações
+                    $targetUser->posts()->update(['user_id' => $newOwnerId]);
+                    $targetUser->comments()->update(['user_id' => $newOwnerId]);
+                    $targetUser->reactions()->update(['user_id' => $newOwnerId]);
+
+                    // Excluir a conta do usuário
+                    $targetUser->delete();
+
+                    return redirect()->route('home')->with('status', 'Conta do usuário excluída com sucesso!');
+                }
+                return redirect()->route('home')->with('error', 'Usuário não encontrado.');
             }
-    
-            // ID do novo proprietário ou "usuário genérico" (ID = 0)
-            $newOwnerId = 0;
-    
-            // Remover referências em "friend_request_notification" antes de excluir a "friend_request"
-            DB::table('friend_request_notification')
-                ->whereIn('friend_request_id', function ($query) use ($user) {
+
+            // Caso não seja administrador, ou se for o próprio usuário tentando excluir a conta
+            if ($targetUserId == $user->id) {
+                // Lógica de exclusão da conta do próprio usuário
+                $newOwnerId = 0; // Transferir a propriedade para um usuário genérico
+
+                // Remover dados do usuário
+                DB::table('friend_request_notification')->whereIn('friend_request_id', function ($query) use ($user) {
                     $query->select('id')
                           ->from('friend_request')
                           ->where('sender_id', $user->id)
                           ->orWhere('receiver_id', $user->id);
-                })
-                ->delete(); // Exclui as referências em "friend_request_notification"
-    
-            // Remover referências em "friend_request" (enviadas e recebidas)
-            DB::table('friend_request')->where('sender_id', $user->id)->orWhere('receiver_id', $user->id)->delete();
-    
-            // Remover referências em "friendship"
-            DB::table('friendship')
-                ->where('user_id1', $user->id)
-                ->orWhere('user_id2', $user->id)
-                ->delete();
-    
-            // Remover todos os posts salvos pelo usuário
-            $user->savedPosts()->detach();
-    
-            // Remover referências de saved_post relacionadas aos posts do usuário
-            $user->posts()->each(function ($post) {
-                $post->savedPosts()->detach();
-            });
-    
-            // Remover referências em "comment_notification" antes de excluir as notificações
-            DB::table('comment_notification')->whereIn('notification_id', function ($query) use ($user) {
-                $query->select('id')
-                      ->from('notification')
-                      ->where('user_id', $user->id);
-            })->delete(); // Exclui as referências em "comment_notification"
-    
-            // Remover as referências em "reaction_notification" antes de excluir as notificações
-            DB::table('reaction_notification')
-                ->whereIn('notification_id', function ($query) use ($user) {
-                    $query->select('id')
-                          ->from('notification')
-                          ->where('user_id', $user->id);
-                })
-                ->delete(); // Exclui as referências em "reaction_notification"
-    
-            // Remover notificações relacionadas ao usuário
-            DB::table('notification')->where('user_id', $user->id)->delete();
-    
-            // Remover notificações de "join_group_request"
-            $groupRequestIds = DB::table('join_group_request')
-                ->where('user_id', $user->id)
-                ->pluck('id'); // Pegar todos os IDs relacionados ao usuário
-    
-            DB::table('group_request_notification')
-                ->whereIn('group_request_id', $groupRequestIds)
-                ->delete(); // Excluir notificações relacionadas
-    
-            // Remover referências em "join_group_request"
-            DB::table('join_group_request')->where('user_id', $user->id)->delete();
-    
-            // Remover referências em "group_member" (membros dos grupos)
-            DB::table('group_member')->where('user_id', $user->id)->delete();
-    
-            // Remover referências em "group_owner" (proprietário dos grupos)
-            DB::table('group_owner')->where('user_id', $user->id)->delete();
-    
-            // Se o usuário for proprietário de algum grupo, transfira a propriedade para outro usuário
-            Group::where('owner_id', $user->id)->update(['owner_id' => $newOwnerId]);
-    
-            // Transferir a propriedade dos posts para o novo proprietário (ID = 0)
-            $user->posts()->update(['user_id' => $newOwnerId]);
-    
-            // Anonimizar os comentários e reações do usuário (atribuir ao usuário genérico ID = 0)
-            $user->comments()->update(['user_id' => $newOwnerId]);
-            $user->reactions()->update(['user_id' => $newOwnerId]);
-    
-            // Excluir o usuário
-            $user->delete();
-    
-            // Retornar resposta de sucesso
-            return redirect()->route('home')->with('status', 'Conta excluída com sucesso!');
+                })->delete();
+
+                DB::table('friend_request')->where('sender_id', $user->id)->orWhere('receiver_id', $user->id)->delete();
+                DB::table('friendship')->where('user_id1', $user->id)->orWhere('user_id2', $user->id)->delete();
+                $user->savedPosts()->detach();
+                $user->posts()->each(function ($post) {
+                    $post->savedPosts()->detach();
+                });
+
+                // Remover as referências em "comment_notification" e "reaction_notification"
+                DB::table('comment_notification')->whereIn('notification_id', function ($query) use ($user) {
+                    $query->select('id')->from('notification')->where('user_id', $user->id);
+                })->delete();
+
+                DB::table('reaction_notification')->whereIn('notification_id', function ($query) use ($user) {
+                    $query->select('id')->from('notification')->where('user_id', $user->id);
+                })->delete();
+
+                DB::table('notification')->where('user_id', $user->id)->delete();
+
+                // Remover referências de grupo e transferir a propriedade
+                DB::table('join_group_request')->where('user_id', $user->id)->delete();
+                DB::table('group_member')->where('user_id', $user->id)->delete();
+                DB::table('group_owner')->where('user_id', $user->id)->delete();
+                Group::where('owner_id', $user->id)->update(['owner_id' => $newOwnerId]);
+
+                // Transferir posts e anonimizar comentários e reações
+                $user->posts()->update(['user_id' => $newOwnerId]);
+                $user->comments()->update(['user_id' => $newOwnerId]);
+                $user->reactions()->update(['user_id' => $newOwnerId]);
+
+                // Excluir a conta do usuário
+                $user->delete();
+
+                return redirect()->route('home')->with('status', 'Sua conta foi excluída com sucesso!');
+            }
+
+            return redirect()->route('home')->with('error', 'Você não tem permissão para excluir esta conta.');
         }
-    
+
         // Caso não encontre o usuário autenticado
         return redirect()->route('home')->with('error', 'Falha ao excluir a conta!');
     }
 }
+

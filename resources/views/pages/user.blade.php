@@ -1,13 +1,33 @@
 @extends('layouts.app')
 
 @section('content')
-
+@if($user->id == 0)
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card-body text-center">
+                    <img src="{{ asset($user->profile_picture) }}" alt="Profile Picture" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;">
+                    <h2 class="card-title">This account no longer exists</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+@else
 <!-- Botão para Excluir Conta -->
-<button type="button" class="btn btn-danger" id="deleteAccountBtn">
-    Apagar Conta
-</button>
+<!-- Caso o usuário seja um administrador, ele verá a opção de excluir a conta de outro usuário -->
+{{-- Exibe o perfil do usuário --}}
+@if($user->id == Auth::id() || Auth::user()->isAdmin())
+    {{-- O botão de exclusão será visível para o próprio usuário ou para um administrador --}}
+    <form action="{{ route('delete.account', ['userId' => $user->id]) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" onclick="return confirm('Tem certeza de que deseja excluir esta conta?')">Excluir Conta</button>
+    </form>
+@endif
 
-<!-- Modal de Confirmação -->
+
+
+<!-- Modal de Confirmação 
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -21,9 +41,9 @@
                 Você tem certeza que deseja apagar a sua conta? Essa ação não pode ser desfeita.
             </div>
             <div class="modal-footer">
-                <!-- Botão Cancelar -->
+                
                 <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-                <!-- Botão Confirmar -->
+                
                 <form action="{{ route('delete.account') }}" method="POST" id="deleteAccountForm">
                     @csrf
                     @method('DELETE')
@@ -33,7 +53,7 @@
         </div>
     </div>
 </div>
-
+-->
 
 
 
@@ -196,4 +216,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endif
 @endsection
