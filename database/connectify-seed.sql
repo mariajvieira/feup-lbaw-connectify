@@ -368,26 +368,21 @@ FOR EACH ROW
 EXECUTE FUNCTION enforce_post_content();
 
 
--- Função para anonimizar os dados do usuário após a exclusão
+-- TRIGGER05: Anonymizes user data upon account deletion, retaining content (BR05)
 CREATE OR REPLACE FUNCTION anonymize_user_data()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Atualiza os registros nas tabelas 'comment_', 'reaction' e 'post' para anonimizar o 'user_id'
-    UPDATE comment_ SET user_id = 0 WHERE user_id = OLD.id;  -- Usando OLD.id
-    UPDATE reaction SET user_id = 0 WHERE user_id = OLD.id;  -- Usando OLD.id
-    UPDATE post SET user_id = 0 WHERE user_id = OLD.id;      -- Usando OLD.id
-    
-    -- Retorna o registro OLD após a execução
+    UPDATE comment_ SET user_id = 0 WHERE user_id = OLD.id; 
+    UPDATE reaction SET user_id = 0 WHERE user_id = OLD.id; 
+    UPDATE post SET user_id = 0 WHERE user_id = OLD.id;     
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger para executar a função de anonimização após a exclusão de um usuário
 CREATE TRIGGER trg_anonymize_user_data
 AFTER DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION anonymize_user_data();
-
 
 
 -- TRIGGER06: Ensures users can only post in groups they belong to (BR11)
