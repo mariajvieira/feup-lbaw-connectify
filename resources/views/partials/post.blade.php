@@ -82,12 +82,22 @@
         @endif  
     </div>
 
+
+    <!-- Save -->
     @if (auth()->check())
-    <button class="saveButton btn btn-custom" data-post-id="{{ $post->id }}">
-        <i class="{{ $post->isSavedByUser() ? 'fa-solid fa-bookmark':'fa-regular fa-bookmark'}}"></i>
-        {{ $post->isSavedByUser() ? 'Saved' : 'Save' }}
-    </button>
-    @endif
+    <div class="post" data-id="{{ $post->id }}">
+        <p>{{ $post->content }}</p>
+
+        <!-- Botões de salvar ou removido -->
+        <button class="save-post-btn" 
+                data-post-id="{{ $post->id }}"
+                data-saved="{{ Auth::user()->savedPosts->contains($post) ? 'true' : 'false' }}">
+            <i class="fa{{ Auth::user()->savedPosts->contains($post) ? 's' : 'r' }} fa-bookmark"></i>
+            {{ Auth::user()->savedPosts->contains($post) ? 'Saved' : 'Save' }}
+        </button>
+    </div>
+@endif
+
 
     <!-- Reactions à direita do post -->
     <div class="post-reactions d-flex justify-content-end ms-3">

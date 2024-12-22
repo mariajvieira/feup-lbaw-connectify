@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'is_public',
         "profile_picture",
+        'google_id'
     ];
 
     /**
@@ -194,7 +195,7 @@ class User extends Authenticatable
                     ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
     }
 
-
+    
 }
 
 

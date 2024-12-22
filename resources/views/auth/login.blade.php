@@ -40,5 +40,6 @@
         </p>
     @endif
 </form>
+<a href="{{ route('google-auth') }}">Continue with Google</a>
 
 @endsection

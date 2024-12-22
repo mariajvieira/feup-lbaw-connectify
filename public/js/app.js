@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
   addEventListeners();
   addReactionEventListeners();
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sendCreateCommentRequest(event);
     });
   });
-
 });
 
 window.addEventListener('DOMContentLoaded', function () {
@@ -20,62 +18,65 @@ window.addEventListener('DOMContentLoaded', function () {
   mainContent.style.paddingTop = headerHeight + 'px';
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+  // Adicionar eventos aos botões de salvar
+  document.querySelectorAll('.save-post-btn').forEach(button => {
+      button.addEventListener('click', function() {
+          const postId = button.getAttribute('data-post-id');
+          const isSaved = button.getAttribute('data-saved') === 'true';
 
-
-document.addEventListener('DOMContentLoaded', function () {
-  // Seleciona todos os botões com a classe 'saveButton'
-  document.querySelectorAll('.saveButton').forEach(saveButton => {
-    saveButton.addEventListener('click', function () {
-      const postId = saveButton.getAttribute('data-post-id');
-      const icon = saveButton.querySelector('i');
-
-      // Desabilita o botão para evitar múltiplos cliques rápidos
-      saveButton.disabled = true;
-
-      // Verifica se o post já está salvo (ícone 'fa-bookmark' significa que o post está salvo)
-      const isSaved = icon.classList.contains('fa-bookmark');
-
-      // Envia a requisição para salvar ou remover o post
-      fetch('/save-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-          post_id: postId,
-          action: isSaved ? 'remove' : 'save'  // Se estiver salvo, envia 'remove', caso contrário envia 'save'
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Se a ação foi realizada com sucesso, atualiza o botão
-        if (data.saved) {
-          // Post foi salvo, atualiza o botão para "Saved"
-          icon.classList.remove('fa-bookmark-o');
-          icon.classList.add('fa-bookmark');
-          saveButton.innerHTML = 'Saved';
-        } else {
-          // Post foi removido dos favoritos, atualiza o botão para "Save"
-          icon.classList.remove('fa-bookmark');
-          icon.classList.add('fa-bookmark-o');
-          saveButton.innerHTML = 'Save';
-        }
-      })
-      .catch(error => {
-        console.error('Erro:', error);
-        saveButton.innerHTML = 'Error';
-      })
-      .finally(() => {
-        // Reabilita o botão após a resposta ou erro, permitindo novos cliques
-        setTimeout(() => {
-          saveButton.disabled = false;
-        }, 1000);
+          if (isSaved) {
+              removeSavePost(postId, button);
+          } else {
+              savePost(postId, button);
+          }
       });
-    });
   });
 });
 
+// Função para salvar o post
+function savePost(postId, button) {
+  fetch('/save-post', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ post_id: postId })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.saved) {
+          button.innerHTML = '<i class="fa-solid fa-bookmark"></i> Saved';
+          button.setAttribute('data-saved', 'true');
+      }
+  })
+  .catch(error => {
+      console.error('Erro ao salvar o post:', error);
+  });
+}
+
+// Função para remover o post salvo
+function removeSavePost(postId, button) {
+  fetch('/remove-save-post', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ post_id: postId })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (!data.saved) {
+          button.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save';
+          button.setAttribute('data-saved', 'false');
+      }
+  })
+  .catch(error => {
+      console.error('Erro ao remover o post salvo:', error);
+  });
+}
 
 
 function addEventListeners() {
@@ -97,7 +98,6 @@ function addEventListeners() {
       deleter.addEventListener('click', sendDeletePostRequest);
   });
 
-  
   let commentDeleters = document.querySelectorAll('.delete-comment-btn');
   commentDeleters.forEach(deleter => {
       deleter.addEventListener('click', sendDeleteCommentRequest);
@@ -110,10 +110,6 @@ function encodeForAjax(data) {
       .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`)
       .join('&');
 }
-
-
-
-
 
 function updatePostList(posts) {
   const postsContainer = document.querySelector('.posts-container');
@@ -359,7 +355,6 @@ function react(event) {
   }
 }
 
-
 function addCommentEventListeners() {
   document.querySelectorAll('.create-comment-btn').forEach(button => {
     button.addEventListener('click', sendCreateCommentRequest);
@@ -371,9 +366,9 @@ function addCommentEventListeners() {
 }
 
 function sendCreateCommentRequest(event) {
-  const form = event.target;
+  const form = event.target.closest('.create-comment');
   const postId = form.getAttribute('data-post-id');
-  const commentContent = form.querySelector('textarea[name=comment]').value;
+  const commentContent = form.querySelector('textarea[name=comment-content]').value;
 
   const data = {
       comment: commentContent,
@@ -392,60 +387,22 @@ function commentAddedHandler(form) {
   const comment = JSON.parse(this.responseText);
   const commentsContainer = form.closest('.comments');
   const newComment = document.createElement('div');
-  newComment.classList.add('comment', 'mt-2');
+  newComment.classList.add('comment-item');
   newComment.setAttribute('data-id', comment.id);
-
   newComment.innerHTML = `
-      <p><strong>${comment.user.username}</strong>: ${comment.comment_content}</p>
-      <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
+      <span>${comment.user.name}: ${comment.content}</span>
+      <button class="delete-comment-btn">Delete</button>
   `;
-  commentsContainer.appendChild(newComment);
 
-  // Limpar o campo de comentário
-  form.querySelector('textarea[name="comment"]').value = '';
+  commentsContainer.appendChild(newComment);
 
   newComment.querySelector('.delete-comment-btn').addEventListener('click', sendDeleteCommentRequest);
 }
 
 function sendDeleteCommentRequest(event) {
-  event.preventDefault(); // Prevents the default form submission
-
-  const commentId = event.target.getAttribute('data-id');
-  const formAction = `/comment/${commentId}`;
-
-  fetch(formAction, {
-    method: 'DELETE',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ comment_id: commentId }),
-    redirect: 'manual' // Prevents the redirection
-  })
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error('Erro ao excluir o comentário');
-    }
-  })
-  .then(data => {
-    if (data.message === 'Comentário excluído com sucesso.') {
-      const commentElement = document.querySelector(`.comment[data-id="${commentId}"]`);
-      if (commentElement) {
-        commentElement.remove(); // Remove the comment from the page
-      }
-      alert(data.message); // Show success message
-    } else {
-      console.error('Erro ao excluir o comentário');
-    }
-  })
-  .catch(error => {
-    console.error('Erro ao excluir o comentário:', error);
-  });
+  const commentId = event.target.closest('.comment-item').getAttribute('data-id');
+  sendAjaxRequest('DELETE', `/api/comments/${commentId}`, null, commentDeletedHandler);
 }
-
-
 
 function commentDeletedHandler() {
   if (this.status !== 200) {
@@ -454,16 +411,41 @@ function commentDeletedHandler() {
   }
 
   const comment = JSON.parse(this.responseText);
-  const commentElement = document.querySelector(`.comment[data-id="${comment.id}"]`);
+  const commentElement = document.querySelector(`.comment-item[data-id="${comment.id}"]`);
   commentElement.remove();
 }
+document.addEventListener('DOMContentLoaded', function () {
+  // Verifica se o botão "Join this Public Group" existe
+  const joinButton = document.getElementById('join-group');
 
-
-function sendAjaxRequest(method, url, data, handler) {
-  let request = new XMLHttpRequest();
-  request.open(method, url, true);
-  request.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
-  request.setRequestHeader('Content-Type', 'application/json');
-  request.addEventListener('load', handler);
-  request.send(JSON.stringify(data));
-}
+  if (joinButton) {
+      joinButton.addEventListener('click', function () {
+          const groupId = joinButton.getAttribute('data-group-id');
+          
+          // Envia a requisição AJAX
+          fetch(`/groups/${groupId}/join`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              },
+              body: JSON.stringify({
+                  group_id: groupId
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.message === 'Successfully joined the group!') {
+                  alert('You have successfully joined the group!');
+                  location.reload();  // Atualiza a página para refletir as mudanças
+              } else {
+                  alert(data.message);  // Exibe a mensagem de erro
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('An error occurred while trying to join the group.');
+          });
+      });
+  }
+});

@@ -46,7 +46,7 @@
                         type="text" 
                         name="query" 
                         id="searchInput" 
-                        placeholder="Search posts, users, comments..." 
+                        placeholder="Search users, posts, comments, groups..." 
                         class="form-control me-2" 
                         value="{{ request('query') }}" 
                         style="width: 400px; border-radius: 25px;" 

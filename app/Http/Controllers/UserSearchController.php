@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\Comment;
+use App\Models\Group;
 
 class UserSearchController extends Controller
 {
@@ -53,13 +55,18 @@ class UserSearchController extends Controller
                 ->get()
             : $commentsExactMatch;
 
+        // Busca para grupos
+        $groupsExactMatch = Group::where('group_name', 'like', '%' . $query . '%')
+            ->orWhere('description', 'like', '%' . $query . '%')
+            ->get();
 
-        $commentsQuery = Comment::where('comment_content', 'like', '%' . $query . '%');
-        if ($filterDate) {
-            $commentsQuery->whereDate('commentDate', '=', $filterDate);
-        }
-        
+        $groupsFullText = $groupsExactMatch->isEmpty()
+            ? Group::whereRaw("to_tsvector('english', group_name) @@ plainto_tsquery('english', ?)", [$query])
+                ->orWhereRaw("to_tsvector('english', description) @@ plainto_tsquery('english', ?)", [$query])
+                ->get()
+            : $groupsExactMatch;
+
         // Retorna a view com os resultados
-        return view('partials.search', compact('usersFullText', 'postsFullText', 'commentsFullText', 'query', 'filterDate'));
+        return view('partials.search', compact('usersFullText', 'postsFullText', 'commentsFullText', 'groupsFullText', 'query', 'filterDate'));
     }
 }

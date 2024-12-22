@@ -16,6 +16,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SavedPostController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\GoogleController;
 
 
 /*
@@ -95,7 +96,8 @@ Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit'
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 
 // Save and unsave post
-Route::post('/save-post', [SavedPostController::class, 'toggleSave'])->name('save-post');
+Route::post('/save-post', [SavedPostController::class, 'savePost'])->name('save.post');
+Route::post('/remove-save-post', [SavedPostController::class, 'removeSavePost'])->name('remove.save.post');
 
 // Friendship Requests
 Route::post('/friend-request/send', [FriendshipController::class, 'sendRequest'])->name('friend-request.send');
@@ -114,6 +116,7 @@ Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('r
 // Comments
 Route::post('/post/{id}/comment', [CommentController::class, 'store'])->name('comment.store');
 Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('comment.destroy');
+Route::put('/comments/{id}/edit', [CommentController::class, 'updateComment'])->name('comment.edit');
 
 
 // API Routes
@@ -141,8 +144,19 @@ Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('sav
 Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota para o feed principal
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show'); // Rota para exibir os detalhes de um grupo específico
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
+
+//Join public group
+Route::post('/groups/{groupId}/join', [GroupController::class, 'joinPublicGroup'])->name('groups.join');
+
 //Tagged posts
 Route::get('/tagged-posts', [PostController::class, 'showTaggedPosts'])->name('tagged.posts')->middleware('auth');
 
 Route::get('/contact', [ContactController::class, 'showContactForm'])->name('contact');
 Route::post('/contact', [ContactController::class, 'sendContactEmail'])->name('contact.send');
+
+
+// Google Auth
+Route::controller(GoogleController::class)->group(function () {
+    Route::get('auth/google', 'redirect')->name('google-auth');
+    Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
+});

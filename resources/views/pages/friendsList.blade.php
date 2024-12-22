@@ -1,10 +1,12 @@
 @extends('layouts.app')
 
+
+
 @section('content')
 <div class="container">
     <h3>My Friends</h3>
     <ul id="friends-list">
-
+        <!-- A lista será preenchida dinamicamente via JavaScript -->
     </ul>
 </div>
 
@@ -25,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 friendsList.innerHTML = '';
 
                 if (friends.length === 0) {
-                    friendsList.innerHTML = '<p>Você ainda não tem amigos.</p>';
+                    friendsList.innerHTML = '<p>You have no friends yet/p>';
                     return;
                 }
                 console.log(friends)
@@ -82,4 +84,15 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchFriends();
 });
 </script>
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 @endsection

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+
+
 @section('content')
 <div class="container">
     <h2>Saved Posts</h2>
@@ -12,4 +14,15 @@
         </div>
     @endif
 </div>
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 @endsection

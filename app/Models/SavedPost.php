@@ -9,16 +9,27 @@ class SavedPost extends Model
 {
     use HasFactory;
 
-    protected $table = 'saved_post'; // Nome da tabela no banco de dados.
+    // Nome da tabela no banco de dados.
+    protected $table = 'saved_post'; 
 
+    // Atributos que podem ser preenchidos
     protected $fillable = [
         'user_id',
         'post_id',
     ];
 
-    public $timestamps = false; // Desativa os timestamps
+    // Desativa os timestamps
+    public $timestamps = false;
 
-    public $incrementing = false; // Indica que a chave primária não é auto-incrementada
+    // Indica que a chave primária não é auto-incrementada
+    public $incrementing = false;
 
-    protected $primaryKey = ['user_id', 'post_id']; // Define a chave primária composta
+    // Define a chave primária composta
+    protected $primaryKey = ['user_id', 'post_id'];
+
+    // Quando Laravel precisa da chave primária, ele irá usar o método a seguir
+    public function getKeyName()
+    {
+        return $this->primaryKey;
+    }
 }
