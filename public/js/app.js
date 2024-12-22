@@ -414,3 +414,38 @@ function commentDeletedHandler() {
   const commentElement = document.querySelector(`.comment-item[data-id="${comment.id}"]`);
   commentElement.remove();
 }
+document.addEventListener('DOMContentLoaded', function () {
+  // Verifica se o botão "Join this Public Group" existe
+  const joinButton = document.getElementById('join-group');
+
+  if (joinButton) {
+      joinButton.addEventListener('click', function () {
+          const groupId = joinButton.getAttribute('data-group-id');
+          
+          // Envia a requisição AJAX
+          fetch(`/groups/${groupId}/join`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              },
+              body: JSON.stringify({
+                  group_id: groupId
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.message === 'Successfully joined the group!') {
+                  alert('You have successfully joined the group!');
+                  location.reload();  // Atualiza a página para refletir as mudanças
+              } else {
+                  alert(data.message);  // Exibe a mensagem de erro
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('An error occurred while trying to join the group.');
+          });
+      });
+  }
+});
