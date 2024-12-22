@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
@@ -47,7 +48,7 @@ class GroupController extends Controller
         return view('pages.group', compact('group', 'members'));
     }
 
-    use Illuminate\Support\Facades\Log;
+
 
     public function index()
     {
