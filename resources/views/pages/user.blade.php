@@ -121,8 +121,8 @@
         <form action="{{ route('delete.account', ['userId' => $user->id]) }}" method="POST">
             @csrf
             @method('DELETE')
-            <button type="submit" onclick="return confirm('Tem certeza de que deseja excluir esta conta?')" class="btn btn-danger">
-                Excluir Conta
+            <button type="submit" onclick="return confirm('Are you sure you want to delete the account?')" class="btn btn-danger">
+                Delete Account
             </button>
         </form>
     </div>
