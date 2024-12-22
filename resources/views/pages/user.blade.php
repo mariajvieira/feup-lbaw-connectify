@@ -137,7 +137,7 @@
 
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
-            <h3 class="mb-3">Your groups:</h3>
+            <h3 class="mb-3">Groups:</h3>
             @if($user->groups->isEmpty())
                 <p>You don't belong to any group yet.</p>
             @else
