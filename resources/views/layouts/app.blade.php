@@ -61,7 +61,8 @@
                         <i class="fa-solid fa-house me-2"></i>
                     </a>
                     <a href="{{ route('user', ['id' => Auth::user()->id]) }}" class="d-flex align-items-center text-custom text-decoration-none">
-                        <img src="{{ asset(Auth::user()->profile_picture) }}" class="rounded-circle me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                        <img src="{{ route('profile.picture', parameters: ['id' => Auth::user()->id]) }}" alt="Profile Picture" class="rounded-circle me-2" style="width: 50px; height: 50px; object-fit: cover;">
+
                         <span>{{ Auth::user()->username }}</span>
                     </a>
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">

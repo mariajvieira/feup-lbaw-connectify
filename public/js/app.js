@@ -247,6 +247,7 @@ function addReactionEventListeners() {
     button.addEventListener('click', react);
   });
 }
+
 function react(event) {
   const button = event.target;
   const reactionType = button.getAttribute('data-reaction-type');

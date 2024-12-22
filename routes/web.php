@@ -87,6 +87,7 @@ Route::get('user/{id}/pending-requests', [UserController::class, 'listPendingReq
 Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('user.friends');
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
+Route::get('/profile-picture/{id}', [UserController::class, 'getProfilePicture'])->name('profile.picture');
 Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
 
 
@@ -95,6 +96,8 @@ Route::get('/post/create', [PostController::class, 'create'])->name('post.create
 Route::get('/post/{id}', [PostController::class, 'show'])->name('post');
 Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+Route::get('post/{postId}/image/{imageNumber}', [PostController::class, 'getPostImage'])->name('post.image');
+
 
 // Save and unsave post
 Route::post('/save-post', [SavedPostController::class, 'savePost'])->name('save.post');

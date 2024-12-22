@@ -27,24 +27,36 @@
     <p class="post-content">{{ $post->content }}</p>
 
     <div class="post-images mt-3">
-        @if ($post->image1 || $post->image2 || $post->image3)
-        <div id="image-slider" class="position-relative">
-            <div class="post-image-container d-flex">
-                @foreach (['image1', 'image2', 'image3'] as $imageField)
-                    @if (!empty($post->$imageField))
+            <div id="image-slider" class="position-relative">
+                <div class="post-image-container d-flex">
+
                         <div class="post-image" style="flex: 1;">
-                            <img src="{{ asset($post->$imageField) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                            <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 1]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                        </div>
+
+                    @if ($post->IMAGE2 != NULL)
+                        <div class="post-image" style="flex: 1;">
+                            <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 2]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                         </div>
                     @endif
-                @endforeach
+
+                    @if ($post->IMAGE3 != NULL)
+                        <div class="post-image" style="flex: 1;">
+                            <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 3]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                        </div>
+                    @endif
+
+                </div>
+                @if (count(array_filter([$post->IMAGE1, $post->IMAGE2, $post->IMAGE3])) > 1)
+                    <button class="btn btn-custom position-absolute top-50 start-0 translate-middle-y" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="btn btn-custom position-absolute top-50 end-0 translate-middle-y" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                @endif
             </div>
-            @if (count(array_filter([$post->image1, $post->image2, $post->image3])) > 1)
-                <button class="btn btn-custom position-absolute top-50 start-0 translate-middle-y" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
-                <button class="btn btn-custom position-absolute top-50 end-0 translate-middle-y" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
-            @endif
-        </div>
-        @endif
     </div>
+
+
+
+
 
 
     @php

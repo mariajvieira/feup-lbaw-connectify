@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Models\SavedPost;
 use App\Models\Comment;
@@ -39,30 +40,30 @@ class PostController extends Controller
     {
         // Validação dos dados
         $request->validate([
-            'content' => 'nullable|string|max:255', // A descrição é opcional, mas deve ser uma string se fornecida
+            'content' => 'nullable|string|max:255', 
             'is_public' => 'required|boolean',
             'image1' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image3' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-        
+
         // Criação do post
         $post = new Post();
         $post->content = $request->content;
         $post->is_public = $request->is_public;
         $post->user_id = Auth::id(); 
-        
+
         // Salvar o post inicialmente para obter o post ID
         $post->save();
 
-        //Processamento das marcações de usuário
+        // Processamento das marcações de usuário
         if (!empty($request->content)) {
             preg_match_all('/@(\w+)/', $request->content, $matches);
-    
+
             if (!empty($matches[1])) {
                 $usernames = $matches[1]; 
                 $taggedUsers = User::whereIn('username', $usernames)->get();
-    
+
                 foreach ($taggedUsers as $user) {
                     $post->taggedUsers()->syncWithoutDetaching([
                         $user->id => ['tagged_by' => Auth::id(), 'created_at' => now()],
@@ -71,35 +72,31 @@ class PostController extends Controller
             }
         }
 
-        if(empty($request->content) && empty($request->image1) && empty($request->image2) && empty($request->image3)){
+        if (empty($request->content) && empty($request->image1) && empty($request->image2) && empty($request->image3)) {
             return redirect()->route('home')->with('error', 'The post must contain content or an image.');
         }
 
-        
-        // Processamento das imagens e armazenamento nos campos image1, image2, image3
+        // Processamento das imagens
         for ($i = 1; $i <= 3; $i++) {
             if ($request->hasFile('image'.$i)) {
                 $image = $request->file('image'.$i);
-                
-                // Criar o caminho da imagem diretamente dentro de public/images/
-                $imageDirectory = public_path('images');
-                
-                // Armazenar a imagem na pasta com o nome baseado no post_id e número da imagem
-                $imagePath = $image->move($imageDirectory, $post->id . '.' . $i . '.' . $image->getClientOriginalExtension());
-                
-                // Salva o caminho relativo da imagem no banco de dados
-                $post->{'image'.$i} = 'images/' . basename($imagePath);
+
+                // Gerar nome do arquivo com base no post ID e número da imagem
+                $imageName = $post->id . '.' . $i . '.' . 'jpg';
+
+                $imagePath = $image->storeAs('images/posts', $imageName, 'local'); 
+                $post->{'image'.$i} = 'posts/' . $imageName;
             }
         }
-        
-        // Atualizar o post após o processamento das imagens
+
         $post->save();
-        
+
         return redirect()->route('home')->with('success', 'Post criado com sucesso');
     }
-    
-    
 
+    
+    
+    
 
     public function edit($id)
     {
@@ -124,38 +121,59 @@ class PostController extends Controller
             'image2' => 'nullable|image|max:2048',
             'image3' => 'nullable|image|max:2048',
         ]);
-
+    
         $post = Post::findOrFail($id);
-
+    
+        // Atualizando o conteúdo e a visibilidade
         $post->update([
             'content' => $validated['content'] ?? $post->content,
             'is_public' => $validated['is_public'],
         ]);
-
-        // Atualizar imagens
+    
+        // Atualizando as imagens
         foreach (['image1', 'image2', 'image3'] as $imageField) {
             if ($request->hasFile($imageField)) {
-                $post->$imageField = $request->file($imageField)->store('posts', 'public');
+                // Armazena a imagem no storage/app/public/posts
+                $post->$imageField = $request->file($imageField)->store('images/posts', 'local');
             }
         }
-
+    
+        // Salvando as alterações no post
         $post->save();
-
+    
         return redirect()->route('home')->with('success', 'Post atualizado com sucesso!');
     }
 
-    /**
-     * Delete a post.
-     */
+    public function getPostImage($postId, $imageNumber)
+    {
+        $post = Post::findOrFail($postId);
+        
+        $imageField = 'image' . $imageNumber;
+        
+        $imagePath = 'images/' . $post->$imageField; 
+        
+        return response()->file(storage_path('app/' . $imagePath));
+    }
+    
+    
+    
+    
+
     public function delete($id)
     {
         $post = Post::find($id);
-
+    
         if (!$post) {
             return redirect()->route('home')->with('error', 'Post não encontrado.');
         }
-
-        // Excluir dependências
+    
+        for ($i = 1; $i <= 3; $i++) {
+            $imageField = 'image' . $i;
+            if ($post->$imageField && Storage::exists('images/posts/' . $post->$imageField)) {
+                Storage::delete('images/posts/' . $post->$imageField);  
+            }
+        }
+    
         DB::table('group_post_notification')->where('post_id', $id)->delete();
         DB::table('reaction_notification')
             ->whereIn('reaction_id', function ($query) use ($id) {
@@ -168,11 +186,13 @@ class PostController extends Controller
             })->delete();
         DB::table('comment_')->where('post_id', $id)->delete();
         DB::table('saved_post')->where('post_id', $id)->delete();
-
+    
         $post->delete();
-
+    
         return redirect()->route('home')->with('success', 'Post deletado com sucesso!');
     }
+
+
 
     /**
      * Retrieve posts for the user's timeline.
@@ -326,7 +346,7 @@ class PostController extends Controller
             'shocked' => 'fa-face-surprise'
         ];
 
-        return $icons[$type] ?? 'fa-smile'; // Ícone padrão
+        return $icons[$type] ?? 'fa-smile';
     }
 
 

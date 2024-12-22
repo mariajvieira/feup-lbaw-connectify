@@ -27,27 +27,26 @@ class UserController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
-
+    
         $user = new User();
-
+    
         $user->username = $request->username;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
         $user->is_public = $request->is_public ?? false;
-        $user->profile_picture = null;
-
+    
         if ($request->hasFile('profile_picture')) {
-            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures');
+        } else {
+            $user->profile_picture = 'profile_pictures/default.png';
         }
-
-        else {
-            $user->profile_picture = 'images/profile_pictures/default.png';
-        }
-
+    
         $user->save();
-
+    
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Usuário criado com sucesso!');
     }
+    
+    
 
 
     public function getProfile($id)
@@ -80,33 +79,44 @@ class UserController extends Controller
         return view('partials.profileedit', compact('user')); 
     }
 
+
+    public function getProfilePicture($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        if (!$user->profile_picture) {
+            abort(404); // Se não encontrar a imagem
+        }
+
+        return response()->file(file: storage_path('app/images/' . $user->profile_picture));
+    }
+
     // Delete user
     public function deleteUser($id)
     {
         $user = User::find($id);
-
+    
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-
-        if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
+            if ($user->profile_picture && Storage::exists('public/' . $user->profile_picture)) {
             Storage::delete('public/' . $user->profile_picture);
         }
-
+    
         $user->delete();
-
+    
         return response()->json(['message' => 'User deleted successfully']);
     }
+    
 
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
         
-        
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-
+    
         $request->validate([
             'username' => 'sometimes|string|max:250|unique:users,username,' . $user->id,
             'email' => 'sometimes|email|max:250|unique:users,email,' . $user->id,
@@ -114,49 +124,52 @@ class UserController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_public' => 'nullable|boolean',
         ]);
-
-
+    
         // Atualizando os dados do usuário
         if ($request->has('username')) {
             $user->username = $request->username;
         }
-
+    
         if ($request->has('email')) {
             $user->email = $request->email;
         }
-
+    
         if ($request->has('password')) {
             $user->password = Hash::make($request->password); 
         }
-
+    
         if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture && $user->profile_picture !== 'images/profile_pictures/default.png') {
-                // Apagando a imagem anterior, caso não seja a imagem padrão
-                if (Storage::exists(public_path($user->profile_picture))) {
-                    Storage::delete(public_path($user->profile_picture));
+            // Apagando a imagem anterior, caso não seja a imagem padrão
+            if ($user->profile_picture && $user->profile_picture !== 'profile_pictures/default.png') {
+                // Apagar imagem antiga
+                $oldFilePath = storage_path('app/' . $user->profile_picture);
+                if (file_exists($oldFilePath)) {
+                    unlink($oldFilePath);
                 }
             }
     
-            // Processando e movendo a nova imagem para o diretório público
+            // Processando e movendo a nova imagem para o diretório de storage
             $profile_picture = $request->file('profile_picture');
             $profile_picturePath = 'images/profile_pictures/' . $user->id . '.' . $profile_picture->getClientOriginalExtension();
-            $profile_picture->move(public_path('images/profile_pictures'), $user->id . '.' . $profile_picture->getClientOriginalExtension());
-            
+    
+            // Salvando a imagem na pasta storage/app/images (não pública)
+            $profile_picture->storeAs('images/profile_pictures', $user->id . '.' . $profile_picture->getClientOriginalExtension(), 'local');
+    
             // Atualizando o caminho da imagem no banco de dados
             $user->profile_picture = $profile_picturePath;
         }
-
+    
         if ($request->has('is_public')) {
             $user->is_public = $request->is_public;
         } else {
             $user->is_public = false;
         }
-
+    
         $user->save();
-
+    
         return redirect()->route('user', ['id' => $user->id])->with('success', 'Perfil atualizado com sucesso!');
     }
-
+    
 
     public function updatePassword(Request $request)
     {
@@ -202,16 +215,16 @@ class UserController extends Controller
 }
 
 
-public function showFriendsPage($id)
-{
-    $user = User::findOrFail($id);
+    public function showFriendsPage($id)
+    {
+        $user = User::findOrFail($id);
 
-    if (!auth()->id()) {
-        abort(403, 'Acesso não autorizado.');
+        if (!auth()->id()) {
+            abort(403, 'Acesso não autorizado.');
+        }
+
+        return view('pages.friendsList', ['user' => $user]);
     }
-
-    return view('pages.friendsList', ['user' => $user]);
-}
 
     public function getFriends($id)
     {
