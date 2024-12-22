@@ -221,6 +221,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Post::class, 'tagged_post', 'user_id', 'post_id')
                     ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
     }
+    public function isInGroup($groupId)
+{
+    return $this->groups()->where('group_id', $groupId)->exists();
+}
+
 }
 
 
