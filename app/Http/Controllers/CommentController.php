@@ -85,4 +85,59 @@ class CommentController extends Controller
 
         return response()->json($comments, 200);
     }
+
+
+    public function getReactionsCount($id)
+    {
+        $comment = Comment::find($id);
+    
+        if (!$comment) {
+            return response()->json(['error' => 'Comment not found.'], 404);
+        }
+    
+        $reactionsCount = $comment->reactions()
+            ->where('target_type', 'comment') 
+            ->select('reaction_type', DB::raw('count(*) as total'))
+            ->groupBy('reaction_type')
+            ->pluck('total', 'reaction_type')
+            ->toArray();
+    
+        return response()->json($reactionsCount, 200);
+    }
+
+
+    public function showReactions($commentId)
+    {
+        $comment = Comment::find($commentId);
+        
+        if (!$comment) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+    
+        // Carregue as reações relacionadas ao post
+        $reactions = $comment->reactions()->with('user')->get();
+    
+        // Get reaction icon for each reaction type
+        foreach ($reactions as $reaction) {
+            $reaction->icon = $this->getReactionIcon($reaction->reaction_type);
+        }
+    
+        return response()->json([
+            'reactions' => $reactions
+        ]);
+    }
+
+
+    function getReactionIcon($type)
+    {
+        $icons = [
+            'like' => 'fa-heart',
+            'laugh' => 'fa-face-laugh-squint',
+            'cry' => 'fa-face-sad-cry',
+            'applause' => 'fa-hands-clapping',
+            'shocked' => 'fa-face-surprise'
+        ];
+
+        return $icons[$type] ?? 'fa-smile';
+    }
 }

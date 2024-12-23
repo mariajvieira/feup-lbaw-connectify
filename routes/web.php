@@ -90,6 +90,7 @@ Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.u
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 Route::get('/profile-picture/{id}', [UserController::class, 'getProfilePicture'])->name('profile.picture');
 Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
+Route::get('/comment/{comment}/reactions', [CommentController::class, 'showReactionsPage'])->name('comment.reactions');
 
 
 // Posts
@@ -114,8 +115,9 @@ Route::post('/friend-request/{id}/remove', [FriendshipController::class, 'remove
 Route::get('api/search', [UserSearchController::class, 'search'])->name('search');
 
 // Reactions
-Route::post('/post/{id}/reaction', [ReactionController::class, 'store'])->name('reaction.store');
+Route::post('/post/{id}/reaction', [ReactionController::class, 'storepost'])->name('postreaction.store');
 Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
+Route::post('/comment/{id}/reaction', [ReactionController::class, 'storecomment'])->name('commentreaction.store');
 
 
 // Comments

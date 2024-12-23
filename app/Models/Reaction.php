@@ -37,6 +37,6 @@ class Reaction extends Model
 
     public function getMorphClass()
     {
-        return strtolower(class_basename($this)); // Retorna "post" ou "comment"
+        return strtolower(class_basename($this)); 
     }
 }

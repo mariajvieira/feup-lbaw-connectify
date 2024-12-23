@@ -223,11 +223,13 @@ function createPostElement(post) {
 function addReactionEventListeners() {
   const reactionButtons = document.querySelectorAll('.reaction-button');
   reactionButtons.forEach(button => {
-    button.addEventListener('click', react);
+    button.addEventListener('click', reactPost);
+    button.addEventListener('click', reactComment);
   });
+
 }
 
-function react(event) {
+function reactPost(event) {
   const button = event.target;
   const reactionType = button.getAttribute('data-reaction-type');
   const postId = button.getAttribute('data-post-id');
@@ -302,6 +304,105 @@ function react(event) {
       body: JSON.stringify({
         target_id: postId,
         target_type: 'post',
+        reaction_type: reactionType,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.message === 'Reação registada com sucesso.') {
+        const parentReactions = button.closest('.d-flex'); 
+        const buttons = parentReactions.querySelectorAll('button');
+        buttons.forEach(btn => {
+          btn.classList.remove('btn-outline-danger');
+          btn.classList.add('btn-outline-secondary');
+        });
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-outline-danger');
+        button.setAttribute('data-reaction-id', data.reaction_id); 
+      } else {
+        console.error('Erro ao registar a reação:', data.error);
+      }
+    })
+    .catch(error => console.error('Erro ao registar a reação:', error));
+  }
+}
+
+
+function reactComment(event) {
+  const button = event.target;
+  const reactionType = button.getAttribute('data-reaction-type');
+  const commentId = button.getAttribute('data-comment-id');
+  let reactionId = button.getAttribute('data-reaction-id'); 
+
+  if (reactionId) {
+    if (button.classList.contains('btn-outline-danger')) {
+      fetch(`/reaction/${reactionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.error || 'Erro ao apagar a reação');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.message === 'Reação removida com sucesso.') {
+          button.classList.remove('btn-outline-danger');
+          button.classList.add('btn-outline-secondary');
+          button.removeAttribute('data-reaction-id');
+        } else {
+          console.error('Erro ao apagar a reação:', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao apagar a reação:', error);
+      });
+    } else {
+      fetch(`/comment/${commentId}/reaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+        body: JSON.stringify({
+          target_id: commentId,
+          target_type: 'comment',
+          reaction_type: reactionType,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === 'Reação registada com sucesso.') {
+          const parentReactions = button.closest('.d-flex'); 
+          buttons.forEach(btn => {
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-outline-secondary');
+          });
+          button.classList.remove('btn-outline-secondary');
+          button.classList.add('btn-outline-danger');
+          button.setAttribute('data-reaction-id', data.reaction_id);
+        } else {
+          console.error('Erro ao registar a reação:', data.error);
+        }
+      })
+      .catch(error => console.error('Erro ao registar a reação:', error));
+    }
+  } else {
+    fetch(`/comment/${commentId}/reaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      },
+      body: JSON.stringify({
+        target_id: commentId,
+        target_type: 'comment',
         reaction_type: reactionType,
       }),
     })

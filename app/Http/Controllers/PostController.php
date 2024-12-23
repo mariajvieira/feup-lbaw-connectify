@@ -148,13 +148,21 @@ class PostController extends Controller
     {
         $post = Post::findOrFail($postId);
         
+        // Construa o campo da imagem dinamicamente com base no número da imagem
         $imageField = 'image' . $imageNumber;
         
+        // Verifique se o campo de imagem é nulo
+        if (!$post->$imageField) {
+            // Retorna uma resposta vazia, com status 204 (No Content)
+            return response()->noContent();
+        }
+    
+        // Caso a imagem não seja nula, continue com o caminho do arquivo
         $imagePath = 'images/' . $post->$imageField; 
         
+        // Retorna a imagem armazenada
         return response()->file(storage_path('app/' . $imagePath));
     }
-    
     
     
     

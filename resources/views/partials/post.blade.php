@@ -34,11 +34,11 @@
                         <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 1]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                     </div>
 
-                @if (!empty($post->IMAGE2))
+              
                     <div class="post-image" style="flex: 1;">
                         <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 2]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                     </div>
-                @endif
+          
 
                 @if (!empty($post->IMAGE3))
                     <div class="post-image" style="flex: 1;">
@@ -49,9 +49,6 @@
             </div>
         </div>
     </div>
-
-
-
 
 
 

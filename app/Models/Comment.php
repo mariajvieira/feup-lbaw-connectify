@@ -34,6 +34,7 @@ class Comment extends Model
 
     public function reactions()
     {
-        return $this->morphMany(Reaction::class, 'target');
+        return $this->morphMany(Reaction::class, 'target')
+        ->where('target_type', 'comment');    
     }
 }

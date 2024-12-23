@@ -5,6 +5,7 @@ use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 use App\Models\Reaction;
 use App\Models\Post;
+use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,7 @@ class ReactionController extends Controller
     /**
      * Store a newly created reaction.
      */
-    public function store(Request $request, $id)
+    public function storepost(Request $request, $id)
     {
         // Validar apenas o tipo de reação
         $validated = $request->validate([
@@ -55,6 +56,45 @@ class ReactionController extends Controller
             'reaction_id' => $reaction->id // Garantir que o ID da reação seja retornado corretamente
         ]);
     }
+
+
+    public function storecomment(Request $request, $id)
+    {
+        // Validar apenas o tipo de reação
+        $validated = $request->validate([
+            'reaction_type' => 'required|in:like,laugh,cry,applause,shocked',
+        ]);
+    
+        $userId = auth()->id();
+    
+        $commentExists = Comment::where('id', $id)->exists();
+        if (!$commentExists) {
+            return response()->json(['error' => 'Comment não encontrado.'], 404);
+        }
+    
+        // Verificar se o usuário já reagiu ao post
+        $reaction = Reaction::where('user_id', $userId)
+                            ->where('target_id', $id)
+                            ->where('target_type', 'comment')
+                            ->first();
+    
+        if ($reaction) {
+            $reaction->update(['reaction_type' => $validated['reaction_type']]);
+        } else {
+            // Criar nova reação
+            $reaction = Reaction::create([
+                'user_id' => $userId,
+                'target_id' => $id,
+                'reaction_type' => $validated['reaction_type'],
+                'target_type' => 'comment',
+            ]);
+        }
+    
+        return response()->json([
+            'message' => 'Reação registada com sucesso.',
+            'reaction_id' => $reaction->id 
+        ]);
+    }
     
     
     
@@ -77,7 +117,7 @@ class ReactionController extends Controller
         // Retornar uma resposta JSON com status 200 e mensagem de sucesso
         return response()->json(['message' => 'Reação removida com sucesso.'], 200);
     }
-    
-    
+
+
 
 }

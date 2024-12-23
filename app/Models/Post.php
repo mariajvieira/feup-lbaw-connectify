@@ -49,32 +49,32 @@ class Post extends Model
         return $this->hasMany(Comment::class, 'post_id', 'id');
     }
     public function isSavedByUser()
-{
-    return SavedPost::where('user_id', auth()->id())
-                    ->where('post_id', $this->id)
-                    ->exists();
-}
+    {
+        return SavedPost::where('user_id', auth()->id())
+                        ->where('post_id', $this->id)
+                        ->exists();
+    }
 
-public function savedPosts()
-{
-    return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
-}
-public function usersWhoSaved()
-{
-    return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
-}
+    public function savedPosts()
+    {
+        return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
+    }
+    public function usersWhoSaved()
+    {
+        return $this->belongsToMany(User::class, 'saved_post', 'post_id', 'user_id');
+    }
 
 
 
-public function taggedUsers()
-{
-    return $this->belongsToMany(User::class, 'tagged_post', 'post_id', 'user_id')
-                ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
-}
+    public function taggedUsers()
+    {
+        return $this->belongsToMany(User::class, 'tagged_post', 'post_id', 'user_id')
+                    ->withPivot('tagged_by', 'created_at'); // Inclui informações adicionais
+    }
 
-public function savedByUsers()
-{
-    return $this->belongsToMany(User::class, 'saved_posts');
-}
+    public function savedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'saved_posts');
+    }
 
 }
