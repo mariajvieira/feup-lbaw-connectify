@@ -390,11 +390,20 @@ CREATE OR REPLACE FUNCTION enforce_group_posting()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.group_id IS NOT NULL THEN
+        -- Verifica se o usuário é membro ou proprietário do grupo
         IF NOT EXISTS (
-            SELECT 1 FROM group_member
-            WHERE group_id = NEW.group_id AND user_id = NEW.user_id
+            SELECT 1 
+            FROM group_member
+            WHERE group_id = NEW.group_id 
+            AND user_id = NEW.user_id
+        ) 
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM group_owner
+            WHERE group_id = NEW.group_id 
+            AND user_id = NEW.user_id
         ) THEN
-            RAISE EXCEPTION 'User must be a member of the group to post.';
+            RAISE EXCEPTION 'User must be a member or owner of the group to post.';
         END IF;
     END IF; 
     RETURN NEW;
@@ -405,6 +414,7 @@ CREATE TRIGGER trg_enforce_group_posting
 BEFORE INSERT ON post
 FOR EACH ROW
 EXECUTE FUNCTION enforce_group_posting();
+
 
 
 
@@ -778,30 +788,30 @@ INSERT INTO users (username, email, profile_picture, password, is_public)
 VALUES
     ('alice_wonder', 'alice@example.com', 'profile_pictures/1.jpg', '$2y$10$rX7CLGWOUaeAKP6ACma35.e9bVB5QqD5hLlUrU.nhxgdI2qWd9v7W', TRUE),
     ('bob_builder', 'bob@example.com', 'profile_pictures/2.jpg', '$2y$10$0xP8NZro/7udYYA0IA8Zhey919ccCDwUjSsj7ulYJlXpUXsSJ306G', TRUE),
-    ('charlie_chaplin', 'charlie@example.com', DEFAULT, 'securepassword3', FALSE),
+    ('charlie_chaplin', 'charlie@example.com', DEFAULT, 'securepassword3', TRUE),
     ('daisy_duck', 'daisy@example.com', 'profile_pictures/4.jpg', 'securepassword4', TRUE),
     ('edgar_allan', 'edgar@example.com', 'profile_pictures/5.jpg', 'securepassword5', TRUE),
-    ('fiona_fairy', 'fiona@example.com', DEFAULT, 'securepassword6', FALSE),
+    ('fiona_fairy', 'fiona@example.com', DEFAULT, 'securepassword6', TRUE),
     ('george_gremlin', 'george@example.com', 'profile_pictures/7.jpg', 'securepassword7', TRUE),
     ('hannah_hacker', 'hannah@example.com', DEFAULT, 'securepassword8', TRUE),
     ('ian_icecream', 'ian@example.com', 'profile_pictures/9.jpg', 'securepassword9', TRUE),
-    ('jessica_jones', 'jessica@example.com', DEFAULT, 'securepassword10', FALSE),
+    ('jessica_jones', 'jessica@example.com', DEFAULT, 'securepassword10', TRUE),
     ('karl_kong', 'karl@example.com', 'profile_pictures/11.jpg', 'securepassword11', TRUE),
     ('linda_lion', 'linda@example.com', 'profile_pictures/12.jpg', 'securepassword12', TRUE),
     ('mike_mouse', 'mike@example.com', DEFAULT, 'securepassword13', TRUE),
-    ('nina_ninja', 'nina@example.com', DEFAULT, 'securepassword14', FALSE),
+    ('nina_ninja', 'nina@example.com', DEFAULT, 'securepassword14', TRUE),
     ('oliver_orange', 'oliver@example.com', DEFAULT, 'securepassword15', TRUE),
     ('peter_panda', 'peter@example.com', 'profile_pictures/16.jpg', 'securepassword16', TRUE),
     ('quincy_quokka', 'quincy@example.com', DEFAULT, 'securepassword17', TRUE),
     ('rose_rabbit', 'rose@example.com', 'profile_pictures/18.jpg', 'securepassword18', TRUE),
-    ('sara_sparrow', 'sara@example.com', 'profile_pictures/19.jpg', 'securepassword19', FALSE),
+    ('sara_sparrow', 'sara@example.com', 'profile_pictures/19.jpg', 'securepassword19', TRUE),
     ('tom_tiger', 'tom@example.com', DEFAULT, 'securepassword20', TRUE),
     ('uma_unicorn', 'uma@example.com', DEFAULT, 'securepassword21', TRUE),
     ('vicky_vulture', 'vicky@example.com', DEFAULT, 'securepassword22', TRUE),
     ('will_walrus', 'will@example.com', 'profile_pictures/23.jpg', 'securepassword23', TRUE),
     ('xena_xerus', 'xena@example.com', 'profile_pictures/24.jpg', 'securepassword24', TRUE),
     ('yara_yeti', 'yara@example.com', DEFAULT, 'securepassword25', TRUE),
-    ('zach_zebra', 'zach@example.com', 'profile_pictures/26.jpg', 'securepassword26', FALSE),
+    ('zach_zebra', 'zach@example.com', 'profile_pictures/26.jpg', 'securepassword26', TRUE),
     ('arnold_alligator', 'arnold@example.com', DEFAULT, 'securepassword27', TRUE),
     ('bianca_butterfly', 'bianca@example.com', DEFAULT, 'securepassword28', TRUE),
     ('clara_cat', 'clara@example.com', DEFAULT, 'securepassword29', TRUE),
@@ -818,14 +828,14 @@ VALUES
     ('nora_narwhal', 'nora@example.com', DEFAULT, 'securepassword40', TRUE),
     ('olga_octopus', 'olga@example.com', DEFAULT, 'securepassword41', TRUE),
     ('paul_parrot', 'paul@example.com', DEFAULT, 'securepassword42', TRUE),
-    ('quinn_quail', 'quinn@example.com', DEFAULT, 'securepassword43', FALSE),
-    ('rachel_raccoon', 'rachel@example.com',DEFAULT, 'securepassword44', FALSE),
-    ('sammy_seal', 'sammy@example.com', DEFAULT, 'securepassword45', FALSE),
-    ('tina_tortoise', 'tina@example.com', DEFAULT, 'securepassword46', FALSE),
-    ('ursula_unicorn', 'ursula@example.com', DEFAULT, 'securepassword47', FALSE),
-    ('vince_viper', 'vince@example.com',DEFAULT, 'securepassword48', FALSE),
-    ('willow_wolf', 'willow@example.com', DEFAULT, 'securepassword49', FALSE),
-    ('xander_xerus', 'xander@example.com', DEFAULT, 'securepassword50', FALSE);
+    ('quinn_quail', 'quinn@example.com', DEFAULT, 'securepassword43', TRUE),
+    ('rachel_raccoon', 'rachel@example.com',DEFAULT, 'securepassword44', TRUE),
+    ('sammy_seal', 'sammy@example.com', DEFAULT, 'securepassword45', TRUE),
+    ('tina_tortoise', 'tina@example.com', DEFAULT, 'securepassword46', TRUE),
+    ('ursula_unicorn', 'ursula@example.com', DEFAULT, 'securepassword47', TRUE),
+    ('vince_viper', 'vince@example.com',DEFAULT, 'securepassword48', TRUE),
+    ('willow_wolf', 'willow@example.com', DEFAULT, 'securepassword49', TRUE),
+    ('xander_xerus', 'xander@example.com', DEFAULT, 'securepassword50', TRUE),
     ('amelia_clarke', 'amelia.clarke@example.com', DEFAULT, 'securepassword51', TRUE),
     ('benjamin_frank', 'benjamin.frank@example.com', DEFAULT, 'securepassword52', TRUE),
     ('charlotte_brown', 'charlotte.brown@example.com', DEFAULT, 'securepassword53', TRUE),
@@ -844,31 +854,31 @@ VALUES
     ('peter_lee', 'peter.lee@example.com', DEFAULT, 'securepassword66', TRUE),
     ('quinn_harris', 'quinn.harris@example.com', DEFAULT, 'securepassword67', TRUE),
     ('ruby_clark', 'ruby.clark@example.com', DEFAULT, 'securepassword68', TRUE),
-    ('samuel_lewis', 'samuel.lewis@example.com', DEFAULT, 'securepassword69', FALSE),
+    ('samuel_lewis', 'samuel.lewis@example.com', DEFAULT, 'securepassword69', TRUE),
     ('taylor_robinson', 'taylor.robinson@example.com', DEFAULT, 'securepassword70', TRUE),
-    ('uma_walker', 'uma.walker@example.com', DEFAULT, 'securepassword71', FALSE),
-    ('victor_hall', 'victor.hall@example.com', DEFAULT, 'securepassword72', FALSE),
-    ('willow_allen', 'willow.allen@example.com', DEFAULT, 'securepassword73', FALSE),
-    ('xavier_young', 'xavier.young@example.com', DEFAULT, 'securepassword74', FALSE),
-    ('yasmine_hernandez', 'yasmine.hernandez@example.com', DEFAULT, 'securepassword75', FALSE),
-    ('zachary_king', 'zachary.king@example.com', DEFAULT, 'securepassword76', FALSE),
-    ('abigail_scott', 'abigail.scott@example.com', DEFAULT, 'securepassword77', FALSE),
-    ('brandon_adams', 'brandon.adams@example.com', DEFAULT, 'securepassword78', FALSE),
-    ('chloe_baker', 'chloe.baker@example.com', DEFAULT, 'securepassword79', FALSE),
-    ('dylan_carter', 'dylan.carter@example.com', DEFAULT, 'securepassword80', FALSE),
-    ('ella_mitchell', 'ella.mitchell@example.com', DEFAULT, 'securepassword81', FALSE),
-    ('finn_perez', 'finn.perez@example.com', DEFAULT, 'securepassword82', FALSE),
-    ('grace_evans', 'grace.evans@example.com', DEFAULT, 'securepassword83', FALSE),
-    ('henry_collins', 'henry.collins@example.com', DEFAULT, 'securepassword84', FALSE),
-    ('ivy_reed', 'ivy.reed@example.com', DEFAULT, 'securepassword85', FALSE),
-    ('james_bell', 'james.bell@example.com', DEFAULT, 'securepassword86', FALSE),
-    ('kylie_cooper', 'kylie.cooper@example.com', DEFAULT, 'securepassword87', FALSE),
-    ('logan_bailey', 'logan.bailey@example.com', DEFAULT, 'securepassword88', FALSE),
-    ('madison_morris', 'madison.morris@example.com', DEFAULT, 'securepassword89', FALSE),
-    ('nathan_rogers', 'nathan.rogers@example.com', DEFAULT, 'securepassword90', FALSE),
-    ('oliver_reed', 'oliver.reed@example.com', DEFAULT, 'securepassword91', FALSE),
-    ('penelope_cook', 'penelope.cook@example.com', DEFAULT, 'securepassword92', FALSE),
-    ('quincy_morgan', 'quincy.morgan@example.com', DEFAULT, 'securepassword93', FALSE),
+    ('uma_walker', 'uma.walker@example.com', DEFAULT, 'securepassword71', TRUE),
+    ('victor_hall', 'victor.hall@example.com', DEFAULT, 'securepassword72', TRUE),
+    ('willow_allen', 'willow.allen@example.com', DEFAULT, 'securepassword73', TRUE),
+    ('xavier_young', 'xavier.young@example.com', DEFAULT, 'securepassword74', TRUE),
+    ('yasmine_hernandez', 'yasmine.hernandez@example.com', DEFAULT, 'securepassword75', TRUE),
+    ('zachary_king', 'zachary.king@example.com', DEFAULT, 'securepassword76', TRUE),
+    ('abigail_scott', 'abigail.scott@example.com', DEFAULT, 'securepassword77', TRUE),
+    ('brandon_adams', 'brandon.adams@example.com', DEFAULT, 'securepassword78', TRUE),
+    ('chloe_baker', 'chloe.baker@example.com', DEFAULT, 'securepassword79', TRUE),
+    ('dylan_carter', 'dylan.carter@example.com', DEFAULT, 'securepassword80', TRUE),
+    ('ella_mitchell', 'ella.mitchell@example.com', DEFAULT, 'securepassword81', TRUE),
+    ('finn_perez', 'finn.perez@example.com', DEFAULT, 'securepassword82', TRUE),
+    ('grace_evans', 'grace.evans@example.com', DEFAULT, 'securepassword83', TRUE),
+    ('henry_collins', 'henry.collins@example.com', DEFAULT, 'securepassword84', TRUE),
+    ('ivy_reed', 'ivy.reed@example.com', DEFAULT, 'securepassword85', TRUE),
+    ('james_bell', 'james.bell@example.com', DEFAULT, 'securepassword86', TRUE),
+    ('kylie_cooper', 'kylie.cooper@example.com', DEFAULT, 'securepassword87', TRUE),
+    ('logan_bailey', 'logan.bailey@example.com', DEFAULT, 'securepassword88', TRUE),
+    ('madison_morris', 'madison.morris@example.com', DEFAULT, 'securepassword89', TRUE),
+    ('nathan_rogers', 'nathan.rogers@example.com', DEFAULT, 'securepassword90', TRUE),
+    ('oliver_reed', 'oliver.reed@example.com', DEFAULT, 'securepassword91', TRUE),
+    ('penelope_cook', 'penelope.cook@example.com', DEFAULT, 'securepassword92', TRUE),
+    ('quincy_morgan', 'quincy.morgan@example.com', DEFAULT, 'securepassword93', TRUE),
     ('riley_peterson', 'riley.peterson@example.com', DEFAULT, 'securepassword94', TRUE),
     ('sophia_hughes', 'sophia.hughes@example.com', DEFAULT, 'securepassword95', TRUE),
     ('thomas_flores', 'thomas.flores@example.com', DEFAULT, 'securepassword96', TRUE),
@@ -905,15 +915,15 @@ VALUES
     (2, NULL, 'Building a new project, check it out!', 'posts/2.1.jpg', NULL, NULL, TRUE, '2023-01-02 12:01:00'),
     (3, NULL, 'Check out my latest painting!', 'posts/3.1.jpg', 'posts/3.2.jpg',  NULL,TRUE, '2023-01-03 12:02:00'),
     (4, NULL, 'Paris!', 'posts/4.1.jpg', NULL, NULL, TRUE, '2023-01-04 12:03:00'),
-    (5, 6, 'Did you know that octopuses have three hearts? Two pump blood to the gills, and one pumps it to the rest of the body. What’s even more fascinating is that the heart that supplies the body stops beating when the octopus swims! Nature is incredible, isn’t it?', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
+    (5, NULL, 'Did you know that octopuses have three hearts? Two pump blood to the gills, and one pumps it to the rest of the body. What’s even more fascinating is that the heart that supplies the body stops beating when the octopus swims! Nature is incredible, isn’t it?', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
     (6, NULL, 'New family member!', 'posts/6.1.jpg', NULL, NULL, TRUE, '2023-01-06 12:05:00'),
     (7, NULL, 'Just got back from my trip to Italy!', 'posts/7.1.jpg', NULL, NULL, TRUE, '2023-01-07 12:06:00'),
-    (8, 13, 'Tried a new recipe today, it was delicious!', 'posts/8.1.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
+    (8,  NULL, 'Tried a new recipe today, it was delicious!', 'posts/8.1.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
     (9, NULL, 'Just finished a 5k run, feeling great!', 'posts/9.1.jpg', NULL, NULL, TRUE, '2023-01-09 12:08:00'),
     (10, NULL, 'I love listening to music!', 'posts/10.1.jpg', NULL, NULL, TRUE, '2023-01-10 12:09:00'),
     (1, NULL, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, '2023-01-11 12:10:00'),
     (2, NULL, 'Love building stuff together!', 'posts/12.1.jpg', NULL, NULL, TRUE, '2023-01-12 12:11:00'),
-    (3, 3, 'Art online class coming up!', 'posts/13.1.jpg', NULL, NULL, TRUE, '2023-01-13 12:12:00'),
+    (3, NULL, 'Art online class coming up!', 'posts/13.1.jpg', NULL, NULL, TRUE, '2023-01-13 12:12:00'),
     (4, NULL, NULL , 'posts/14.1.jpg', NULL, NULL, TRUE, '2023-01-14 12:13:00'),
     (5, NULL, 'Amazing coffe with an amazing view', 'posts/15.1.jpg', NULL, NULL, TRUE, '2023-01-15 12:14:00'),
     (6, NULL, 'Happy birthday mom!', 'posts/16.1.jpg', NULL, NULL, TRUE, '2023-01-16 12:15:00'),
@@ -926,45 +936,45 @@ VALUES
     (3, NULL, NULL,'posts/23.1.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
     (4, NULL, 'Today in Porto', 'posts/24.1.jpg', NULL, NULL, TRUE, '2023-01-24 12:23:00'),
     (5, NULL, 'Adopt, dont shop!', 'posts/25.1.jpg', NULL, NULL, TRUE, '2023-01-25 12:24:00'),
-    (6, 14, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
+    (6, NULL, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
     (7, NULL, 'Family time :)', 'posts/27.1.jpg', NULL, NULL, TRUE, '2023-01-27 12:26:00'),
     (8, NULL, 'Who wants to join me for a workout?', 'posts/28.1.jpg', NULL, NULL, TRUE, '2023-01-28 12:27:00'),
     (9, NULL, 'Whats your favourite song? I love Despacito', 'posts/29.1.jpg', NULL, NULL, TRUE, '2023-01-29 12:28:00'),
-    (10, 1, 'What book are you currently reading?', 'posts/30.1.jpg', NULL, NULL, TRUE, '2023-01-30 12:29:00');
-    (1, 1, 'Just finished reading "To Kill a Mockingbird" by Harper Lee. Highly recommend!', NULL, NULL, NULL, TRUE, '2023-02-01 12:00:00'),
-    (2, 1, 'Currently reading "1984" by George Orwell. It is a thought-provoking book.', NULL, NULL, NULL, TRUE, '2023-02-02 12:00:00'),
-    (3, 1, 'Just started "Pride and Prejudice" by Jane Austen. Loving it so far!', NULL, NULL, NULL, TRUE, '2023-02-03 12:00:00'),
-    (12, 2, 'Just finished building a new deck for my backyard!', 'posts/31.1.jpg', NULL, NULL, TRUE, '2023-02-04 12:00:00'),
-    (27, 2, 'Started a new project: building a treehouse for my kids!', 'posts/32.1.jpg', NULL, NULL, TRUE, '2023-02-05 12:00:00'),
-    (51, 2, 'Renovating my kitchen, here are some progress pics!', 'posts/33.1.jpg', 'posts/33.2.jpg', NULL, TRUE, '2023-02-06 12:00:00'),
-    (28, 3, 'Just finished a new painting, what do you think?', 'posts/34.1.jpg', NULL, NULL, TRUE, '2023-02-07 12:00:00'),
-    (43, 3, 'Art is my passion. Here is my latest sketch.', 'posts/35.1.jpg', NULL, NULL, TRUE, '2023-02-08 12:00:00'),
-    (62, 3, 'Exploring new techniques in digital art.', 'posts/36.1.jpg', NULL, NULL, TRUE, '2023-02-09 12:00:00'),
-    (7, 4, 'I found a strange key in my attic. It has an intricate design and looks very old. Does anyone know what it might open?', NULL, NULL, NULL, TRUE, '2023-02-10 12:00:00'),
-    (44, 4, 'There are mysterious footprints leading to my garden shed. They appear overnight and disappear by morning. Any ideas on what could be causing them?',NULL, NULL, NULL, TRUE, '2023-02-11 12:00:00'),
-    (30, 5, 'Just planted some new flowers in my garden. Can’t wait to see them bloom!', 'posts/39.1.jpg', NULL, NULL, TRUE, '2023-02-12 12:00:00'),
-    (45, 5, 'Harvested some fresh vegetables today. Nothing beats homegrown produce!', NULL, NULL, NULL, TRUE, '2023-02-13 12:00:00'),
-    (45, 5, 'Built a new compost bin for my garden. Sustainability is key!', 'posts/41.1.jpg', NULL, NULL, TRUE, '2023-02-14 12:00:00'),
-    (9, 6, 'Just adopted a new puppy! Meet Max.', 'posts/42.1.jpg', NULL, NULL, TRUE, '2023-02-19 12:00:00'),
-    (31, 6, 'My cat Luna loves to play with her new toy.', 'posts/43.1.jpg', NULL, NULL, TRUE, '2023-02-20 12:00:00'),
-    (66, 6, 'Check out this beautiful bird I saw at the park.', 'posts/44.1.jpg', NULL, NULL, TRUE, '2023-02-21 12:00:00'),
-    (17, 7, 'Just completed a 10k run, feeling amazing!', 'posts/45.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
-    (32, 7, 'Started a new fitness routine today. Let’s get fit together!', 'posts/46.1.jpg', NULL, NULL, TRUE, '2023-02-23 12:00:00'),
-    (10, 7, 'Join me for a workout session this weekend! Saturday 9am in the park :)', NULL, NULL, NULL, TRUE, '2023-02-24 12:00:00'),
-    (18, 8, 'Exploring the latest advancements in technology.', 'posts/48.1.jpg', NULL, NULL, TRUE, '2023-02-25 12:00:00'),
-    (2, 8, 'Just built my first robot! It can navigate through obstacles.', 'posts/49.1.jpg', NULL, NULL, TRUE, '2023-02-26 12:00:00'),
-    (8, 8, 'Attending a tech conference this weekend. Excited to learn about new trends!', NULL, NULL, NULL, TRUE, '2023-02-27 12:00:00')
-    (4, 9, 'Captured this beautiful sunset today!', 'posts/51.1.jpg', NULL, NULL, TRUE, '2023-02-28 12:00:00'),
-    (19, 9, 'Nature at its best!', 'posts/52.1.jpg', NULL, NULL, TRUE, '2023-03-01 12:00:00'),
-    (34, 9, 'What do tou most like to capture? I love to take pictures of people that stand out in the middle of the crowd', NULL, NULL, NULL, TRUE, '2023-03-02 12:00:00'),
-    (1, 10, 'Just finished an intense gaming session! Anyone up for a rematch?', NULL, NULL, NULL, TRUE, '2023-03-03 12:00:00'),
-    (20, 10, 'Check out my new gaming setup!', 'posts/55.1.jpg', NULL, NULL, TRUE, '2023-03-04 12:00:00'),
-    (50, 10, 'What’s your favorite game of all time?', NULL, NULL, NULL, TRUE, '2023-03-05 12:00:00'),
-    (21, 11, 'I trained legs today!', 'posts/57.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
-    (38, 11, 'What is your favourite exercise for biceps?', NULL, NULL, NULL, TRUE, '2023-02-23 12:00:00');
-    (41, 12, 'Just watched an amazing movie last night! It was called "The 7 secrets"', NULL, NULL, NULL, TRUE, '2023-03-06 12:00:00'),
-    (60, 12, 'Any recommendations for a good thriller movie?', NULL, NULL, NULL, TRUE, '2023-03-07 12:00:00'),
-    (64, 12, 'I love classic movies. Casablanca is my all-time favorite!', NULL, NULL, NULL, TRUE, '2023-03-08 12:00:00');
+    (10, NULL, 'What book are you currently reading?', 'posts/30.1.jpg', NULL, NULL, TRUE, '2023-01-30 12:29:00'),
+    (1, NULL, 'Just finished reading "To Kill a Mockingbird" by Harper Lee. Highly recommend!', NULL, NULL, NULL, TRUE, '2023-02-01 12:00:00'),
+    (2, NULL, 'Currently reading "1984" by George Orwell. It is a thought-provoking book.', NULL, NULL, NULL, TRUE, '2023-02-02 12:00:00'),
+    (3, NULL, 'Just started "Pride and Prejudice" by Jane Austen. Loving it so far!', NULL, NULL, NULL, TRUE, '2023-02-03 12:00:00'),
+    (12, NULL, 'Just finished building a new deck for my backyard!', 'posts/31.1.jpg', NULL, NULL, TRUE, '2023-02-04 12:00:00'),
+    (27, NULL, 'Started a new project: building a treehouse for my kids!', 'posts/32.1.jpg', NULL, NULL, TRUE, '2023-02-05 12:00:00'),
+    (51, NULL, 'Renovating my kitchen, here are some progress pics!', 'posts/33.1.jpg', 'posts/33.2.jpg', NULL, TRUE, '2023-02-06 12:00:00'),
+    (28, NULL, 'Just finished a new painting, what do you think?', 'posts/34.1.jpg', NULL, NULL, TRUE, '2023-02-07 12:00:00'),
+    (43, NULL, 'Art is my passion. Here is my latest sketch.', 'posts/35.1.jpg', NULL, NULL, TRUE, '2023-02-08 12:00:00'),
+    (62, NULL, 'Exploring new techniques in digital art.', 'posts/36.1.jpg', NULL, NULL, TRUE, '2023-02-09 12:00:00'),
+    (7, NULL, 'I found a strange key in my attic. It has an intricate design and looks very old. Does anyone know what it might open?', NULL, NULL, NULL, TRUE, '2023-02-10 12:00:00'),
+    (44, NULL, 'There are mysterious footprints leading to my garden shed. They appear overnight and disappear by morning. Any ideas on what could be causing them?',NULL, NULL, NULL, TRUE, '2023-02-11 12:00:00'),
+    (30, NULL, 'Just planted some new flowers in my garden. Can’t wait to see them bloom!', 'posts/39.1.jpg', NULL, NULL, TRUE, '2023-02-12 12:00:00'),
+    (45, NULL, 'Harvested some fresh vegetables today. Nothing beats homegrown produce!', NULL, NULL, NULL, TRUE, '2023-02-13 12:00:00'),
+    (45, NULL, 'Built a new compost bin for my garden. Sustainability is key!', 'posts/41.1.jpg', NULL, NULL, TRUE, '2023-02-14 12:00:00'),
+    (9, NULL, 'Just adopted a new puppy! Meet Max.', 'posts/42.1.jpg', NULL, NULL, TRUE, '2023-02-19 12:00:00'),
+    (31, NULL, 'My cat Luna loves to play with her new toy.', 'posts/43.1.jpg', NULL, NULL, TRUE, '2023-02-20 12:00:00'),
+    (66, NULL, 'Check out this beautiful bird I saw at the park.', 'posts/44.1.jpg', NULL, NULL, TRUE, '2023-02-21 12:00:00'),
+    (17, NULL, 'Just completed a 10k run, feeling amazing!', 'posts/45.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
+    (32, NULL, 'Started a new fitness routine today. Let’s get fit together!', 'posts/46.1.jpg', NULL, NULL, TRUE, '2023-02-23 12:00:00'),
+    (10, NULL, 'Join me for a workout session this weekend! Saturday 9am in the park :)', NULL, NULL, NULL, TRUE, '2023-02-24 12:00:00'),
+    (18, NULL, 'Exploring the latest advancements in technology.', 'posts/48.1.jpg', NULL, NULL, TRUE, '2023-02-25 12:00:00'),
+    (2, NULL, 'Just built my first robot! It can navigate through obstacles.', 'posts/49.1.jpg', NULL, NULL, TRUE, '2023-02-26 12:00:00'),
+    (8, NULL, 'Attending a tech conference this weekend. Excited to learn about new trends!', NULL, NULL, NULL, TRUE, '2023-02-27 12:00:00'),
+    (9, NULL, 'Captured this beautiful sunset today!', 'posts/51.1.jpg', NULL, NULL, TRUE, '2023-02-28 12:00:00'),
+    (19, NULL, 'Nature at its best!', 'posts/52.1.jpg', NULL, NULL, TRUE, '2023-03-01 12:00:00'),
+    (34, NULL, 'What do tou most like to capture? I love to take pictures of people that stand out in the middle of the crowd', NULL, NULL, NULL, TRUE, '2023-03-02 12:00:00'),
+    (1, NULL, 'Just finished an intense gaming session! Anyone up for a rematch?', NULL, NULL, NULL, TRUE, '2023-03-03 12:00:00'),
+    (20, NULL, 'Check out my new gaming setup!', 'posts/55.1.jpg', NULL, NULL, TRUE, '2023-03-04 12:00:00'),
+    (50, NULL, 'What’s your favorite game of all time?', NULL, NULL, NULL, TRUE, '2023-03-05 12:00:00'),
+    (21, NULL, 'I trained legs today!', 'posts/57.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
+    (36, NULL, 'What is your favourite exercise for biceps?', NULL, NULL, NULL, TRUE, '2023-02-23 12:00:00'),
+    (42, NULL, 'Just watched an amazing movie last night! It was called "The 7 secrets"', NULL, NULL, NULL, TRUE, '2023-03-06 12:00:00'),
+    (60, NULL, 'Any recommendations for a good thriller movie?', NULL, NULL, NULL, TRUE, '2023-03-07 12:00:00'),
+    (64, NULL, 'I love classic movies. Casablanca is my all-time favorite!', NULL, NULL, NULL, TRUE, '2023-03-08 12:00:00');
 
 
 
@@ -1081,6 +1091,8 @@ VALUES
     (2, 8, 'accepted');
 
 
+
+
 INSERT INTO friendship (user_id1, user_id2)
 VALUES
     (1,2),
@@ -1111,19 +1123,62 @@ VALUES
 
 INSERT INTO join_group_request (group_id, user_id, request_status)
 VALUES
-    (1, 3, 'pending'),
-    (2, 1, 'accepted'),
-    (3, 4, 'denied'),
-    (4, 5, 'pending'),
     (5, 6, 'accepted'),
-    (6, 7, 'denied'),
-    (7, 8, 'pending'),
-    (8, 9, 'accepted'),
     (9, 10, 'denied'),
-    (10, 1, 'pending'),
-    (1, 2, 'accepted'),
-    (2, 3, 'pending'),
-    (3, 4, 'denied');
+    (3, 4, 'denied'),
+    (3, 6, 'accepted'),
+    (3, 13, 'accepted'),
+    (3, 23, 'accepted'),
+    (3, 28, 'accepted'),
+    (3, 43, 'accepted'),
+    (3, 62, 'accepted'),
+    (5, 7, 'accepted'),
+    (5, 8, 'accepted'),
+    (5, 15, 'accepted'),
+    (5, 30, 'accepted'),
+    (5, 45, 'accepted'),
+    (9,9, 'accepted'),
+    (9,19, 'accepted'),
+    (9,34, 'accepted'),
+    (9,49, 'accepted'),
+    (10, 5, 'accepted'),
+    (10, 9, 'accepted'),
+    (10, 10, 'accepted'),
+    (10, 1, 'accepted'),
+    (10, 20, 'accepted'),
+    (10, 35, 'accepted'),
+    (10, 50, 'accepted'),
+    (11, 6, 'accepted'),
+    (11, 21, 'accepted'),
+    (11, 36, 'accepted'),
+    (12, 4, 'accepted'),
+    (12, 22, 'accepted'),
+    (12, 37, 'accepted'),
+    (12, 41, 'accepted'),
+    (12, 42, 'accepted'),
+    (12, 43, 'accepted'),
+    (12, 44, 'accepted'),
+    (12, 45, 'accepted'),
+    (12, 46, 'accepted'),
+    (12, 47, 'accepted'),
+    (12, 48, 'accepted'),
+    (12, 49, 'accepted'),
+    (12, 50, 'accepted'),
+    (12, 51, 'accepted'),
+    (12, 52, 'accepted'),
+    (12, 53, 'accepted'),
+    (12, 54, 'accepted'),
+    (12, 55, 'accepted'),
+    (12, 56, 'accepted'),
+    (12, 57, 'accepted'),
+    (12, 58, 'accepted'),
+    (12, 59, 'accepted'),
+    (12, 60, 'accepted'),
+    (12, 61, 'accepted'),
+    (12, 62, 'accepted'),
+    (12, 63, 'accepted'),
+    (12, 64, 'accepted'),
+    (12, 65, 'accepted');
 
 INSERT INTO group_member (user_id, group_id)
 VALUES
@@ -1251,7 +1306,14 @@ VALUES
     (97,15),
     (98,15),
     (99,15),
-    (100,15);
+    (100,15),
+    (10,1),
+    (2,1),
+    (51,2),
+    (62,3),
+    (5,6),
+    (8,13),
+    (6,14);
 
 
 INSERT INTO group_owner (user_id, group_id)
@@ -1259,18 +1321,18 @@ VALUES
     (1, 1),
     (2, 2),
     (3, 3),
-    (4, 5),
+    (5, 4),
     (5, 5),
     (6, 6),
-    (7, 9),
-    (8, 10),
-    (9, 11),
-    (10, 17),
-    (11, 38),
-    (12, 43),
-    (13, 47),
-    (14, 66),
-    (15, 70);
+    (9, 7),
+    (10, 8),
+    (11, 9),
+    (17, 10),
+    (38, 11),
+    (43, 12),
+    (47, 13),
+    (66, 14),
+    (70, 15);
 
 INSERT INTO notification (content, is_read, notification_date, user_id)
 VALUES
