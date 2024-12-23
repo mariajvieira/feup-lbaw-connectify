@@ -81,7 +81,6 @@ class PostPolicy
         return false;
     }
     
-    
 
     private function areFriends(User $user, $postUserId)
     {
