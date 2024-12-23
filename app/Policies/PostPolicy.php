@@ -42,22 +42,32 @@ class PostPolicy
     /**
      * Determine if the user can view the post.
      */
-    public function view(User $user, Post $post)
+    public function view(User $user = null, Post $post)
     {
+        // Permitir que posts públicos sejam vistos por qualquer pessoa (inclusive não autenticados)
         if ($post->is_public) {
             return true;
         }
     
+        // Se o usuário não está autenticado, retornar false
+        if ($user === null) {
+            return false;
+        }
+    
+        // Permitir que o usuário veja seus próprios posts, mesmo que não seja público
         if ($user->id === $post->user_id) {
             return true;
         }
     
+        // Permitir que amigos vejam o post
         if ($this->areFriends($user, $post->user_id)) {
             return true;
         }
     
+        // Verificação de grupo, se o post está dentro de um grupo
         $group = $post->group; 
         if ($group) {
+            // Se o grupo não for público, checar se o usuário está no grupo ou é dono do grupo
             if (!$group->is_public) {
                 if ($user->groups->contains($group->id)) {
                     return true;
@@ -70,6 +80,7 @@ class PostPolicy
     
         return false;
     }
+    
     
 
     private function areFriends(User $user, $postUserId)
