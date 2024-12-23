@@ -44,8 +44,33 @@ class PostPolicy
      */
     public function view(User $user, Post $post)
     {
-        return $post->is_public || $user->id === $post->user_id || $this->areFriends($user, $post->user_id);    }
-
+        if ($post->is_public) {
+            return true;
+        }
+    
+        if ($user->id === $post->user_id) {
+            return true;
+        }
+    
+        if ($this->areFriends($user, $post->user_id)) {
+            return true;
+        }
+    
+        $group = $post->group; 
+        if ($group) {
+            if (!$group->is_public) {
+                if ($user->groups->contains($group->id)) {
+                    return true;
+                }
+                if ($user->ownedGroups->contains($group->id)) {
+                    return true;
+                }
+            }
+        }
+    
+        return false;
+    }
+    
 
     private function areFriends(User $user, $postUserId)
     {

@@ -24,33 +24,40 @@
         @endcan
     </div>
 
+    <!-- Mostrar o grupo, caso o post pertença a um grupo -->
+    @if ($post->group)
+        <div class="post-group-info mt-2">
+            <span class="text-muted small">
+                Posted in group: 
+                <a href="{{ route('group.show', ['group' => $post->group->id]) }}" class="text-custom">
+                    {{ $post->group->name }}
+                </a>
+                @if (!$post->group->is_public)
+                    <span class="text-danger">(Private Group)</span>
+                @endif
+            </span>
+        </div>
+    @endif
+
     <p class="post-content">{{ $post->content }}</p>
 
     <div class="post-images mt-3">
         <div id="image-slider" class="position-relative">
             <div class="post-image-container d-flex">
-
-                    <div class="post-image" style="flex: 1;">
-                        <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 1]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
-                    </div>
-
-              
-                    <div class="post-image" style="flex: 1;">
-                        <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 2]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
-                    </div>
-          
-
+                <div class="post-image" style="flex: 1;">
+                    <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 1]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                </div>
+                <div class="post-image" style="flex: 1;">
+                    <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 2]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                </div>
                 @if (!empty($post->IMAGE3))
                     <div class="post-image" style="flex: 1;">
                         <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 3]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                     </div>
                 @endif
-
             </div>
         </div>
     </div>
-
-
 
     @php
         $userReaction = $post->reactions()->where('user_id', auth()->id())->first();
@@ -80,12 +87,12 @@
     </div>
 
     <div>
-    <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
-        <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
-            {{ $post->reactions->count() }} 
-            {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
-        </a>
-    </span>
+        <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
+            <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
+                {{ $post->reactions->count() }} 
+                {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
+            </a>
+        </span>
     </div>
 
     <div class="comments-list comment-section mt-4">
@@ -108,12 +115,9 @@
         @endif  
     </div>
 
-
     <!-- Save -->
     @if (auth()->check())
     <div class="post" data-id="{{ $post->id }}">
-
-        <!-- Botões de salvar ou removido -->
         <button class="save-post-btn btn-custom" 
                 data-post-id="{{ $post->id }}"
                 data-saved="{{ Auth::user()->savedPosts->contains($post) ? 'true' : 'false' }}">
@@ -121,10 +125,7 @@
             {{ Auth::user()->savedPosts->contains($post) ? 'Saved' : 'Save' }}
         </button>
     </div>
-@endif
-
-
-
+    @endif
 
     <span class="post-date text-muted small">Published at: {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</span>
 
