@@ -50,16 +50,6 @@
             @enderror
         </div>
         
-        <div class="form-group mb-3">
-            <label for="is_public" class="field-label">Is Public:</label>
-            <select name="is_public" id="is_public" class="form-select">
-                <option value="1" {{ old('is_public') == 1 ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ old('is_public') == 0 ? 'selected' : '' }}>No</option>
-            </select>
-            @error('is_public')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
 
         <button type="submit" class="btn btn-custom">Create Post</button>
     </form>

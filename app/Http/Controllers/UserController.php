@@ -83,12 +83,18 @@ class UserController extends Controller
     public function getProfilePicture($userId)
     {
         $user = User::findOrFail($userId);
-
+    
         if (!$user->profile_picture) {
-            abort(404); // Se não encontrar a imagem
+            abort(404); 
         }
-
-        return response()->file(file: storage_path('app/images/' . $user->profile_picture));
+    
+        $filePath = storage_path('app/images/' . $user->profile_picture);
+    
+        if (file_exists($filePath)) {
+            return response()->file($filePath);
+        } else {
+            abort(404); 
+        }
     }
 
     // Delete user
@@ -137,22 +143,24 @@ class UserController extends Controller
         if ($request->has('password')) {
             $user->password = Hash::make($request->password); 
         }
-    
+
         if ($request->hasFile('profile_picture')) {
             if ($user->profile_picture && $user->profile_picture !== 'profile_pictures/default.png') {
                 $oldFilePath = storage_path('app/' . $user->profile_picture);
                 if (file_exists($oldFilePath)) {
-                    unlink($oldFilePath);
+                    unlink($oldFilePath); // Remove o arquivo anterior
                 }
             }
-    
+
             $profile_picture = $request->file('profile_picture');
-            $profile_picturePath = 'images/profile_pictures/' . $user->id . '.' . 'jpg';
-    
-            $profile_picture->storeAs('images/profile_pictures', $user->id . '.' . $profile_picture->getClientOriginalExtension(), 'local');
-    
+
+            $profile_picturePath = 'profile_pictures/' . $user->id . '.' . 'jpg';
+
+            $profile_picture->storeAs('images/profile_pictures', $user->id . '.' . 'jpg', 'local');
+
             $user->profile_picture = $profile_picturePath;
         }
+
 
 
     
