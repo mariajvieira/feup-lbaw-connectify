@@ -50,6 +50,11 @@ class Group extends Model
     {
         return $this->owner_id == $user->id;
     }
+    public function posts()
+{
+    return $this->hasMany(Post::class, 'group_id');
+}
+
 
 
 }
