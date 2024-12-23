@@ -113,10 +113,11 @@
 
 
     <footer class="text-center py-3 mt-auto bg-light">
-        <p>Connectify 2024</p>
-        <a href="{{ route('about') }}" class="text-decoration-none text-dark">About Us</a> |
-        <a href="{{ route('about') }}" class="text-decoration-none text-dark">Help</a> |
-        <a href="{{ route('contact') }}" class="text-decoration-none text-dark">Contact Us</a>
+        <p class="text-decoration-none text-custom fw-bold">Connectify 2024</p>
+        <a href="{{ route('about') }}" class="text-decoration-none text-custom fw-bold">About Us</a> |
+        <a href="{{ route('mainfeatures') }}" class="text-decoration-none text-custom fw-bold">Main Features</a> |
+        <a href="{{ route('about') }}" class="text-decoration-none text-custom fw-bold">Help</a> |
+        <a href="{{ route('contact') }}" class="text-decoration-none text-custom fw-bold">Contact Us</a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

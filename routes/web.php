@@ -50,6 +50,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/about', function () {
     return view('pages/about'); 
 })->name('about');
+Route::get('/mainfeatures', function () {
+    return view('pages/mainfeatures'); 
+})->name('mainfeatures');
 
 //Show friends 
 Route::middleware('auth')->group(function () {
