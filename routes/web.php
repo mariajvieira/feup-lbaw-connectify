@@ -174,8 +174,6 @@ Route::get('/groups/{groupId}/leave', [GroupController::class, 'leaveGroup'])->n
 Route::delete('/group/{group}/remove/{user}', [GroupController::class, 'removeMember'])->name('group.removeMember');
 Route::get('/group/{group}/members', [GroupController::class, 'showMembers'])->name('group.members');
 
-// Add friend to group (owner)
-
 // Página principal do grupo
 Route::get('group/{groupId}', [GroupController::class, 'show'])->name('group.show');
 
@@ -184,3 +182,6 @@ Route::get('group/{groupId}/members', [GroupController::class, 'viewMembers'])->
 
 // Rota para adicionar amigos ao grupo
 Route::post('group/{groupId}/addFriend', [GroupController::class, 'addFriendToGroup'])->name('group.addFriend');
+
+// View Group Posts
+Route::get('/group/{groupId}', [GroupController::class, 'show'])->name('group.show');

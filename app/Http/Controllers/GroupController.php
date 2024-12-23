@@ -41,13 +41,23 @@ class GroupController extends Controller
     // Mostrar um grupo específico
     public function show($groupId)
     {
-        // Encontra o grupo ou falha
-        $group = Group::with('users', 'owner')->findOrFail($groupId);
-        $members = $group->users; // Membros do grupo
+        // Encontra o grupo com os posts e usuários relacionados
+        $group = Group::with(['users', 'posts'])->findOrFail($groupId);
     
-        // Passa os dados para a view
-        return view('pages.group', compact('group', 'members'));
+        // Pega os membros e os posts associados ao grupo
+        $members = $group->users;
+        $posts = $group->posts;
+    
+        // Obter amigos para o owner
+        $friends = [];
+        if (Auth::id() == $group->owner_id) {
+            $friends = Auth::user()->friends()->whereNotIn('id', $members->pluck('id'))->get();
+        }
+    
+        // Retornar a view com os dados
+        return view('pages.group', compact('group', 'members', 'posts', 'friends'));
     }
+    
     
     public function viewMembers($groupId)
     {
