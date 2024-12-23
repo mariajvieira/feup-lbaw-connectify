@@ -27,14 +27,7 @@
         <p>No posts in this group yet.</p>
     @else
         <ul class="group-posts-list">
-            @foreach($posts as $post)
-                <li>
-                    <h4>{{ $post->title }}</h4>
-                    <p>{{ $post->content }}</p>
-                    <small>Posted by: {{ $post->user->username }} on {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</small>
-                </li>
-                <hr>
-            @endforeach
+            @include('pages.posts', ['posts' => $posts])            
         </ul>
     @endif
 
