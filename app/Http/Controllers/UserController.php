@@ -24,7 +24,7 @@ class UserController extends Controller
             'username' => 'required|string|max:250|unique:users',
             'email' => 'required|email|max:250|unique:users',
             'password' => 'required|min:8|confirmed',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
             'is_public' => 'nullable|boolean',
         ]);
     
@@ -34,12 +34,8 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
         $user->is_public = $request->is_public ?? false;
-    
-        if ($request->hasFile('profile_picture')) {
-            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures');
-        } else {
-            $user->profile_picture = 'profile_pictures/default.png';
-        }
+        $user->profile_picture = 'profile_pictures/default.png';
+        
     
         $user->save();
     
@@ -88,14 +84,15 @@ class UserController extends Controller
             abort(404); 
         }
     
-        $filePath = storage_path('app/images/' . $user->profile_picture);
+        $filePath = 'images/' . $user->profile_picture;
     
-        if (file_exists($filePath)) {
-            return response()->file($filePath);
-        } else {
-            abort(404); 
+        if (!Storage::exists($filePath)) {
+            abort(404);
         }
+    
+        return response()->file(storage_path('app/' . $filePath));
     }
+
 
     // Delete user
     public function deleteUser($id)
@@ -145,20 +142,18 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture && $user->profile_picture !== 'profile_pictures/default.png') {
-                $oldFilePath = storage_path('app/' . $user->profile_picture);
+            if ($user->profile_picture && $user->profile_picture !== 'images/profile_pictures/default.png') {
+                $oldFilePath = storage_path('app/public/' . $user->profile_picture);
                 if (file_exists($oldFilePath)) {
                     unlink($oldFilePath); // Remove o arquivo anterior
                 }
             }
-
+        
             $profile_picture = $request->file('profile_picture');
-
-            $profile_picturePath = 'profile_pictures/' . $user->id . '.' . 'jpg';
-
-            $profile_picture->storeAs('images/profile_pictures', $user->id . '.' . 'jpg', 'local');
-
-            $user->profile_picture = $profile_picturePath;
+            $profile_pictureName = $user->id . '.' . $profile_picture->getClientOriginalExtension();
+            $profile_picturePath = $profile_picture->storeAs('images/profile_pictures', $profile_pictureName);
+        
+            $user->profile_picture = 'profile_pictures/' . $profile_pictureName;
         }
 
 
