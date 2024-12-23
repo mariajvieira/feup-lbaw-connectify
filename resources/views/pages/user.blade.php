@@ -14,8 +14,6 @@
     </div>
 @else
 
-
-
 <div class="container mt-5">
     <!-- Profile Section -->
     <div class="row justify-content-center">
@@ -75,6 +73,16 @@
                     @can('editProfile', $user)
                         <a href="{{ route('user.edit', ['id' => $user->id]) }}" class="btn btn-custom mt-3"><i class="fa-solid fa-pen"></i></a>
                     @endcan
+
+                    @can('promoteToAdmin', $user)
+                        <form action="{{ route('user.promote', ['userId' => $user->id]) }}" method="POST" class="mt-3">
+                            @csrf
+                            <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to promote this user to administrator?')">
+                                Promote to Admin
+                            </button>
+                        </form>
+                    @endcan
+
                 </div>
             </div>
         </div>
@@ -112,62 +120,24 @@
         </div>
     @endif
 
-<!-- Botão para Excluir Conta -->
-<!-- Caso o usuário seja um administrador, ele verá a opção de excluir a conta de outro usuário -->
-{{-- Exibe o perfil do usuário --}}
-@if($user->id == Auth::id() || Auth::user()->isAdmin())
-    {{-- O botão de exclusão será visível para o próprio usuário ou para um administrador --}}
-    <div class="d-flex justify-content-center mt-3">
-        <form action="{{ route('delete.account', ['userId' => $user->id]) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" onclick="return confirm('Are you sure you want to delete the account?')" class="btn btn-danger">
-                Delete Account
-            </button>
-        </form>
-    </div>
-@endif
-
-
-
-<!-- Modal de Confirmação 
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmDeleteModalLabel">Tem certeza?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar" id="closeModalBtn">
-                    <span aria-hidden="true">&times;</span>
+    <!-- Botão para Excluir Conta -->
+    @if($user->id == Auth::id() || Auth::user()->isAdmin())
+        <div class="d-flex justify-content-center mt-3">
+            <form action="{{ route('delete.account', ['userId' => $user->id]) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" onclick="return confirm('Are you sure you want to delete the account?')" class="btn btn-danger">
+                    Delete Account
                 </button>
-            </div>
-            <div class="modal-body">
-                Você tem certeza que deseja apagar a sua conta? Essa ação não pode ser desfeita.
-            </div>
-            <div class="modal-footer">
-                
-                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-                
-                <form action="{{ route('delete.account') }}" method="POST" id="deleteAccountForm">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Sim, apagar conta</button>
-                </form>
-            </div>
+            </form>
         </div>
-    </div>
-</div>
--->
-
+    @endif
 
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
             <h3 class="mb-3">Groups:</h3>
             @if($user->groups->isEmpty())
-                @if(auth()->check() && auth()->user()->id === $user->id)
-                    <p>You don't belong to any group yet.</p>
-                @else
-                    <p>This user doesn't belong to any group yet.</p>
-                @endif
+                <p>This user doesn't belong to any group yet.</p>
             @else
                 <ul class="list-group">
                     @foreach($user->groups as $group)
@@ -179,33 +149,7 @@
                 </ul>
             @endif
         </div>
-
-        <div class="col-md-8 offset-md-2">
-            @if(auth()->check() && auth()->user()->id === $user->id)
-                <h3 class="mb-3">Groups you own:</h3>
-            @else
-            <h3 class="mb-3">Groups @ {{ $user->username }} owns:</h3> 
-            @endif
-
-            @if($user->ownedGroups->isEmpty())
-                @if(auth()->check() && auth()->user()->id === $user->id)
-                    <p>You don't own any group yet.</p>
-                @else
-                    <p>This user doesn't own any group yet.</p>
-                @endif
-            @else
-                <ul class="list-group">
-                    @foreach($user->ownedGroups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
     </div>
-
 
     <!-- Posts Section -->
     <div class="row mt-4">

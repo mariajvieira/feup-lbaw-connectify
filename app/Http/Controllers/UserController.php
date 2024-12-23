@@ -214,10 +214,10 @@ class UserController extends Controller
     }
 
     public function pendingRequests()
-{
-    return $this->hasMany(FriendRequest::class, 'receiver_id')
-                ->where('request_status', 'pending');
-}
+    {
+        return $this->hasMany(FriendRequest::class, 'receiver_id')
+                    ->where('request_status', 'pending');
+    }
 
 
     public function showFriendsPage($id)
@@ -248,6 +248,18 @@ class UserController extends Controller
 
 
         return response()->json($friends);
+    }
+
+
+    public function promoteToAdmin($userId)
+    {
+        $user = User::findOrFail($userId);
+    
+        DB::table('administrator')->insert([
+            'user_id' => $userId
+        ]);
+
+            return redirect()->route('user', ['id' => $userId])->with('success', 'User promoted to administrator.');    
     }
 
     

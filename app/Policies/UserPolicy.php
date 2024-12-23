@@ -56,4 +56,11 @@ class UserPolicy
         $user->isPublic() || //se for público
         $authUser->isFriend($user); // se for amigo
     }
+
+
+    public function promoteToAdmin(User $authUser, User $user)
+    {
+
+        return $authUser->isAdmin() && !$user->isAdmin();
+    }
 }

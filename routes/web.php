@@ -91,6 +91,8 @@ Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('u
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 Route::get('/profile-picture/{id}', [UserController::class, 'getProfilePicture'])->name('profile.picture');
+Route::post('/user/{userId}/promote', [UserController::class, 'promoteToAdmin'])->name('user.promote');
+
 
 // Posts
 Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
