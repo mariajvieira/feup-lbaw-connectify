@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-  addEventListeners();
   addReactionEventListeners();
 });
 
@@ -70,26 +69,7 @@ function removeSavePost(postId, button) {
 }
 
 
-function addEventListeners() {
-  let postCheckers = document.querySelectorAll('.post-item input[type=checkbox]');
-  postCheckers.forEach(checker => {
-      checker.addEventListener('change', sendPostUpdateRequest);
-  });
 
-  let postCreators = document.querySelectorAll('button.new-post-button');
-  postCreators.forEach(creator => {
-      creator.addEventListener('click', function(event) {
-          event.preventDefault();
-          sendCreatePostRequest();
-      });
-  });
-
-  let postDeleters = document.querySelectorAll('.post-item .delete-post-btn');
-  postDeleters.forEach(deleter => {
-      deleter.addEventListener('click', sendDeletePostRequest);
-  });
-
-}
 
 function encodeForAjax(data) {
   if (data == null) return null;
@@ -98,127 +78,7 @@ function encodeForAjax(data) {
       .join('&');
 }
 
-function updatePostList(posts) {
-  const postsContainer = document.querySelector('.posts-container');
-  postsContainer.innerHTML = ''; 
 
-  posts.forEach(post => {
-    const postElement = createPostElement(post);
-    postsContainer.appendChild(postElement);
-  });
-}
-
-function sendPostUpdateRequest() {
-  const item = this.closest('.post-item');
-  const id = item.getAttribute('data-id');
-  const checked = item.querySelector('input[type=checkbox]').checked;
-
-  sendAjaxRequest('POST', `/api/posts/${id}`, { done: checked }, postUpdatedHandler);
-}
-
-function sendDeletePostRequest() {
-  const id = this.closest('.post-item').getAttribute('data-id');
-  sendAjaxRequest('DELETE', `/api/posts/${id}`, null, postDeletedHandler);
-}
-
-function sendCreatePostRequest() {
-  const form = document.querySelector('.create-post-form');
-  const content = form.querySelector('textarea[name=content]').value;
-  const isPublic = form.querySelector('select[name=is_public]').value;
-
-  const formData = new FormData();
-  formData.append('content', content);
-  formData.append('is_public', isPublic);
-
-  const imageFields = ['image1', 'image2', 'image3'];
-  imageFields.forEach(field => {
-      const imageInput = form.querySelector(`input[name=${field}]`);
-      if (imageInput.files.length > 0) {
-          formData.append(field, imageInput.files[0]);
-      }
-  });
-
-  sendAjaxRequest('POST', '/api/posts', formData, postAddedHandler);
-}
-
-function postUpdatedHandler() {
-  if (this.status !== 200) {
-      console.error('Erro ao atualizar o post');
-      return;
-  }
-
-  const item = JSON.parse(this.responseText);
-  const element = document.querySelector(`.post-item[data-id="${item.id}"]`);
-  const checkbox = element.querySelector('input[type=checkbox]');
-  checkbox.checked = item.done === 'true';
-}
-
-function postAddedHandler() {
-  if (this.status !== 200) {
-      window.location = '/';
-      return;
-  }
-
-  const item = JSON.parse(this.responseText);
-  const newItem = createPostElement(item);
-
-  document.querySelector('.posts-container').prepend(newItem);
-
-  const form = document.querySelector('.create-post-form');
-  form.reset(); 
-}
-
-function postDeletedHandler() {
-  if (this.status !== 200) {
-      console.error('Erro ao deletar o post');
-      return;
-  }
-
-  const item = JSON.parse(this.responseText);
-  const element = document.querySelector(`.post-item[data-id="${item.id}"]`);
-  element.remove();
-}
-
-function createPostElement(post) {
-  const newItem = document.createElement('div');
-  newItem.classList.add('post-item');
-  newItem.setAttribute('data-id', post.id);
-  newItem.innerHTML = `
-      <div class="post-content">
-          <input type="checkbox" ${post.done === 'true' ? 'checked' : ''}>
-          <span>${post.content}</span>
-          <a href="#" class="delete-post-btn">Delete</a>
-      </div>
-      <div class="reactions mt-3">
-          ${['like', 'laugh', 'cry', 'applause', 'shocked'].map(reaction => `
-              <button 
-                  class="reaction-button ${post.user_reaction === reaction ? 'selected' : ''}" 
-                  data-reaction-type="${reaction}" 
-                  data-post-id="${post.id}">
-                  ${reaction.charAt(0).toUpperCase() + reaction.slice(1)}
-              </button>
-          `).join('')}
-      </div>
-      <div class="comments mt-4">
-          ${post.comments.map(comment => `
-              <div class="comment-item" data-id="${comment.id}">
-                  <span>${comment.user.name}: ${comment.content}</span>
-                  <button class="delete-comment-btn" data-id="${comment.id}">Delete</button>
-              </div>
-          `).join('')}
-      </div>
-      <div class="create-comment">
-          <textarea name="comment-content" placeholder="Add a comment..."></textarea>
-          <button class="create-comment-btn" data-post-id="${post.id}">Comment</button>
-      </div>
-  `;
-
-  newItem.querySelector('input[type=checkbox]').addEventListener('change', sendPostUpdateRequest);
-  newItem.querySelector('.delete-post-btn').addEventListener('click', sendDeletePostRequest);
-  addReactionEventListeners();
-
-  return newItem;
-}
 
 function addReactionEventListeners() {
   const reactionButtons = document.querySelectorAll('.reaction-button');
@@ -394,7 +254,7 @@ function reactComment(event) {
           button.classList.remove('btn-outline-secondary');
           button.classList.add('btn-outline-danger');
           button.setAttribute('data-reaction-id', data.reaction_id);
-          
+
           updateCommentReactionCount(commentId);
         } else {
           console.error('Erro ao registar a reação:', data.error);

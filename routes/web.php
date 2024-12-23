@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ItemController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
@@ -100,7 +99,8 @@ Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit'
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 Route::get('post/{postId}/image/{imageNumber}', [PostController::class, 'getPostImage'])->name('post.image');
 Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
-
+Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
+Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
 
 
 // Save and unsave post
@@ -130,14 +130,6 @@ Route::delete('/comment/{id}', [CommentController::class, 'destroy'])->name('com
 Route::get('/post/{postId}/comments', [CommentController::class, 'getComments']);
 Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
-
-
-// API Routes
-Route::prefix('api')->group(function () {
-    // Posts API Routes
-    Route::put('/post/{id}', [PostController::class, 'update'])->name('post.update');
-    Route::delete('/post/{id}', [PostController::class, 'delete'])->name('post.delete');
-});
 
 
 // Mostrar formulário de criação do grupo

@@ -38,25 +38,19 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // Validação dos dados
         $request->validate([
             'content' => 'nullable|string|max:255', 
-            'is_public' => 'required|boolean',
-            'image1' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'image2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'image3' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg',
         ]);
 
-        // Criação do post
         $post = new Post();
         $post->content = $request->content;
-        $post->is_public = $request->is_public;
         $post->user_id = Auth::id(); 
 
-        // Salvar o post inicialmente para obter o post ID
         $post->save();
 
-        // Processamento das marcações de usuário
         if (!empty($request->content)) {
             preg_match_all('/@(\w+)/', $request->content, $matches);
 
@@ -91,12 +85,9 @@ class PostController extends Controller
 
         $post->save();
 
-        return redirect()->route('home')->with('success', 'Post criado com sucesso');
+        return redirect()->route('post.reactions',$post->id)->with('success');
     }
 
-    
-    
-    
 
     public function edit($id)
     {
@@ -115,52 +106,56 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'content' => 'nullable|string',
-            'is_public' => 'required|boolean',
-            'image1' => 'nullable|image|max:2048',
-            'image2' => 'nullable|image|max:2048',
-            'image3' => 'nullable|image|max:2048',
+            'content' => 'nullable|string|max:255',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'in:image1,image2,image3',
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
     
         $post = Post::findOrFail($id);
-    
-        // Atualizando o conteúdo e a visibilidade
-        $post->update([
-            'content' => $validated['content'] ?? $post->content,
-            'is_public' => $validated['is_public'],
-        ]);
-    
-        // Atualizando as imagens
-        foreach (['image1', 'image2', 'image3'] as $imageField) {
-            if ($request->hasFile($imageField)) {
-                // Armazena a imagem no storage/app/public/posts
-                $post->$imageField = $request->file($imageField)->store('images/posts', 'local');
+
+        if ($request->has('content')) {
+            $post->content = $request->content;
+        }
+
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $image) {
+                if ($post->$image) {
+                    Storage::delete('public/' . $post->$image);
+                    $post->$image = null;
+                }
             }
         }
-    
-        // Salvando as alterações no post
-        $post->save();
-    
-        return redirect()->route('home')->with('success', 'Post atualizado com sucesso!');
-    }
 
+        for ($i = 1; $i <= 3; $i++) {
+            if ($request->hasFile('image' . $i)) {
+                $image = $request->file('image' . $i);
+                $imageName = $post->id . '.' . $i . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('public/posts', $imageName);
+                $post->{'image' . $i} = 'posts/' . $imageName;
+            }
+        }
+
+        $post->save();
+
+        return redirect()->route('post.reactions', $post->id)->with('success', 'Post atualizado com sucesso!');
+    }
+    
+    
     public function getPostImage($postId, $imageNumber)
     {
         $post = Post::findOrFail($postId);
         
-        // Construa o campo da imagem dinamicamente com base no número da imagem
         $imageField = 'image' . $imageNumber;
         
-        // Verifique se o campo de imagem é nulo
         if (!$post->$imageField) {
-            // Retorna uma resposta vazia, com status 204 (No Content)
             return response()->noContent();
         }
     
-        // Caso a imagem não seja nula, continue com o caminho do arquivo
         $imagePath = 'images/' . $post->$imageField; 
         
-        // Retorna a imagem armazenada
         return response()->file(storage_path('app/' . $imagePath));
     }
     
@@ -197,7 +192,7 @@ class PostController extends Controller
     
         $post->delete();
     
-        return redirect()->route('home')->with('success', 'Post deletado com sucesso!');
+        return redirect()->route('home')->with('success', 'Post deleted successfully!');
     }
 
 
