@@ -345,6 +345,20 @@ class PostController extends Controller
         return $icons[$type] ?? 'fa-smile';
     }
 
+ // Método no controlador de Post
+ public function removeFromGroup(Post $post)
+ {
+     // Usar a policy para verificar se o usuário pode remover o post
+     $this->authorize('removeFromGroup', $post);
 
+     // Remover o post do grupo
+     $post->group_id = null; // Remove o post do grupo
+     $post->save();
+
+     return redirect()->back()->with('success', 'Post removido do grupo!');
+ }
+    
+    
+    
 
 }

@@ -54,6 +54,14 @@ class Group extends Model
 {
     return $this->hasMany(Post::class, 'group_id');
 }
+// Grupo tem muitos administradores
+// Modelo Group.php
+public function admins()
+{
+    return $this->hasMany(Administrator::class, 'user_id', 'owner_id');
+}
+
+
 
 
 
