@@ -52,8 +52,6 @@
 
 
 
-
-
     @php
         $userReaction = $post->reactions()->where('user_id', auth()->id())->first();
     @endphp

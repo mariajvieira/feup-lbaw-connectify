@@ -40,8 +40,8 @@
             </div>
 
             <div>
-            <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-comment-id="{{ $comment->id }}">
-                <a class="text-custom text-decoration-none" href="{{ route('comment.reactions', $comment->id) }}">
+            <span class="reaction-count" id="reaction-count-{{ $comment->id }}" data-comment-id="{{ $comment->id }}">
+                <a class="text-custom text-decoration-none">
                     {{ $comment->reactions->count() }} 
                     {{ $comment->reactions->count() === 1 ? 'reaction' : 'reactions' }}
                 </a>

@@ -87,45 +87,19 @@ class CommentController extends Controller
     }
 
 
-    public function getReactionsCount($id)
+    public function getCommentReactionCount($commentId)
     {
-        $comment = Comment::find($id);
-    
-        if (!$comment) {
-            return response()->json(['error' => 'Comment not found.'], 404);
-        }
-    
-        $reactionsCount = $comment->reactions()
-            ->where('target_type', 'comment') 
-            ->select('reaction_type', DB::raw('count(*) as total'))
-            ->groupBy('reaction_type')
-            ->pluck('total', 'reaction_type')
-            ->toArray();
-    
-        return response()->json($reactionsCount, 200);
-    }
-
-
-    public function showReactions($commentId)
-    {
-        $comment = Comment::find($commentId);
+        $comment = Comment::findOrFail($commentId);
         
-        if (!$comment) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
+        $reactionCount = $comment->reactions()->count();
     
-        // Carregue as reações relacionadas ao post
-        $reactions = $comment->reactions()->with('user')->get();
-    
-        // Get reaction icon for each reaction type
-        foreach ($reactions as $reaction) {
-            $reaction->icon = $this->getReactionIcon($reaction->reaction_type);
-        }
-    
+        // Retorna a contagem de reações como JSON
         return response()->json([
-            'reactions' => $reactions
+            'reactionCount' => $reactionCount
         ]);
     }
+
+
 
 
     function getReactionIcon($type)

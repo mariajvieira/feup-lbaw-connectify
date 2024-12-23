@@ -257,6 +257,7 @@ function reactPost(event) {
           button.classList.remove('btn-outline-danger');
           button.classList.add('btn-outline-secondary');
           button.removeAttribute('data-reaction-id');
+          updatePostReactionCount(postId);
         } else {
           console.error('Erro ao apagar a reação:', data.error);
         }
@@ -288,6 +289,7 @@ function reactPost(event) {
           button.classList.remove('btn-outline-secondary');
           button.classList.add('btn-outline-danger');
           button.setAttribute('data-reaction-id', data.reaction_id);
+          updatePostReactionCount(postId);
         } else {
           console.error('Erro ao registar a reação:', data.error);
         }
@@ -319,6 +321,9 @@ function reactPost(event) {
         button.classList.remove('btn-outline-secondary');
         button.classList.add('btn-outline-danger');
         button.setAttribute('data-reaction-id', data.reaction_id); 
+
+
+        updatePostReactionCount(postId);
       } else {
         console.error('Erro ao registar a reação:', data.error);
       }
@@ -356,6 +361,8 @@ function reactComment(event) {
           button.classList.remove('btn-outline-danger');
           button.classList.add('btn-outline-secondary');
           button.removeAttribute('data-reaction-id');
+
+          updateCommentReactionCount(commentId);
         } else {
           console.error('Erro ao apagar a reação:', data.error);
         }
@@ -387,6 +394,8 @@ function reactComment(event) {
           button.classList.remove('btn-outline-secondary');
           button.classList.add('btn-outline-danger');
           button.setAttribute('data-reaction-id', data.reaction_id);
+          
+          updateCommentReactionCount(commentId);
         } else {
           console.error('Erro ao registar a reação:', data.error);
         }
@@ -418,12 +427,74 @@ function reactComment(event) {
         button.classList.remove('btn-outline-secondary');
         button.classList.add('btn-outline-danger');
         button.setAttribute('data-reaction-id', data.reaction_id); 
+
+        updateCommentReactionCount(commentId);
       } else {
         console.error('Erro ao registar a reação:', data.error);
       }
     })
     .catch(error => console.error('Erro ao registar a reação:', error));
   }
+}
+
+
+
+function updatePostReactionCount(postId) {
+  fetch(`/post/${postId}/reactions/count`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data && data.reactionCount !== undefined) {
+      const reactionCountElement = document.getElementById('reaction-count-' + postId);
+      if (reactionCountElement) {
+        const reactionText = data.reactionCount + ' ' + (data.reactionCount === 1 ? 'reaction' : 'reactions');
+        const reactionLink = reactionCountElement.querySelector('a');
+
+        reactionCountElement.textContent = reactionText;
+
+        if (reactionLink) {
+          reactionLink.setAttribute('href', `/post/${postId}/reactions`);
+        }
+      }
+    } else {
+      console.error('Erro ao atualizar a contagem de reações:', data.error || 'Erro desconhecido');
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao realizar a requisição para contar as reações:', error);
+  });
+}
+
+
+
+function updateCommentReactionCount(commentId) {
+  fetch(`/comment/${commentId}/reactions/count`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data && data.reactionCount !== undefined) {
+      const reactionCountElement = document.getElementById('reaction-count-' + commentId);
+      if (reactionCountElement) {
+        // Atualiza a contagem de reações
+        reactionCountElement.textContent = data.reactionCount + ' ' + (data.reactionCount === 1 ? 'reaction' : 'reactions');
+      }
+    } else {
+      console.error('Erro ao atualizar a contagem de reações:', data.error || 'Erro desconhecido');
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao realizar a requisição para contar as reações:', error);
+  });
 }
 
 

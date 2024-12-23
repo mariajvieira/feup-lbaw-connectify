@@ -89,9 +89,6 @@ Route::get('/user/{id}/friends', [UserController::class, 'getFriends'])->name('u
 Route::put('/user/{id}', [UserController::class, 'updateProfile'])->name('user.update');
 Route::delete('/user/{id}', [UserController::class, 'deleteUser'])->name('user.delete');
 Route::get('/profile-picture/{id}', [UserController::class, 'getProfilePicture'])->name('profile.picture');
-Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
-Route::get('/comment/{comment}/reactions', [CommentController::class, 'showReactionsPage'])->name('comment.reactions');
-
 
 // Posts
 Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
@@ -99,6 +96,8 @@ Route::get('/post/{id}', [PostController::class, 'show'])->name('post');
 Route::get('/post/{id}/edit', [PostController::class, 'edit'])->name('post.edit');
 Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 Route::get('post/{postId}/image/{imageNumber}', [PostController::class, 'getPostImage'])->name('post.image');
+Route::get('/post/{post}/reactions', [PostController::class, 'showReactionsPage'])->name('post.reactions');
+
 
 
 // Save and unsave post
@@ -118,6 +117,8 @@ Route::get('api/search', [UserSearchController::class, 'search'])->name('search'
 Route::post('/post/{id}/reaction', [ReactionController::class, 'storepost'])->name('postreaction.store');
 Route::delete('/reaction/{id}', [ReactionController::class, 'destroy'])->name('reaction.destroy');
 Route::post('/comment/{id}/reaction', [ReactionController::class, 'storecomment'])->name('commentreaction.store');
+Route::get('/post/{postId}/reactions/count', [PostController::class, 'getPostReactionCount']);
+Route::get('/comment/{commentId}/reactions/count', [CommentController::class, 'getCommentReactionCount']);
 
 
 // Comments

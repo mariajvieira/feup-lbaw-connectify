@@ -288,23 +288,16 @@ class PostController extends Controller
     
 
     
-    public function getReactionsCount($id)
+    public function getPostReactionCount($postId)
     {
-        $post = Post::find($id);
+        $post = Post::findOrFail($postId);
+        
+        $reactionCount = $post->reactions()->count();
     
-        if (!$post) {
-            return response()->json(['error' => 'Post não encontrado.'], 404);
-        }
-    
-        // Contar o número de reações por tipo, garantindo que target_type seja 'post'
-        $reactionsCount = $post->reactions()
-            ->where('target_type', 'post') // Adiciona a condição target_type = 'post'
-            ->select('reaction_type', DB::raw('count(*) as total'))
-            ->groupBy('reaction_type')
-            ->pluck('total', 'reaction_type')
-            ->toArray();
-    
-        return response()->json($reactionsCount, 200);
+        // Retorna a contagem de reações como JSON
+        return response()->json([
+            'reactionCount' => $reactionCount
+        ]);
     }
     
     public function showReactions($postId)
