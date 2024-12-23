@@ -24,7 +24,6 @@
         @endcan
     </div>
 
-    <!-- Mostrar o grupo, caso o post pertença a um grupo -->
     @if ($post->group)
         <div class="post-group-info mt-2">
             <span class="text-muted small">
@@ -42,16 +41,22 @@
     <div class="post-images mt-3">
         <div id="image-slider" class="position-relative">
             <div class="post-image-container d-flex">
+                @if ($post->image1 && !empty($post->image1))
                 <div class="post-image" style="flex: 1;">
                     <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 1]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                 </div>
+                @endif
+
+                @if ($post->image2 && !empty($post->image2))
                 <div class="post-image" style="flex: 1;">
                     <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 2]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
                 </div>
-                @if (!empty($post->IMAGE3))
-                    <div class="post-image" style="flex: 1;">
-                        <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 3]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
-                    </div>
+                @endif
+
+                @if ($post->image3 && !empty($post->image3))
+                <div class="post-image" style="flex: 1;">
+                    <img src="{{ route('post.image', ['postId' => $post->id, 'imageNumber' => 3]) }}" class="img-fluid" alt="Post Image" style="width: 100%; height: 500px; object-fit: cover;">
+                </div>
                 @endif
             </div>
         </div>
