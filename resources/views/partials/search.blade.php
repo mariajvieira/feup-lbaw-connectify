@@ -103,15 +103,15 @@
                     @else
                         <ul class="list-group">
                             @foreach ($commentsFullText as $comment)
-                                <li class="list-group-item">
+                                <li class="list-group-item ">
                                     <p>
-                                        <strong>
+                                        <strong class="text-decoration-none text-custom" >
                                             @if($comment->user)
-                                                <a href="{{ route('user', ['id' => $comment->user->id]) }}">
+                                                <a class="text-decoration-none text-custom" href="{{ route('user', ['id' => $comment->user->id]) }}">
                                                     {{ $comment->user->username }}
                                                 </a>
                                             @else
-                                                <span>User not found</span>
+                                                <span class="text-decoration-none text-custom" >User not found</span>
                                             @endif
                                         </strong>: 
                                         {{ $comment->comment_content }}
@@ -120,7 +120,7 @@
                                         <small>
                                             @if($comment->post)
                                                 On post: 
-                                                <a href="{{ route('post', ['id' => $comment->post_id]) }}">
+                                                <a class="text-decoration-none text-custom fw-bold"  href="{{ route('post.reactions', [$comment->post_id]) }}">
                                                     {{ $comment->post->content }}
                                                 </a>
                                             @else
@@ -143,18 +143,16 @@
             <ul class="list-group">
                 @foreach ($groupsFullText as $group)
                     <li class="list-group-item">
-                        @if($group)
                             <!-- Nome do Grupo e Link -->
                             <a href="{{ route('group.show', $group->id) }}" class="text-decoration-none text-custom fw-bold">
-                                {{ $group->name }}
+                                {{ $group->group_name }}
                             </a>
                             <!-- Descrição opcional -->
                             @if($group->description)
                                 <p class="mb-0 text-muted">{{ $group->description }}</p>
                             @endif
-                        @else
-                            <p>Group not found</p>
-                        @endif
+                            
+
                     </li>
                 @endforeach
             </ul>
