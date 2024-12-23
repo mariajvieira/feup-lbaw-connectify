@@ -31,7 +31,7 @@
                 <li>
                     <h4>{{ $post->title }}</h4>
                     <p>{{ $post->content }}</p>
-                    <small>Posted by: {{ $post->user->username }} on {{ $post->created_at->format('d M Y') }}</small>
+                    <small>Posted by: {{ $post->user->username }} on {{ \Carbon\Carbon::parse($post->post_date)->format('d/m/Y \a\t H:i') }}</small>
                 </li>
                 <hr>
             @endforeach

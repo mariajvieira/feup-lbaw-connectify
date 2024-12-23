@@ -29,9 +29,7 @@
         <div class="post-group-info mt-2">
             <span class="text-muted small">
                 Posted in group: 
-                <a href="{{ route('group.show', ['group' => $post->group->id]) }}" class="text-custom">
                     {{ $post->group->name }}
-                </a>
                 @if (!$post->group->is_public)
                     <span class="text-danger">(Private Group)</span>
                 @endif

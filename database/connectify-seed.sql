@@ -390,22 +390,27 @@ CREATE OR REPLACE FUNCTION enforce_group_posting()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.group_id IS NOT NULL THEN
-        -- Verifica se o usuário é membro ou proprietário do grupo
-        IF NOT EXISTS (
-            SELECT 1 
-            FROM group_member
-            WHERE group_id = NEW.group_id 
-            AND user_id = NEW.user_id
-        ) 
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM group_owner
-            WHERE group_id = NEW.group_id 
-            AND user_id = NEW.user_id
+        IF EXISTS (
+            SELECT 1
+            FROM group_member gm
+            WHERE gm.group_id = NEW.group_id 
+              AND gm.user_id = NEW.user_id
         ) THEN
-            RAISE EXCEPTION 'User must be a member or owner of the group to post.';
+            RETURN NEW;
+        ELSE
+            IF EXISTS (
+                SELECT 1 
+                FROM group_owner go
+                WHERE go.group_id = NEW.group_id
+                  AND go.user_id = NEW.user_id
+            ) THEN
+                RETURN NEW;
+            ELSE
+                RAISE EXCEPTION 'User must be a member or owner of the group to post.';
+            END IF;
         END IF;
-    END IF; 
+    END IF;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -414,6 +419,9 @@ CREATE TRIGGER trg_enforce_group_posting
 BEFORE INSERT ON post
 FOR EACH ROW
 EXECUTE FUNCTION enforce_group_posting();
+
+
+
 
 
 
@@ -909,171 +917,7 @@ VALUES
     (66, 'Travel Enthusiasts', 'Discuss travel experiences and tips.', TRUE),
     (70, 'Music Lovers', 'Share your favorite music and playlists.', TRUE);
 
-INSERT INTO post (user_id, group_id, content, IMAGE1, IMAGE2, IMAGE3, is_public, post_date)
-VALUES
-    (1, NULL, 'Just finished reading a fantastic book!','posts/1.1.jpg', NULL, NULL, TRUE, '2023-01-01 12:00:00'),
-    (2, NULL, 'Building a new project, check it out!', 'posts/2.1.jpg', NULL, NULL, TRUE, '2023-01-02 12:01:00'),
-    (3, NULL, 'Check out my latest painting!', 'posts/3.1.jpg', 'posts/3.2.jpg',  NULL,TRUE, '2023-01-03 12:02:00'),
-    (4, NULL, 'Paris!', 'posts/4.1.jpg', NULL, NULL, TRUE, '2023-01-04 12:03:00'),
-    (5, NULL, 'Did you know that octopuses have three hearts? Two pump blood to the gills, and one pumps it to the rest of the body. What’s even more fascinating is that the heart that supplies the body stops beating when the octopus swims! Nature is incredible, isn’t it?', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
-    (6, NULL, 'New family member!', 'posts/6.1.jpg', NULL, NULL, TRUE, '2023-01-06 12:05:00'),
-    (7, NULL, 'Just got back from my trip to Italy!', 'posts/7.1.jpg', NULL, NULL, TRUE, '2023-01-07 12:06:00'),
-    (8,  NULL, 'Tried a new recipe today, it was delicious!', 'posts/8.1.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
-    (9, NULL, 'Just finished a 5k run, feeling great!', 'posts/9.1.jpg', NULL, NULL, TRUE, '2023-01-09 12:08:00'),
-    (10, NULL, 'I love listening to music!', 'posts/10.1.jpg', NULL, NULL, TRUE, '2023-01-10 12:09:00'),
-    (1, NULL, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, '2023-01-11 12:10:00'),
-    (2, NULL, 'Love building stuff together!', 'posts/12.1.jpg', NULL, NULL, TRUE, '2023-01-12 12:11:00'),
-    (3, NULL, 'Art online class coming up!', 'posts/13.1.jpg', NULL, NULL, TRUE, '2023-01-13 12:12:00'),
-    (4, NULL, NULL , 'posts/14.1.jpg', NULL, NULL, TRUE, '2023-01-14 12:13:00'),
-    (5, NULL, 'Amazing coffe with an amazing view', 'posts/15.1.jpg', NULL, NULL, TRUE, '2023-01-15 12:14:00'),
-    (6, NULL, 'Happy birthday mom!', 'posts/16.1.jpg', NULL, NULL, TRUE, '2023-01-16 12:15:00'),
-    (7, NULL, NULL, 'posts/17.1.jpg', NULL, NULL, TRUE, '2023-01-17 12:16:00'),
-    (8, NULL, 'Food festival this weekend!', 'posts/18.1.jpg', 'posts/18.2.jpg', NULL, TRUE, '2023-01-18 12:17:00'),
-    (9, NULL, 'Join my fitness challenge!', 'posts/19.1.jpg', NULL, NULL, TRUE, '2023-01-19 12:18:00'),
-    (10, NULL, 'Rock n roll!!!','posts/20.1.jpg', NULL, NULL, TRUE, '2023-01-20 12:19:00'),
-    (1, NULL, 'Finally got my first job as a software engineer! Wish me luck :)', NULL, NULL, NULL, TRUE, '2023-01-21 12:20:00'),
-    (2, NULL, 'First day at college','posts/22.1.jpg', NULL, NULL, TRUE, '2023-01-22 12:21:00'),
-    (3, NULL, NULL,'posts/23.1.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
-    (4, NULL, 'Today in Porto', 'posts/24.1.jpg', NULL, NULL, TRUE, '2023-01-24 12:23:00'),
-    (5, NULL, 'Adopt, dont shop!', 'posts/25.1.jpg', NULL, NULL, TRUE, '2023-01-25 12:24:00'),
-    (6, NULL, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
-    (7, NULL, 'Family time :)', 'posts/27.1.jpg', NULL, NULL, TRUE, '2023-01-27 12:26:00'),
-    (8, NULL, 'Who wants to join me for a workout?', 'posts/28.1.jpg', NULL, NULL, TRUE, '2023-01-28 12:27:00'),
-    (9, NULL, 'Whats your favourite song? I love Despacito', 'posts/29.1.jpg', NULL, NULL, TRUE, '2023-01-29 12:28:00'),
-    (10, NULL, 'What book are you currently reading?', 'posts/30.1.jpg', NULL, NULL, TRUE, '2023-01-30 12:29:00'),
-    (1, NULL, 'Just finished reading "To Kill a Mockingbird" by Harper Lee. Highly recommend!', NULL, NULL, NULL, TRUE, '2023-02-01 12:00:00'),
-    (2, NULL, 'Currently reading "1984" by George Orwell. It is a thought-provoking book.', NULL, NULL, NULL, TRUE, '2023-02-02 12:00:00'),
-    (3, NULL, 'Just started "Pride and Prejudice" by Jane Austen. Loving it so far!', NULL, NULL, NULL, TRUE, '2023-02-03 12:00:00'),
-    (12, NULL, 'Just finished building a new deck for my backyard!', 'posts/31.1.jpg', NULL, NULL, TRUE, '2023-02-04 12:00:00'),
-    (27, NULL, 'Started a new project: building a treehouse for my kids!', 'posts/32.1.jpg', NULL, NULL, TRUE, '2023-02-05 12:00:00'),
-    (51, NULL, 'Renovating my kitchen, here are some progress pics!', 'posts/33.1.jpg', 'posts/33.2.jpg', NULL, TRUE, '2023-02-06 12:00:00'),
-    (28, NULL, 'Just finished a new painting, what do you think?', 'posts/34.1.jpg', NULL, NULL, TRUE, '2023-02-07 12:00:00'),
-    (43, NULL, 'Art is my passion. Here is my latest sketch.', 'posts/35.1.jpg', NULL, NULL, TRUE, '2023-02-08 12:00:00'),
-    (62, NULL, 'Exploring new techniques in digital art.', 'posts/36.1.jpg', NULL, NULL, TRUE, '2023-02-09 12:00:00'),
-    (7, NULL, 'I found a strange key in my attic. It has an intricate design and looks very old. Does anyone know what it might open?', NULL, NULL, NULL, TRUE, '2023-02-10 12:00:00'),
-    (44, NULL, 'There are mysterious footprints leading to my garden shed. They appear overnight and disappear by morning. Any ideas on what could be causing them?',NULL, NULL, NULL, TRUE, '2023-02-11 12:00:00'),
-    (30, NULL, 'Just planted some new flowers in my garden. Can’t wait to see them bloom!', 'posts/39.1.jpg', NULL, NULL, TRUE, '2023-02-12 12:00:00'),
-    (45, NULL, 'Harvested some fresh vegetables today. Nothing beats homegrown produce!', NULL, NULL, NULL, TRUE, '2023-02-13 12:00:00'),
-    (45, NULL, 'Built a new compost bin for my garden. Sustainability is key!', 'posts/41.1.jpg', NULL, NULL, TRUE, '2023-02-14 12:00:00'),
-    (9, NULL, 'Just adopted a new puppy! Meet Max.', 'posts/42.1.jpg', NULL, NULL, TRUE, '2023-02-19 12:00:00'),
-    (31, NULL, 'My cat Luna loves to play with her new toy.', 'posts/43.1.jpg', NULL, NULL, TRUE, '2023-02-20 12:00:00'),
-    (66, NULL, 'Check out this beautiful bird I saw at the park.', 'posts/44.1.jpg', NULL, NULL, TRUE, '2023-02-21 12:00:00'),
-    (17, NULL, 'Just completed a 10k run, feeling amazing!', 'posts/45.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
-    (32, NULL, 'Started a new fitness routine today. Let’s get fit together!', 'posts/46.1.jpg', NULL, NULL, TRUE, '2023-02-23 12:00:00'),
-    (10, NULL, 'Join me for a workout session this weekend! Saturday 9am in the park :)', NULL, NULL, NULL, TRUE, '2023-02-24 12:00:00'),
-    (18, NULL, 'Exploring the latest advancements in technology.', 'posts/48.1.jpg', NULL, NULL, TRUE, '2023-02-25 12:00:00'),
-    (2, NULL, 'Just built my first robot! It can navigate through obstacles.', 'posts/49.1.jpg', NULL, NULL, TRUE, '2023-02-26 12:00:00'),
-    (8, NULL, 'Attending a tech conference this weekend. Excited to learn about new trends!', NULL, NULL, NULL, TRUE, '2023-02-27 12:00:00'),
-    (9, NULL, 'Captured this beautiful sunset today!', 'posts/51.1.jpg', NULL, NULL, TRUE, '2023-02-28 12:00:00'),
-    (19, NULL, 'Nature at its best!', 'posts/52.1.jpg', NULL, NULL, TRUE, '2023-03-01 12:00:00'),
-    (34, NULL, 'What do tou most like to capture? I love to take pictures of people that stand out in the middle of the crowd', NULL, NULL, NULL, TRUE, '2023-03-02 12:00:00'),
-    (1, NULL, 'Just finished an intense gaming session! Anyone up for a rematch?', NULL, NULL, NULL, TRUE, '2023-03-03 12:00:00'),
-    (20, NULL, 'Check out my new gaming setup!', 'posts/55.1.jpg', NULL, NULL, TRUE, '2023-03-04 12:00:00'),
-    (50, NULL, 'What’s your favorite game of all time?', NULL, NULL, NULL, TRUE, '2023-03-05 12:00:00'),
-    (21, NULL, 'I trained legs today!', 'posts/57.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
-    (36, NULL, 'What is your favourite exercise for biceps?', NULL, NULL, NULL, TRUE, '2023-02-23 12:00:00'),
-    (42, NULL, 'Just watched an amazing movie last night! It was called "The 7 secrets"', NULL, NULL, NULL, TRUE, '2023-03-06 12:00:00'),
-    (60, NULL, 'Any recommendations for a good thriller movie?', NULL, NULL, NULL, TRUE, '2023-03-07 12:00:00'),
-    (64, NULL, 'I love classic movies. Casablanca is my all-time favorite!', NULL, NULL, NULL, TRUE, '2023-03-08 12:00:00');
 
-
-
-
-INSERT INTO saved_post (user_id, post_id)
-VALUES
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
-    (1, 2),
-    (2, 3),
-    (3, 4),
-    (4, 5),
-    (5, 6),
-    (6, 7),
-    (7, 8),
-    (8, 9),
-    (9, 10),
-    (10, 1);
-
-INSERT INTO comment_ (post_id, user_id, comment_content)
-VALUES
-    (1, 2, 'I loved that book too!'),
-    (1, 3, 'Great choice!'),
-    (1, 7, 'My favourite!'),
-    (1, 4, 'Glad you followed my recommendation'),
-    (2, 1, 'That looks amazing!'),
-    (2, 15, 'Can’t wait to see the final result!'),
-    (2, 5, 'I love working on projects like this with you!'),
-    (3, 4, 'Your art is inspiring!'),
-    (3, 10, 'So cool!'),
-    (3, 6, 'Art is truly a reflection of the soul!'),
-    (4, 5, 'LOVE!'),
-    (4, 7, 'wow, in the city of romance'),
-    (5, 6, 'I love fun facts!'),
-    (5, 8, 'So interesting!'),
-    (6, 7, 'What a cute puppy!'),
-    (6, 9, 'Dogs are the best companions!'),
-    (7, 10, 'Traveling is such a rewarding experience!'),
-    (7, 8, 'Italy is wonderful!'),
-    (8, 9, 'That recipe sounds delicious!'),
-    (8, 2, 'I have to try it!'),
-    (8, 1, 'Food is an art form in itself!'),
-    (9, 2, 'Congrats!'),
-    (9, 10, 'Running is so rewarding!'),
-    (10, 1, 'What’s your favoutite song!'),
-    (10, 3, 'I love discovering new music!'),
-    (11, 4, 'Any from Nicholas Spark is great!'),
-    (11, 9, 'Little women!'),
-    (13, 6, 'I’ll be there!'),
-    (14, 7, 'Love it'),
-    (15, 8, 'I’m jealous!!!'),
-    (16, 9, 'Happy birthday <3'),
-    (17, 10, 'wow'),
-    (18, 1, 'Food is an art form in itself!'),
-    (19, 2, 'Fitness is a journey, not a destination!'),
-    (20, 3, 'omg i was there too!'),
-    (21, 4, 'Congratulations!!!!'),
-    (22, 5, 'So nice to meet youu'),
-    (24, 7, 'So beautiful!'),
-    (25, 8, 'That’s right!!'),
-    (26, 9, 'Dubai and NY!!!!'),
-    (26, 1, 'I agree, London is the best!'),
-    (27, 10, 'Family goals!'),
-    (28, 1, 'Not me xD'),
-    (29, 2, 'Great song!'),
-    (29, 30, 'My favourite is Hey Jude!');
-
-
-
-INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)
-VALUES
-    (1, 1, 'post', 'like', '2023-01-30 10:00:00'),
-    (2, 2, 'post', 'laugh', '2023-01-31 10:00:00'),
-    (3, 3, 'post', 'applause', '2023-02-01 10:00:00'),
-    (4, 4, 'post', 'like', '2023-02-02 10:00:00'),
-    (5, 5, 'post', 'applause', '2023-02-03 10:00:00'),
-    (6, 6, 'post', 'like', '2023-02-04 10:00:00'),
-    (7, 7, 'post', 'applause', '2023-02-05 10:00:00'),
-    (8, 8, 'post', 'like', '2023-02-06 10:00:00'),
-    (9, 9, 'post', 'like', '2023-02-07 10:00:00'),
-    (10, 10, 'post', 'applause', '2023-02-08 10:00:00'),
-    (1, 2, 'comment', 'shocked', '2023-02-09 10:00:00'),
-    (2, 3, 'comment', 'like', '2023-02-10 10:00:00'),
-    (3, 4, 'comment', 'like', '2023-02-11 10:00:00'),
-    (4, 5, 'comment', 'shocked', '2023-02-12 10:00:00'),
-    (5, 6, 'comment', 'like', '2023-02-13 10:00:00'),
-    (6, 7, 'comment', 'shocked', '2023-02-14 10:00:00'),
-    (7, 8, 'comment', 'like', '2023-02-15 10:00:00'),
-    (8, 9, 'comment', 'shocked', '2023-02-16 10:00:00'),
-    (9, 10, 'comment', 'like', '2023-02-17 10:00:00'),
-    (10, 1, 'comment', 'shocked', '2023-02-18 10:00:00');
 
 
 
@@ -1123,6 +967,7 @@ VALUES
 
 INSERT INTO join_group_request (group_id, user_id, request_status)
 VALUES
+    (6,5,'accepted'),
     (5, 6, 'accepted'),
     (9, 10, 'denied'),
     (3, 4, 'denied'),
@@ -1333,6 +1178,168 @@ VALUES
     (47, 13),
     (66, 14),
     (70, 15);
+
+
+INSERT INTO post (user_id, group_id, content, IMAGE1, IMAGE2, IMAGE3, is_public, post_date)
+VALUES
+    (1, NULL, 'Just finished reading a fantastic book!','posts/1.1.jpg', NULL, NULL, TRUE, '2023-01-01 12:00:00'),
+    (2, NULL, 'Building a new project, check it out!', 'posts/2.1.jpg', NULL, NULL, TRUE, '2023-01-02 12:01:00'),
+    (3, NULL, 'Check out my latest painting!', 'posts/3.1.jpg', 'posts/3.2.jpg',  NULL,TRUE, '2023-01-03 12:02:00'),
+    (4, NULL, 'Paris!', 'posts/4.1.jpg', NULL, NULL, TRUE, '2023-01-04 12:03:00'),
+    (5, 6, 'Did you know that octopuses have three hearts? Two pump blood to the gills, and one pumps it to the rest of the body. What’s even more fascinating is that the heart that supplies the body stops beating when the octopus swims! Nature is incredible, isn’t it?', NULL, NULL, NULL, TRUE, '2023-01-05 12:04:00'),
+    (6, NULL, 'New family member!', 'posts/6.1.jpg', NULL, NULL, TRUE, '2023-01-06 12:05:00'),
+    (7, NULL, 'Just got back from my trip to Italy!', 'posts/7.1.jpg', NULL, NULL, TRUE, '2023-01-07 12:06:00'),
+    (8,  13, 'Tried a new recipe today, it was delicious!', 'posts/8.1.jpg', NULL, NULL, TRUE, '2023-01-08 12:07:00'),
+    (9, NULL, 'Just finished a 5k run, feeling great!', 'posts/9.1.jpg', NULL, NULL, TRUE, '2023-01-09 12:08:00'),
+    (10, NULL, 'I love listening to music!', 'posts/10.1.jpg', NULL, NULL, TRUE, '2023-01-10 12:09:00'),
+    (1, NULL, 'Any recommendations for good books?', NULL, NULL, NULL, TRUE, '2023-01-11 12:10:00'),
+    (2, NULL, 'Love building stuff together!', 'posts/12.1.jpg', NULL, NULL, TRUE, '2023-01-12 12:11:00'),
+    (3, 3, 'Art online class coming up!', 'posts/13.1.jpg', NULL, NULL, TRUE, '2023-01-13 12:12:00'),
+    (4, NULL, NULL , 'posts/14.1.jpg', NULL, NULL, TRUE, '2023-01-14 12:13:00'),
+    (5, NULL, 'Amazing coffe with an amazing view', 'posts/15.1.jpg', NULL, NULL, TRUE, '2023-01-15 12:14:00'),
+    (6, NULL, 'Happy birthday mom!', 'posts/16.1.jpg', NULL, NULL, TRUE, '2023-01-16 12:15:00'),
+    (7, NULL, NULL, 'posts/17.1.jpg', NULL, NULL, TRUE, '2023-01-17 12:16:00'),
+    (8, NULL, 'Food festival this weekend!', 'posts/18.1.jpg', 'posts/18.2.jpg', NULL, TRUE, '2023-01-18 12:17:00'),
+    (9, NULL, 'Join my fitness challenge!', 'posts/19.1.jpg', NULL, NULL, TRUE, '2023-01-19 12:18:00'),
+    (10, NULL, 'Rock n roll!!!','posts/20.1.jpg', NULL, NULL, TRUE, '2023-01-20 12:19:00'),
+    (1, NULL, 'Finally got my first job as a software engineer! Wish me luck :)', NULL, NULL, NULL, TRUE, '2023-01-21 12:20:00'),
+    (2, NULL, 'First day at college','posts/22.1.jpg', NULL, NULL, TRUE, '2023-01-22 12:21:00'),
+    (3, NULL, NULL,'posts/23.1.jpg', NULL, NULL, TRUE, '2023-01-23 12:22:00'),
+    (4, NULL, 'Today in Porto', 'posts/24.1.jpg', NULL, NULL, TRUE, '2023-01-24 12:23:00'),
+    (5, NULL, 'Adopt, dont shop!', 'posts/25.1.jpg', NULL, NULL, TRUE, '2023-01-25 12:24:00'),
+    (6, 14, 'Whats your favorite travel destination? I`ve been to some cities all over the world but no city has the same fun and vibe as Lisbon!', NULL, NULL, NULL, TRUE, '2023-01-26 12:25:00'),
+    (7, NULL, 'Family time :)', 'posts/27.1.jpg', NULL, NULL, TRUE, '2023-01-27 12:26:00'),
+    (8, NULL, 'Who wants to join me for a workout?', 'posts/28.1.jpg', NULL, NULL, TRUE, '2023-01-28 12:27:00'),
+    (9, NULL, 'Whats your favourite song? I love Despacito', 'posts/29.1.jpg', NULL, NULL, TRUE, '2023-01-29 12:28:00'),
+    (10, 1, 'What book are you currently reading?', 'posts/30.1.jpg', NULL, NULL, TRUE, '2023-01-30 12:29:00'),
+    (1, 1, 'Just finished reading "To Kill a Mockingbird" by Harper Lee. Highly recommend!', NULL, NULL, NULL, TRUE, '2023-02-01 12:00:00'),
+    (2, 1, 'Currently reading "1984" by George Orwell. It is a thought-provoking book.', NULL, NULL, NULL, TRUE, '2023-02-02 12:00:00'),
+    (3, 1, 'Just started "Pride and Prejudice" by Jane Austen. Loving it so far!', NULL, NULL, NULL, TRUE, '2023-02-03 12:00:00'),
+    (12, 2, 'Just finished building a new deck for my backyard!', 'posts/31.1.jpg', NULL, NULL, TRUE, '2023-02-04 12:00:00'),
+    (27, 2, 'Started a new project: building a treehouse for my kids!', 'posts/32.1.jpg', NULL, NULL, TRUE, '2023-02-05 12:00:00'),
+    (51, 2, 'Renovating my kitchen, here are some progress pics!', 'posts/33.1.jpg', 'posts/33.2.jpg', NULL, TRUE, '2023-02-06 12:00:00'),
+    (28, NULL, 'Just finished a new painting, what do you think?', 'posts/34.1.jpg', NULL, NULL, TRUE, '2023-02-07 12:00:00'),
+    (43, NULL, 'Art is my passion. Here is my latest sketch.', 'posts/35.1.jpg', NULL, NULL, TRUE, '2023-02-08 12:00:00'),
+    (62, NULL, 'Exploring new techniques in digital art.', 'posts/36.1.jpg', NULL, NULL, TRUE, '2023-02-09 12:00:00'),
+    (7, NULL, 'I found a strange key in my attic. It has an intricate design and looks very old. Does anyone know what it might open?', NULL, NULL, NULL, TRUE, '2023-02-10 12:00:00'),
+    (44, NULL, 'There are mysterious footprints leading to my garden shed. They appear overnight and disappear by morning. Any ideas on what could be causing them?',NULL, NULL, NULL, TRUE, '2023-02-11 12:00:00'),
+    (30, NULL, 'Just planted some new flowers in my garden. Can’t wait to see them bloom!', 'posts/39.1.jpg', NULL, NULL, TRUE, '2023-02-12 12:00:00'),
+    (45, NULL, 'Harvested some fresh vegetables today. Nothing beats homegrown produce!', NULL, NULL, NULL, TRUE, '2023-02-13 12:00:00'),
+    (45, NULL, 'Built a new compost bin for my garden. Sustainability is key!', 'posts/41.1.jpg', NULL, NULL, TRUE, '2023-02-14 12:00:00'),
+    (9, NULL, 'Just adopted a new puppy! Meet Max.', 'posts/42.1.jpg', NULL, NULL, TRUE, '2023-02-19 12:00:00'),
+    (31, NULL, 'My cat Luna loves to play with her new toy.', 'posts/43.1.jpg', NULL, NULL, TRUE, '2023-02-20 12:00:00'),
+    (66, NULL, 'Check out this beautiful bird I saw at the park.', 'posts/44.1.jpg', NULL, NULL, TRUE, '2023-02-21 12:00:00'),
+    (17, NULL, 'Just completed a 10k run, feeling amazing!', 'posts/45.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
+    (32, NULL, 'Started a new fitness routine today. Let’s get fit together!', 'posts/46.1.jpg', NULL, NULL, TRUE, '2023-02-23 12:00:00'),
+    (10, NULL, 'Join me for a workout session this weekend! Saturday 9am in the park :)', NULL, NULL, NULL, TRUE, '2023-02-24 12:00:00'),
+    (18, NULL, 'Exploring the latest advancements in technology.', 'posts/48.1.jpg', NULL, NULL, TRUE, '2023-02-25 12:00:00'),
+    (2, NULL, 'Just built my first robot! It can navigate through obstacles.', 'posts/49.1.jpg', NULL, NULL, TRUE, '2023-02-26 12:00:00'),
+    (8, NULL, 'Attending a tech conference this weekend. Excited to learn about new trends!', NULL, NULL, NULL, TRUE, '2023-02-27 12:00:00'),
+    (9, NULL, 'Captured this beautiful sunset today!', 'posts/51.1.jpg', NULL, NULL, TRUE, '2023-02-28 12:00:00'),
+    (19, NULL, 'Nature at its best!', 'posts/52.1.jpg', NULL, NULL, TRUE, '2023-03-01 12:00:00'),
+    (34, NULL, 'What do tou most like to capture? I love to take pictures of people that stand out in the middle of the crowd', NULL, NULL, NULL, TRUE, '2023-03-02 12:00:00'),
+    (1, NULL, 'Just finished an intense gaming session! Anyone up for a rematch?', NULL, NULL, NULL, TRUE, '2023-03-03 12:00:00'),
+    (20, NULL, 'Check out my new gaming setup!', 'posts/55.1.jpg', NULL, NULL, TRUE, '2023-03-04 12:00:00'),
+    (50, NULL, 'What’s your favorite game of all time?', NULL, NULL, NULL, TRUE, '2023-03-05 12:00:00'),
+    (21, NULL, 'I trained legs today!', 'posts/57.1.jpg', NULL, NULL, TRUE, '2023-02-22 12:00:00'),
+    (36, NULL, 'What is your favourite exercise for biceps?', NULL, NULL, NULL, TRUE, '2023-02-23 12:00:00'),
+    (42, NULL, 'Just watched an amazing movie last night! It was called "The 7 secrets"', NULL, NULL, NULL, TRUE, '2023-03-06 12:00:00'),
+    (60, NULL, 'Any recommendations for a good thriller movie?', NULL, NULL, NULL, TRUE, '2023-03-07 12:00:00'),
+    (64, NULL, 'I love classic movies. Casablanca is my all-time favorite!', NULL, NULL, NULL, TRUE, '2023-03-08 12:00:00');
+
+INSERT INTO comment_ (post_id, user_id, comment_content)
+VALUES
+    (1, 2, 'I loved that book too!'),
+    (1, 3, 'Great choice!'),
+    (1, 7, 'My favourite!'),
+    (1, 4, 'Glad you followed my recommendation'),
+    (2, 1, 'That looks amazing!'),
+    (2, 15, 'Can’t wait to see the final result!'),
+    (2, 5, 'I love working on projects like this with you!'),
+    (3, 4, 'Your art is inspiring!'),
+    (3, 10, 'So cool!'),
+    (3, 6, 'Art is truly a reflection of the soul!'),
+    (4, 5, 'LOVE!'),
+    (4, 7, 'wow, in the city of romance'),
+    (5, 6, 'I love fun facts!'),
+    (5, 8, 'So interesting!'),
+    (6, 7, 'What a cute puppy!'),
+    (6, 9, 'Dogs are the best companions!'),
+    (7, 10, 'Traveling is such a rewarding experience!'),
+    (7, 8, 'Italy is wonderful!'),
+    (8, 9, 'That recipe sounds delicious!'),
+    (8, 2, 'I have to try it!'),
+    (8, 1, 'Food is an art form in itself!'),
+    (9, 2, 'Congrats!'),
+    (9, 10, 'Running is so rewarding!'),
+    (10, 1, 'What’s your favoutite song!'),
+    (10, 3, 'I love discovering new music!'),
+    (11, 4, 'Any from Nicholas Spark is great!'),
+    (11, 9, 'Little women!'),
+    (13, 6, 'I’ll be there!'),
+    (14, 7, 'Love it'),
+    (15, 8, 'I’m jealous!!!'),
+    (16, 9, 'Happy birthday <3'),
+    (17, 10, 'wow'),
+    (18, 1, 'Food is an art form in itself!'),
+    (19, 2, 'Fitness is a journey, not a destination!'),
+    (20, 3, 'omg i was there too!'),
+    (21, 4, 'Congratulations!!!!'),
+    (22, 5, 'So nice to meet youu'),
+    (24, 7, 'So beautiful!'),
+    (25, 8, 'That’s right!!'),
+    (26, 9, 'Dubai and NY!!!!'),
+    (26, 1, 'I agree, London is the best!'),
+    (27, 10, 'Family goals!'),
+    (28, 1, 'Not me xD'),
+    (29, 2, 'Great song!'),
+    (29, 30, 'My favourite is Hey Jude!');
+
+INSERT INTO reaction (user_id, target_id, target_type, reaction_type, reaction_date)
+VALUES
+    (1, 1, 'post', 'like', '2023-01-30 10:00:00'),
+    (2, 2, 'post', 'laugh', '2023-01-31 10:00:00'),
+    (3, 3, 'post', 'applause', '2023-02-01 10:00:00'),
+    (4, 4, 'post', 'like', '2023-02-02 10:00:00'),
+    (5, 5, 'post', 'applause', '2023-02-03 10:00:00'),
+    (6, 6, 'post', 'like', '2023-02-04 10:00:00'),
+    (7, 7, 'post', 'applause', '2023-02-05 10:00:00'),
+    (8, 8, 'post', 'like', '2023-02-06 10:00:00'),
+    (9, 9, 'post', 'like', '2023-02-07 10:00:00'),
+    (10, 10, 'post', 'applause', '2023-02-08 10:00:00'),
+    (1, 2, 'comment', 'shocked', '2023-02-09 10:00:00'),
+    (2, 3, 'comment', 'like', '2023-02-10 10:00:00'),
+    (3, 4, 'comment', 'like', '2023-02-11 10:00:00'),
+    (4, 5, 'comment', 'shocked', '2023-02-12 10:00:00'),
+    (5, 6, 'comment', 'like', '2023-02-13 10:00:00'),
+    (6, 7, 'comment', 'shocked', '2023-02-14 10:00:00'),
+    (7, 8, 'comment', 'like', '2023-02-15 10:00:00'),
+    (8, 9, 'comment', 'shocked', '2023-02-16 10:00:00'),
+    (9, 10, 'comment', 'like', '2023-02-17 10:00:00'),
+    (10, 1, 'comment', 'shocked', '2023-02-18 10:00:00');
+
+INSERT INTO saved_post (user_id, post_id)
+VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10),
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (4, 5),
+    (5, 6),
+    (6, 7),
+    (7, 8),
+    (8, 9),
+    (9, 10),
+    (10, 1);
 
 INSERT INTO notification (content, is_read, notification_date, user_id)
 VALUES
