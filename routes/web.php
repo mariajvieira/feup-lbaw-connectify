@@ -17,6 +17,7 @@ use App\Http\Controllers\SavedPostController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\DeleteAccountController;
+use App\Http\Controllers\JoinGroupController;
 
 
 /*
@@ -188,3 +189,15 @@ Route::get('/group/{groupId}', [GroupController::class, 'show'])->name('group.sh
 
 // Remove post from group
 Route::patch('/posts/{post}/remove-from-group', [PostController::class, 'removeFromGroup'])->name('post.removeFromGroup');
+
+
+
+// Rota para enviar pedido de adesão
+Route::post('/join-group', [JoinGroupController::class, 'joinPrivateGroup'])->name('join-group');
+
+
+// Rota para listar pedidos de adesão (somente para o owner)
+Route::get('/group/{groupId}/requests', [JoinGroupController::class, 'listGroupRequests'])->middleware('auth');
+
+// Rota para aprovar ou rejeitar pedidos
+Route::post('/group-request/{id}/handle', [JoinGroupController::class, 'handleGroupRequest'])->name('handle-group-request')->middleware('auth');

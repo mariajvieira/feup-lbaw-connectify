@@ -430,14 +430,17 @@ EXECUTE FUNCTION enforce_group_posting();
 CREATE OR REPLACE FUNCTION enforce_group_membership_control()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- Verifica se o grupo é privado
     IF (SELECT is_public FROM group_ WHERE id = NEW.group_id) = FALSE THEN
+        -- Permite o pedido ser pendente, sem levantar exceção
         IF NEW.request_status = 'pending' THEN
-            RAISE EXCEPTION 'Group membership requires owner approval.';
+            RETURN NEW;
         END IF;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE TRIGGER trg_enforce_group_membership_control
 BEFORE INSERT OR UPDATE ON join_group_request
