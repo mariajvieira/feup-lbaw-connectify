@@ -22,6 +22,8 @@ tags:
   - name: 'M07: Search'
   - name: 'M08: Administration'
 
+
+
 paths:
 
 #################################### Authentication ####################################
@@ -147,6 +149,177 @@ paths:
                 302Failure:
                   description: 'Failed authentication. Redirect to login form.'
                   value: '/login'
+
+
+    /forgot-password:
+    get:
+      operationId: R106
+      summary: '107: Forgot Password Form'
+      description: 'Displays a form to request a password recovery email. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show forgot password form.'
+    post:
+      operationId: R107
+      summary: '107: Send Password Recovery Email'
+      description: 'Processes the form submission to send a password recovery code. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:         
+                  type: string
+                  format: email
+                  description: 'Registered user email address'
+              required:
+                - email
+      responses:
+        '302':
+          description: 'Redirect after processing the request.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Redirect to verify code page.'
+                  value: '/verify-code'
+                302Error:
+                  description: 'Redirect back with an error message.'
+                  value: '/forgot-password'
+
+  /verify-code:
+    get:
+      operationId: R108
+      summary: 'R108: Verify Code Form'
+      description: 'Displays the form to verify the password recovery code. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show verify code form.'
+    post:
+      operationId: R204
+      summary: 'R204: Verify Recovery Code'
+      description: 'Processes the submitted recovery code and redirects appropriately. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:         
+                  type: string
+                  format: email
+                  description: 'Email associated with recovery code'
+                code:
+                  type: integer
+                  description: '6-digit recovery code'
+              required:
+                - email
+                - code
+      responses:
+        '302':
+          description: 'Redirect after verifying the recovery code.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Code verified successfully. Redirect to reset password page.'
+                  value: '/reset-password'
+                302Error:
+                  description: 'Failed verification. Redirect back with error.'
+                  value: '/verify-code'
+
+  /reset-password:
+    get:
+      operationId: R110
+      summary: 'R110: Reset Password Form'
+      description: 'Displays the form to reset the user password. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show reset password form.'
+    post:
+      operationId: R111
+      summary: 'R111: Reset Password Action'
+      description: 'Processes the form submission to reset the user password. Access: GST'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:         
+                  type: string
+                  format: email
+                  description: 'User email address'
+                password:
+                  type: string
+                  format: password
+                  description: 'New password'
+                password_confirmation:
+                  type: string
+                  format: password
+                  description: 'Confirmation of the new password'
+              required:
+                - email
+                - password
+                - password_confirmation
+      responses:
+        '302':
+          description: 'Redirect after resetting the password.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Password reset successfully. Redirect to login page.'
+                  value: '/login'
+                302Error:
+                  description: 'Failed to reset password. Redirect back with error.'
+                  value: '/reset-password'
+
+/auth/google:
+    get:
+      operationId: R112
+      summary: R112:Redirect to Google OAuth
+      description: Redirects the user to the Google OAuth authorization page.
+      responses:
+        '302':
+          description: Redirects to Google OAuth login page.
+      tags:
+        - Authentication
+  /auth/google/call-back:
+    get:
+      summary: Google OAuth callback
+      description: Handles the callback from Google OAuth after user login/authorization.
+      responses:
+        '200':
+          description: Successfully authenticated and redirected to the home page.
+        '400':
+          description: Invalid OAuth callback data.
+        '500':
+          description: Server error or authentication failed.
+      tags:
+        - Authentication
 
 #############################################Users############################################ 
 
@@ -309,7 +482,38 @@ paths:
                     description: 'You need to login first. Redirect to login page.'
                     value: '/login'
 
-##########################POSTS######################
+  /user/friends/{userId}:
+    get:
+      operationId: R206
+      summary: 'R206: Get user friends list'
+      description: 'Retrieve the list of friends for a specific user. Access: GST, USR, ADM'
+      tags:
+        - 'M02: Users'
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 'The ID of the user whose friends list is being requested.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'OK. Return the list of friends.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    friendId:
+                      type: string
+                    friendUsername:
+                      type: string
+        '404':
+          description: 'User not found or no friends available.'
+
+##########################POSTS AND COMMENTS######################
 
   /post/create:
     post:
@@ -457,6 +661,535 @@ paths:
           description: Post edited successfully
         '403':
           description: Forbidden, user not allowed to edit post
+
+    /post/save/{postId}:
+    post:
+      operationId: R305
+      summary: 'R305: Save a post'
+      description: 'Save a post for later reference. Access: USR'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to be saved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post saved successfully
+        '403':
+          description: Forbidden, user not allowed to save this post
+        '401':
+          description: Unauthorized, user not logged in
+
+  /post/unsave/{postId}:
+    post:
+      operationId: R306
+      summary: 'R306: Unsave a post'
+      description: 'Remove a post from saved posts. Access: USR'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to be unsaved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post unsaved successfully
+        '403':
+          description: Forbidden, user not allowed to unsave this post
+        '401':
+          description: Unauthorized, user not logged in
+
+  /post/saved:
+    get:
+      operationId: R307
+      summary: 'R307: View saved posts'
+      description: 'Retrieve all posts saved by the authenticated user. Access: USR'
+      tags:
+        - 'M03: Posts and Comments'
+      responses:
+        '200':
+          description: List of saved posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    imageUrls:
+                      type: array
+                      items:
+                        type: string
+                    postDate:
+                      type: string
+                      format: date-time
+                    userId:
+                      type: string
+        '401':
+          description: Unauthorized, user not logged in
+
+
+  /post/{postId}/comment:
+    post:
+      operationId: R308
+      summary: 'R308: Add a comment to a post'
+      description: 'Create a new comment for a specific post. Access: USR'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to comment on
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+              required:
+                - comment
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  comment:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      content:
+                        type: string
+                      userId:
+                        type: string
+                      postId:
+                        type: string
+        '400':
+          description: Bad request, invalid input data
+        '401':
+          description: Unauthorized, user not logged in
+
+  /comments/{commentId}:
+    put:
+      operationId: R309
+      summary: 'R309: Edit a comment'
+      description: 'Edit an existing comment. Access: OWN, ADM'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to be edited
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+      responses:
+        '200':
+          description: Comment edited successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  content:
+                    type: string
+        '403':
+          description: Forbidden, user not allowed to edit comment
+        '404':
+          description: Comment not found
+
+    delete:
+      operationId: R310
+      summary: 'R310: Delete a comment'
+      description: 'Delete an existing comment. Access: OWN, ADM'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment deleted successfully
+        '403':
+          description: Forbidden, user not allowed to delete comment
+        '404':
+          description: Comment not found
+
+  /post/{postId}/comments:
+    get:
+      operationId: R311
+      summary: 'R311: Get comments for a post'
+      description: 'Retrieve all comments for a specific post. Access: GST, USR, OWN, ADM'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    userId:
+                      type: string
+                    postId:
+                      type: string
+        '404':
+          description: Post not found
+
+  /comment/{commentId}/reaction-count:
+    get:
+      operationId: R312
+      summary: 'R312: Get reaction count for a comment'
+      description: 'Retrieve the number of reactions for a specific comment. Access: GST, USR'
+      tags:
+        - 'M03: Posts and Comments'
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reaction count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reactionCount:
+                    type: integer
+        '404':
+          description: Comment not found
+
+
+#################################### Friendship Requests ####################################
+
+
+  /friendship/request/send:
+    post:
+      operationId: R401
+      summary: "R401: Send friendship request"
+      description: "Allows a user to send a friendship request to another user. Access: USR"
+      tags:
+        - "M04: Friendship"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receiver_id:
+                  type: integer
+                  description: "ID of the user who will receive the friendship request."
+      responses:
+        '200':
+          description: "Friendship request sent successfully."
+          content:
+            application/json:
+              example:
+                message: "Friendship request sent successfully."
+        '400':
+          description: "Invalid parameters or request already exists."
+          content:
+            application/json:
+              example:
+                error: "Friendship request already sent."
+  /friendship/request/{id}/accept:
+    post:
+      operationId: R402
+      summary: "R402: Accept friendship request"
+      description: "Allows accepting a pending friendship request. Access: USR"
+      tags:
+        - "M04: Friendship"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "ID of the friendship request."
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Friendship request accepted successfully."
+          content:
+            application/json:
+              example:
+                message: "Friendship added successfully."
+        '400':
+          description: "Invalid or not found request."
+          content:
+            application/json:
+              example:
+                error: "Invalid friendship request."
+  /friendship/request/{id}/decline:
+    post:
+      operationId: R403
+      summary: "R403: Decline friendship request"
+      description: "Allows declining a pending friendship request. Access: USR"
+      tags:
+        - "M04: Friendship"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "ID of the friendship request."
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Friendship request declined successfully."
+          content:
+            application/json:
+              example:
+                message: "Friendship request declined successfully."
+        '400':
+          description: "Invalid or not found request."
+          content:
+            application/json:
+              example:
+                error: "Invalid friendship request."
+
+
+
+#################################### Groups ####################################
+
+/group/create:
+    get:
+      operationId: R501
+      summary: R501:Create a new group
+      responses:
+        '200':
+          description: Group creation form displayed successfully.
+
+  /group:
+    post:
+      operationId: R502
+      summary: R502:Store a new group
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group_name:
+                  type: string
+                  description: Name of the group.
+                  example: College Friends
+                description:
+                  type: string
+                  description: Description of the group.
+                  example: Group to share college memories.
+                is_public:
+                  type: boolean
+                  description: Indicates if the group is public or private.
+                  example: true
+      responses:
+        '201':
+          description: Group created successfully.
+
+  /group/{id}:
+    get:
+      operationId: R503
+      summary: R503:Get details of a specific group
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Group data retrieved successfully.
+
+  /groups/{groupId}/join:
+    post:
+      operationId: R504
+      summary: R504:Join a public group
+
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully joined the group.
+        '400':
+          description: Error joining the group.
+
+  /groups/{groupId}/leave:
+    get:
+      operationId: R505
+      summary: R505:Leave a group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully left the group.
+        '400':
+          description: Error leaving the group.
+
+  /group/{groupId}/members:
+    get:
+      operationId: R506
+      summary: R506:View group members
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Group member list retrieved successfully.
+
+  /group/{groupId}/addFriend:
+    post:
+      operationId: R507
+      summary: R507:Add a friend to the group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friend_id:
+                  type: integer
+                  description: ID of the friend to be added.
+                  example: 2
+      responses:
+        '200':
+          description: Friend added to the group successfully.
+        '400':
+          description: Error adding friend to the group.
+
+  /group/{groupId}/remove/{userId}:
+    delete:
+      operationId: R508
+      summary: R508:Remove a member from the group
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 2
+      responses:
+        '200':
+          description: Member removed successfully.
+        '400':
+          description: Error removing member from the group.
+
+  /posts/{post}/remove-from-group:
+    patch:
+      operationId: R509
+      summary: R509:Remove a post from a group
+      parameters:
+        - name: post
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupId:
+                  type: integer
+                  description: ID of the group from which the post will be removed.
+                  example: 1
+      responses:
+        '200':
+          description: Post removed from the group successfully.
+        '400':
+          description: Error removing the post from the group.
+
 
   ###############################Search###########################
 
@@ -815,3 +1548,26 @@ paths:
         '500':
           description: Internal server error
 
+  /user/{userId}/promote:
+    post:
+      operationId: R805
+      summary: R805:Promote user to administrator
+      description: Grants administrator privileges to the specified user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user to promote.
+      responses:
+        200:
+          description: User promoted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User promoted to administrator.
