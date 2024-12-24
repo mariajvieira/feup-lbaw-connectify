@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
+
+
+
+
+
+
 @section('content')
+<!-- resources/views/join_group.blade.php -->
+
+@if ($group->is_public == false)
+    <!-- Exibe o formulário de adesão apenas para grupos privados -->
+    <form action="{{ route('join-group') }}" method="POST">
+        @csrf
+        <input type="hidden" name="group_id" value="{{ $group->id }}">
+        <button type="submit">Solicitar adesão</button>
+    </form>
+@else
+    <!-- Caso o grupo seja público, você pode exibir outra mensagem ou ação -->
+    <p>Este é um grupo público. Não é necessário solicitar adesão.</p>
+@endif
+
+<!-- resources/views/group.blade.php -->
+
+@if ($group->owner_id == auth()->id())
+    <!-- Exibe o botão para acessar os pedidos de adesão se o utilizador for o owner -->
+    <a href="{{ route('manage-requests', $group->id) }}">
+        <button>Gerir Pedidos de Adesão</button>
+    </a>
+@endif
+
 <div class="group-details-container">
     <h1>{{ $group->group_name }}</h1>
     <p><strong>Description:</strong> {{ $group->description }}</p>
