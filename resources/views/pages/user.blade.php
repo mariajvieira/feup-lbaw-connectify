@@ -140,12 +140,27 @@
                 <p>This user doesn't belong to any group yet.</p>
             @else
                 <ul class="list-group">
-                    @foreach($user->groups as $group)
-                        <li class="list-group-item">
-                            <strong>{{ $group->group_name }}</strong><br>
-                            <small>{{ $group->description ?? 'Sem descrição' }}</small>
-                        </li>
-                    @endforeach
+                @foreach($user->groups as $group)
+                    <li class="list-group-item">
+                        <!-- Tornar o nome do grupo clicável -->
+                        <a href="{{ route('group.show', $group->id) }}">
+                            <strong class="text-decoration-none text-custom">{{ $group->group_name }}</strong>
+                        </a><br>
+                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                    </li>
+                @endforeach
+
+                @foreach($user->ownedGroups as $group)
+                    <li class="list-group-item">
+                        <!-- Tornar o nome do grupo clicável -->
+                        <strong class="text-decoration-none text-custom">Owner of</strong>
+
+                        <a href="{{ route('group.show', $group->id) }}">
+                            <strong class="text-decoration-none text-custom">{{ $group->group_name }}</strong>
+                        </a><br>
+                        <small>{{ $group->description ?? 'Sem descrição' }}</small>
+                    </li>
+                @endforeach
                 </ul>
             @endif
         </div>

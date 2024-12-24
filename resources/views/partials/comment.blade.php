@@ -1,5 +1,5 @@
-<div class="container mt-5">
-    <div class="comments-list mt-2" id="comment-{{ $comment->id }}">
+<div class="container mt-2">
+    <div class="comments-list mt-1" id="comment-{{ $comment->id }}">
         <div class="d-flex justify-content-between align-items-center">
             <span>
                 <strong>
@@ -10,8 +10,14 @@
                 <span class="comment-text">{{ $comment->comment_content }}</span>
             </span>
 
-
-
+            <div>
+            <span class="reaction-count" id="reaction-count-{{ $comment->id }}" data-comment-id="{{ $comment->id }}">
+                <a class="text-custom text-decoration-none">
+                    {{ $comment->reactions->count() }} 
+                    {{ $comment->reactions->count() === 1 ? 'reaction' : 'reactions' }}
+                </a>
+            </span>
+            </div>
 
             @php
                 $userReaction = $comment->reactions()->where('user_id', auth()->id())->first();
@@ -39,17 +45,6 @@
                 @endforeach
             </div>
 
-            <div>
-            <span class="reaction-count" id="reaction-count-{{ $comment->id }}" data-comment-id="{{ $comment->id }}">
-                <a class="text-custom text-decoration-none">
-                    {{ $comment->reactions->count() }} 
-                    {{ $comment->reactions->count() === 1 ? 'reaction' : 'reactions' }}
-                </a>
-            </span>
-            </div>
-
-
-
 
 
             @can('destroy', $comment)
@@ -60,6 +55,8 @@
                 <form class="delete-comment-form mb-0" action="{{ route('comment.destroy', $comment->id) }}" method="POST" style="display: inline;">
                     @csrf
                     @method('DELETE')
+                    <!-- Adicionando o postId como um campo oculto -->
+                    <input type="hidden" name="post_id" value="{{ $comment->post_id }}">
                     <button type="submit" class="btn btn-danger d-flex align-items-center gap-2 delete-comment">
                         <i class="fa-solid fa-trash"></i> 
                     </button>
@@ -79,4 +76,3 @@
         </ul>
     </div>
 @endif
-

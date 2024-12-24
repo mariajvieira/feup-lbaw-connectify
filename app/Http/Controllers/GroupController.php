@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Post;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -172,6 +173,68 @@ class GroupController extends Controller
 
     return redirect()->route('group.show', $groupId)->with('success', 'Friend added to the group successfully.');
 }
+
+    public function createPost(Group $group)
+    {
+        if (!$group->users->contains(auth()->user())) {
+            return redirect()->route('group.show', $group->id)->with('error', 'You must be a member of the group to post.');
+        }
+
+        return view('pages.group_post', compact('group'));
+    }
+
+    // Armazenar o post no banco de dados
+    public function storePost(Request $request, Group $group)
+    {
+        // Validar os dados do formulário
+        $request->validate([
+            'content' => 'required|string|max:1000',
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg',
+        ]);
+
+
+        // Criar o post
+        $post = new Post();
+        $post->content = $request->input('content');
+        $post->group_id = $group->id;
+        $post->user_id = auth()->id();  
+
+
+        // Processamento das imagens
+        for ($i = 1; $i <= 3; $i++) {
+            if ($request->hasFile('image'.$i)) {
+                $image = $request->file('image'.$i);
+
+                // Gerar nome do arquivo com base no post ID e número da imagem
+                $imageName = $post->id . '.' . $i . '.' . 'jpg';
+
+                $imagePath = $image->storeAs('images/posts', $imageName, 'local'); 
+                $post->{'image'.$i} = 'posts/' . $imageName;
+            }
+        } 
+
+        $post->save();
+
+        return redirect()->route('group.show', $group->id)->with('success', 'Post created successfully.');
+    }
+
+
+    public function showGroupPosts(Group $group)
+    {
+        // Verificar se o grupo é privado e se o usuário não é membro nem dono
+        if ($group->is_public == false && !$group->users->contains(auth()->user()) && $group->owner_id !== auth()->user()->id) {
+            // Se não for permitido, redireciona ou retorna uma mensagem de erro
+            return redirect()->route('group.show', $group->id)->with('error', 'You do not have permission to view the posts in this group.');
+        }
+
+        // Obter os posts do grupo
+        $posts = $group->posts()->latest()->get();
+
+        // Retornar a view com os posts
+        return view('pages.group_posts', compact('group', 'posts'));
+    }
 
 
 }

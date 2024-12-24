@@ -5,18 +5,7 @@
     <h2 class="text-center mb-4">Search Results for: "{{ $query }}"</h2>
 
     <div class="row">
-        <!-- Filtros -->
-        <div class="mb-4">
-            <h3 class="h5">Filters</h3>
-            <form id="filter-form" class="card p-3">
-                <div class="mb-3">
-                    <label for="filter-date" class="form-label">Date:</label>
-                    <input type="date" id="filter-date" name="filter-date" class="form-control" />
-                </div>
-                <button type="submit" class="btn btn-custom w-100">Apply Filters</button>
-            </form>
-        </div>
-    </div>
+
 
     <div class="row">
         <div class="col-12">

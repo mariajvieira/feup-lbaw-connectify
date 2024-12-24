@@ -89,22 +89,32 @@
     
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
-        <h2 class="text-center mb-4">Friends</h2>
+            <h2 class="text-center mb-4">Friends</h2>
 
+            <!-- Caso o usuário não tenha amigos -->
             @if($friends->isEmpty())
-                <p class="text-center">You have no friends yet.</p>
+                <p class="text-center">No friends yet.</p>
             @else
-                <ul class="list-group">
+                <ul id="friends-list" class="list-group" data-user-id="{{ $user->id }}">
                     @foreach($friends as $friend)
                         <li class="list-group-item d-flex justify-content-between align-items-center" id="friend-{{ $friend->id }}">
-                            <span>{{ $friend->username }}</span>
-                            <button class="btn btn-danger btn-sm remove-btn" data-id="{{ $friend->id }}">Remove</button>
+                            <a href="{{ route('user', ['id' => $friend->id]) }}" class="text-decoration-none text-custom">
+                                <span>{{ $friend->username }}</span>
+                            </a>
+                            <form action="{{ route('friendship.remove', ['id' => $friend->id]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Remove
+                                </button>
+                            </form>
                         </li>
                     @endforeach
                 </ul>
             @endif
         </div>
     </div>
+
+
 </div>
 
 

@@ -30,6 +30,10 @@ class CommentController extends Controller
     }
 
 
+
+    
+
+
 //edit comment
     public function update(Request $request, $commentId)
     {

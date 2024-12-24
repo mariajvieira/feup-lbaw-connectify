@@ -225,25 +225,23 @@ class UserController extends Controller
     public function getFriends($id)
     {
         $user = User::findOrFail($id);
-
-        if ($user->id !== auth()->id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
+    
         $friends = DB::table('friendship')
             ->join('users', function($join) use ($user) {
                 $join->on('friendship.user_id1', '=', 'users.id')
-                    ->orOn('friendship.user_id2', '=', 'users.id');
+                     ->orOn('friendship.user_id2', '=', 'users.id');
             })
-            ->where('friendship.user_id1', '=', $user->id)
-            ->orWhere('friendship.user_id2', '=', $user->id)
-            ->where('users.id', '!=', $user->id) // Exclui o próprio usuário
-            ->select('users.id','users.username')
+            ->where(function($query) use ($user) {
+                $query->where('friendship.user_id1', '=', $user->id)
+                      ->orWhere('friendship.user_id2', '=', $user->id);
+            })
+            ->where('users.id', '!=', $user->id) 
+            ->select('users.id', 'users.username')
             ->get();
-
-
+    
         return response()->json($friends);
     }
+    
 
 
     public function promoteToAdmin($userId)

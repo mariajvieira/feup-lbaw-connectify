@@ -26,6 +26,10 @@
 
     @if ($post->group)
     <div class="post-group-info mt-2">
+
+         <a href='{{ route('group.show', $post->group->id) }}'" class=" text-decoration-none fw-bold text-custom">
+                    {{ $post->group->group_name }}
+        </a>
         @can('removeFromGroup', $post)
             <!-- Botão para remover o post do grupo -->
             <form action="{{ route('post.removeFromGroup', $post->id) }}" method="POST" style="display: inline;">
@@ -37,7 +41,7 @@
             </form>
         @endcan
     </div>
-@endif
+    @endif
 
 
 
@@ -69,6 +73,15 @@
         </div>
     </div>
 
+    <div>
+        <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
+            <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
+                {{ $post->reactions->count() }} 
+                {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
+            </a>
+        </span>
+    </div>
+
     @php
         $userReaction = $post->reactions()->where('user_id', auth()->id())->first();
     @endphp
@@ -96,20 +109,13 @@
         @endforeach
     </div>
 
-    <div>
-        <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
-            <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
-                {{ $post->reactions->count() }} 
-                {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
-            </a>
-        </span>
-    </div>
 
-    <div class="comments-list comment-section mt-4">
+
+    <div class="comments-list comment-section mt-3">
         @foreach ($post->comments as $comment)
             @include('partials.comment', ['comment' => $comment])
         @endforeach
-
+        <div class="row mt-4"></div>
         @if (auth()->check())
             <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
             @csrf
