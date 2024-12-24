@@ -81,10 +81,15 @@ class PostPolicy
         return false;
     }
     
-    
 
     private function areFriends(User $user, $postUserId)
     {
         return $user->friends()->where('friend_id', $postUserId)->exists();
+    }
+
+    public function removeFromGroup(User $user, Post $post)
+    {
+        // O usuário pode remover o post do grupo se for o dono do grupo ou um administrador
+        return $post->group && ($user->id === $post->group->owner_id || $user->isAdmin());
     }
 }

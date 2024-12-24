@@ -25,18 +25,22 @@
     </div>
 
     @if ($post->group)
-        <div class="post-group-info mt-2">
-            <span class="text-muted small">
-                Posted in group: 
-                <a href="javascript:void(0);" onclick="window.location.href='{{ route('group.show', $post->group->id) }}'" class=" text-decoration-none fw-bold text-custom">
-                    {{ $post->group->group_name }}
-                </a>
-                @if (!$post->group->is_public)
-                    <span class="text-danger">(Private Group)</span>
-                @endif
-            </span>
-        </div>
-    @endif
+    <div class="post-group-info mt-2">
+        @can('removeFromGroup', $post)
+            <!-- Botão para remover o post do grupo -->
+            <form action="{{ route('post.removeFromGroup', $post->id) }}" method="POST" style="display: inline;">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to remove this post from the group?')">
+                    Remove from {{ $post->group->group_name }}
+                </button>
+            </form>
+        @endcan
+    </div>
+@endif
+
+
+
 
 
     <p class="post-content">{{ $post->content }}</p>

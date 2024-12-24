@@ -186,3 +186,6 @@ Route::post('group/{groupId}/addFriend', [GroupController::class, 'addFriendToGr
 
 // View Group Posts
 Route::get('/group/{groupId}', [GroupController::class, 'show'])->name('group.show');
+
+// Remove post from group
+Route::patch('/posts/{post}/remove-from-group', [PostController::class, 'removeFromGroup'])->name('post.removeFromGroup');
