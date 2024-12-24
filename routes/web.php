@@ -149,7 +149,6 @@ Route::post('group/{group}/post', [GroupController::class, 'storePost'])->name('
 
 // Go to the group page
 Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota para o feed principal
-Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show'); // Rota para exibir os detalhes de um grupo específico
 Route::get('/feed', [FeedController::class, 'index'])->name('feed');
 
 
@@ -179,16 +178,9 @@ Route::get('/groups/{groupId}/leave', [GroupController::class, 'leaveGroup'])->n
 Route::delete('/group/{group}/remove/{user}', [GroupController::class, 'removeMember'])->name('group.removeMember');
 Route::get('/group/{group}/members', [GroupController::class, 'showMembers'])->name('group.members');
 
-// Página principal do grupo
-Route::get('group/{groupId}', [GroupController::class, 'show'])->name('group.show');
-
-// Página de membros do grupo
 
 // Rota para adicionar amigos ao grupo
 Route::post('group/{groupId}/addFriend', [GroupController::class, 'addFriendToGroup'])->name('group.addFriend');
-
-// View Group Posts
-Route::get('/group/{groupId}', [GroupController::class, 'show'])->name('group.show');
 
 // Remove post from group
 Route::patch('/posts/{post}/remove-from-group', [PostController::class, 'removeFromGroup'])->name('post.removeFromGroup');
