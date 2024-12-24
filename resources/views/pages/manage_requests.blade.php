@@ -1,21 +1,18 @@
-<h3>Pedidos de Adesão</h3>
+@extends('layouts.app')
+
+@section('content')
+<h3>Join Requests</h3>
 
 @foreach($requests as $request)
     <div>
-        <p>Utilizador: {{ $request->user->username }}</p>
+        <p>User:: {{ $request->user->username }}</p>
         
-        <!-- Formulário para aceitar o pedido -->
+        <!-- Formulário para aceitar ou rejeitar o pedido -->
         <form action="{{ route('handle-group-request', $request->id) }}" method="POST">
             @csrf
-            <input type="hidden" name="status" value="approved">
-            <button type="submit">Aceitar</button>
-        </form>
-
-        <!-- Formulário para rejeitar o pedido -->
-        <form action="{{ route('handle-group-request', $request->id) }}" method="POST">
-            @csrf
-            <input type="hidden" name="status" value="rejected">
-            <button type="submit">Rejeitar</button>
+            <button type="submit" name="status" value="accepted">Accept</button>
+            <button type="submit" name="status" value="denied">Reject</button>
         </form>
     </div>
 @endforeach
+@endsection

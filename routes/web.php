@@ -200,7 +200,8 @@ Route::post('/join-group', [JoinGroupController::class, 'joinPrivateGroup'])->na
 
 
 // Rota para listar pedidos de adesão (somente para o owner)
-Route::get('/group/{groupId}/requests', [JoinGroupController::class, 'listGroupRequests'])->middleware('auth');
+Route::get('/group/{groupId}/requests', [JoinGroupController::class, 'listGroupRequests'])->name('manage-requests')->middleware('auth');
 
 // Rota para aprovar ou rejeitar pedidos
-Route::post('/group-request/{id}/handle', [JoinGroupController::class, 'handleGroupRequest'])->name('handle-group-request')->middleware('auth');
+Route::post('/group-request/{id}/handle', [JoinGroupController::class, 'handleGroupRequest'])->name('handle-group-request');
+

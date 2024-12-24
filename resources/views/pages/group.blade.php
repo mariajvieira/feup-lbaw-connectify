@@ -1,34 +1,7 @@
 @extends('layouts.app')
 
-
-
-
-
-
-
 @section('content')
-<!-- resources/views/join_group.blade.php -->
 
-@if ($group->is_public == false)
-    <!-- Exibe o formulário de adesão apenas para grupos privados -->
-    <form action="{{ route('join-group') }}" method="POST">
-        @csrf
-        <input type="hidden" name="group_id" value="{{ $group->id }}">
-        <button type="submit">Solicitar adesão</button>
-    </form>
-@else
-    <!-- Caso o grupo seja público, você pode exibir outra mensagem ou ação -->
-    <p>Este é um grupo público. Não é necessário solicitar adesão.</p>
-@endif
-
-<!-- resources/views/group.blade.php -->
-
-@if ($group->owner_id == auth()->id())
-    <!-- Exibe o botão para acessar os pedidos de adesão se o utilizador for o owner -->
-    <a href="{{ route('manage-requests', $group->id) }}">
-        <button>Gerir Pedidos de Adesão</button>
-    </a>
-@endif
 
 <div class="group-details-container">
     <h1>{{ $group->group_name }}</h1>
@@ -37,10 +10,31 @@
 
     <!-- Botões para o grupo -->
     @if($group->is_public && !$group->users->contains(Auth::user()->id) && $group->owner_id !== Auth::user()->id)
-        <button id="join-group" data-group-id="{{ $group->id }}" class="btn btn-primary">Join this Public Group</button>
-    @elseif($group->users->contains(Auth::user()->id))
+        <button id="join-group" data-group-id="{{ $group->id }}" class="btn btn-custom">Join this Public Group</button>
+    @elseif($group->users->contains(Auth::user()->id) && $group->owner_id !== Auth::user()->id)
         <p>You are a member of this group!</p>
         <a href="{{ route('group.leave', $group->id) }}" class="btn btn-danger">Leave Group</a>
+    @endif
+
+
+    
+    @if ($group->is_public == false && !$group->users->contains(Auth::user()->id) && $group->owner_id !== Auth::user()->id)
+        @if ($group->pendingJoinRequests->contains('user_id', Auth::user()->id))
+            <p>Your request to join this group is pending.</p>
+        @else
+        <form action="{{ route('join-group') }}" method="POST">
+            @csrf
+            <input type="hidden" name="group_id" value="{{ $group->id }}">
+            <button class="btn btn-custom" type="submit">Send join request</button>
+        </form>
+        @endif
+    @endif
+
+    @if ($group->owner_id == auth()->id())
+        <!-- Exibe o botão para acessar os pedidos de adesão se o utilizador for o owner -->
+        <a href="{{ route('manage-requests', $group->id) }}">
+            <button class="btn btn-custom">Manage join requests</button>
+        </a>
     @endif
 
     <!-- Botão de Postagem (apenas para membros ou donos) -->
