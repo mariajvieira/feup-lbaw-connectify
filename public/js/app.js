@@ -720,3 +720,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+document.addEventListener("DOMContentLoaded", function() {
+  const joinButton = document.getElementById("join-group");
+
+  if (joinButton) {
+      joinButton.addEventListener("click", function() {
+          const groupId = joinButton.getAttribute("data-group-id");
+
+          // Enviar a requisição AJAX
+          fetch("{{ route('join-group') }}", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRF-TOKEN": "{{ csrf_token() }}"
+              },
+              body: JSON.stringify({ group_id: groupId })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert("Join request sent successfully!");
+                  // Atualizar o estado da página após enviar o pedido
+                  window.location.reload(); // Isso recarrega a página para mostrar o novo estado
+              } else {
+                  alert("An error occurred: " + data.message);
+              }
+          })
+          .catch(error => {
+              console.error("Error:", error);
+              alert("Something went wrong. Please try again later.");
+          });
+      });
+  }
+});
+
+
+

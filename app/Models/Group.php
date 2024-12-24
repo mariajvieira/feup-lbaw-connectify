@@ -27,6 +27,12 @@ class Group extends Model
         return $this->belongsTo(User::class, 'owner_id');  // Relacionamento belongsTo
     }
 
+    public function pendingJoinRequests()
+    {
+        return $this->hasMany(JoinGroupRequest::class, 'group_id')
+                    ->where('request_status', 'pending');
+    }
+
     /**
      * Relacionamento com os usuários do grupo (muitos-para-muitos)
      */

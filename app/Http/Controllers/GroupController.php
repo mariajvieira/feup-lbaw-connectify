@@ -236,5 +236,7 @@ class GroupController extends Controller
         return view('pages.group_posts', compact('group', 'posts'));
     }
 
+    
+
 
 }
