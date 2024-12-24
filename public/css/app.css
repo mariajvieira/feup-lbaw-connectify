@@ -73,3 +73,16 @@ header {
   padding: 0.50rem;
 }
 
+
+@media (min-width:900px) { /* lg e acima */
+  aside {
+      position: fixed;
+      top: 90px !important;  /* Altura do header (70px) + barra azul (3px) */
+      left: 0;
+      height: calc(100vh - 73px); /* Altura total menos o header */
+      overflow-y: auto;
+  }
+  main {
+      margin-left: 16.6667%; /* Largura da sidebar em lg (col-lg-2) */
+  }
+}

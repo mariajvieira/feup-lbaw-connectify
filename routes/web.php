@@ -139,10 +139,12 @@ Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('c
 Route::get('/group/create', [GroupController::class, 'create'])->name('group.create');
 
 // Armazenar novo grupo
-//Route::post('/group/store', [GroupController::class, 'store'])->name('group.store');
 Route::get('/group/{id}', [GroupController::class, 'show'])->name('group.show');
 Route::post('/group', [GroupController::class, 'store'])->name('group.store');
 Route::get('/saved-posts', [PostController::class, 'showSavedPosts'])->name('saved.posts');
+Route::get('group/{group}/post/create', [GroupController::class, 'createPost'])->name('group.post.create');
+Route::post('group/{group}/post', [GroupController::class, 'storePost'])->name('group.post.store');
+
 
 // Go to the group page
 Route::get('/feed', [GroupController::class, 'index'])->name('feed'); // Rota para o feed principal

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h2>Create New Post for Group: {{ $groupName }}</h2>
+    <h2>Create New Post for Group: {{ $group->group_name }}</h2>
     
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -14,9 +14,9 @@
         </div>
     @endif
 
-    <form action="{{ route('group.post.store', $groupId) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('group.post.store', $group->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
-    <input type="hidden" name="group_id" value="{{ $groupId }}">
+    <input type="hidden" name="group_id" value="{{ $group->id }}">
 
         <div class="form-group mb-3">
             <label for="content">Post Content:</label>

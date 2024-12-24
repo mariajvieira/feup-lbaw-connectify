@@ -26,6 +26,10 @@
 
     @if ($post->group)
     <div class="post-group-info mt-2">
+
+         <a href='{{ route('group.show', $post->group->id) }}'" class=" text-decoration-none fw-bold text-custom">
+                    {{ $post->group->group_name }}
+        </a>
         @can('removeFromGroup', $post)
             <!-- Botão para remover o post do grupo -->
             <form action="{{ route('post.removeFromGroup', $post->id) }}" method="POST" style="display: inline;">
@@ -37,7 +41,7 @@
             </form>
         @endcan
     </div>
-@endif
+    @endif
 
 
 

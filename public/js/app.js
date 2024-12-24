@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function postComment(e) {
-  e.preventDefault(); 
+  e.preventDefault();
 
   const form = e.target;
   const postId = form.dataset.postId;
@@ -380,7 +380,6 @@ function postComment(e) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', `/post/${postId}/comment`, true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
   xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
   const queryString = `comment=${encodeURIComponent(commentContent)}&_token=${encodeURIComponent(document.querySelector('meta[name="csrf-token"]').getAttribute('content'))}`;
@@ -388,16 +387,31 @@ function postComment(e) {
   xhr.onload = function () {
     if (xhr.status === 200) {
       const response = JSON.parse(xhr.responseText);
-      
+
       if (response.comment) {
+        const { content, username, created_at, user_id } = response.comment;
+
+        // Limpa o campo do formulário
         form.querySelector('#comment').value = '';
 
-        // Atualizar a lista de comentários após o envio do novo comentário
-        updateCommentList(postId);
+        // Atualiza a lista de comentários
+        const commentsList = form.closest('.comments-list');
+        const newCommentHTML = `
+          <div class="comment-item">
+            <strong>
+              <a href="/user/${user_id}" class="text-decoration-none text-custom">
+                @${username}
+              </a>
+            </strong>
+            <p>${content}</p>
+            <span class="text-muted small">${created_at}</span>
+          </div>
+        `;
+        commentsList.insertAdjacentHTML('beforeend', newCommentHTML);
 
         alert('The comment has been posted successfully.');
       } else {
-        alert('Failed to post comment.');
+        alert('Failed to post comment. Please try again.');
       }
     } else {
       alert('Error posting comment.');
@@ -406,7 +420,6 @@ function postComment(e) {
 
   xhr.send(queryString);
 }
-
 
 
 
@@ -532,11 +545,6 @@ function updateCommentList(postId, newComment = null) {
 
   xhr.send();
 }
-
-
-
-
-
 
 
 // Edição de comentário

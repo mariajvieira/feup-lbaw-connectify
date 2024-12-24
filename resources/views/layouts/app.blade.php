@@ -30,6 +30,20 @@
             background-color: rgb(8, 57, 105) !important;
             color: white !important;
         }
+
+        /* Sidebar fixa para ecrãs grandes */
+        @media (min-width: 992px) { /* lg e acima */
+            aside {
+                position: fixed;
+                top: 70px; /* altura do header */
+                left: 0;
+                height: calc(100vh - 70px); /* altura total menos o header */
+                overflow-y: auto;
+            }
+            main {
+                margin-left: 16.6667%; /* largura da sidebar em lg (col-lg-2) */
+            }
+        }
     </style>
 </head>
 <body>
@@ -89,34 +103,34 @@
     </header>
 
 
+
     <div class="container-fluid mt-5 pt-5">
-    <div class="row flex-column flex-md-row">
-        <!-- Sidebar -->
-        <aside class="col-12 col-md-3 col-lg-2 bg-light p-3 border-end">
-            @auth
-            <div class="mb-3 d-flex flex-column gap-2">
-                <a href="{{ route('tagged.posts') }}" class="btn btn-custom">Tagged Posts</a>
-                <a href="{{ route('saved.posts') }}" class="btn btn-custom">Saved</a>
-                @can('createUser', App\Models\User::class)
-                    <a href="{{ route('user.create') }}" class="btn btn-custom">New User</a>
-                @endcan
-                <a href="{{ route('group.create') }}" class="btn btn-custom">New Group</a>
-                <a href="{{ route('post.create') }}" class="btn btn-custom">New Post</a>
-            </div>
-            @endauth
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-12 col-md-3 col-lg-2 bg-light p-3 border-end">
+                @auth
+                <div class="mb-3 d-flex flex-column gap-2">
+                    <a href="{{ route('tagged.posts') }}" class="btn btn-custom">Tagged Posts</a>
+                    <a href="{{ route('saved.posts') }}" class="btn btn-custom">Saved</a>
+                    @can('createUser', App\Models\User::class)
+                        <a href="{{ route('user.create') }}" class="btn btn-custom">New User</a>
+                    @endcan
+                    <a href="{{ route('group.create') }}" class="btn btn-custom">New Group</a>
+                    <a href="{{ route('post.create') }}" class="btn btn-custom">New Post</a>
+                </div>
+                @endauth
 
-            @include('partials.group-list', ['groups' => $allGroups])
-        </aside>
+                @include('partials.group-list', ['groups' => $allGroups])
+            </aside>
 
-        <!-- Content Area -->
-        <main class="col-12 col-md-9 col-lg-10 p-4">
-            <section id="content">
-                @yield('content')
-            </section>
-        </main>
+            <!-- Content Area -->
+            <main class="col-12 col-md-9 col-lg-9 p-4">
+                <section id="content">
+                    @yield('content')
+                </section>
+            </main>
+        </div>
     </div>
-</div>
-
 
     <footer class="text-center py-3 mt-auto bg-light">
         <p class="text-decoration-none text-custom fw-bold">Connectify 2024</p>
