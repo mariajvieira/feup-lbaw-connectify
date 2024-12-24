@@ -32,10 +32,6 @@
 
                         <div class="d-flex justify-content-between mb-4">
                             <a href="{{ route('forgotPassword') }}" class="text-decoration-none text-custom">Forgot your password?</a>
-                            <div class="form-check">
-                                <input type="checkbox" name="remember" class="form-check-input" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="remember">Remember Me</label>
-                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-custom w-100 mb-3 py-2">Login</button>
