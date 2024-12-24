@@ -43,7 +43,7 @@
     @endif
 
     <!-- Botão para visualizar os membros -->
-    @if($group->users->contains(Auth::user()->id))
+    @if($group->users->contains(Auth::user()->id) || $group->owner_id === Auth::user()->id)
         <a href="{{ route('group.members', $group->id) }}" class="btn btn-secondary">View Members</a>
     @endif
 
