@@ -28,13 +28,16 @@
         <div class="post-group-info mt-2">
             <span class="text-muted small">
                 Posted in group: 
-                    {{ $post->group->name }}
+                <a href="javascript:void(0);" onclick="window.location.href='{{ route('group.show', $post->group->id) }}'" class=" text-decoration-none fw-bold text-custom">
+                    {{ $post->group->group_name }}
+                </a>
                 @if (!$post->group->is_public)
                     <span class="text-danger">(Private Group)</span>
                 @endif
             </span>
         </div>
     @endif
+
 
     <p class="post-content">{{ $post->content }}</p>
 
@@ -60,6 +63,15 @@
                 @endif
             </div>
         </div>
+    </div>
+
+    <div>
+        <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
+            <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
+                {{ $post->reactions->count() }} 
+                {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
+            </a>
+        </span>
     </div>
 
     @php
@@ -89,20 +101,13 @@
         @endforeach
     </div>
 
-    <div>
-        <span class="reaction-count" id="reaction-count-{{ $post->id }}" data-post-id="{{ $post->id }}">
-            <a class="text-custom text-decoration-none" href="{{ route('post.reactions', $post->id) }}">
-                {{ $post->reactions->count() }} 
-                {{ $post->reactions->count() === 1 ? 'reaction' : 'reactions' }}
-            </a>
-        </span>
-    </div>
 
-    <div class="comments-list comment-section mt-4">
+
+    <div class="comments-list comment-section mt-3">
         @foreach ($post->comments as $comment)
             @include('partials.comment', ['comment' => $comment])
         @endforeach
-
+        <div class="row mt-4"></div>
         @if (auth()->check())
             <form action="{{ route('comment.store', $post->id) }}" method="POST" class="add-comment-form" data-post-id="{{ $post->id }}">
             @csrf

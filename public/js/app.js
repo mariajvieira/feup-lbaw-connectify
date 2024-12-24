@@ -380,6 +380,7 @@ function postComment(e) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', `/post/${postId}/comment`, true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
   xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
   const queryString = `comment=${encodeURIComponent(commentContent)}&_token=${encodeURIComponent(document.querySelector('meta[name="csrf-token"]').getAttribute('content'))}`;
@@ -391,39 +392,8 @@ function postComment(e) {
       if (response.comment) {
         form.querySelector('#comment').value = '';
 
-        const commentListContainer = document.querySelector('.comment-section .comments-list');
-        const commentHtml = `
-          <div class="container mt-5">
-            <div class="comments-list mt-2" id="comment-${response.comment.id}">
-              <div class="d-flex justify-content-between align-items-center">
-                <span>
-                  <strong>
-                    <a class="text-custom text-decoration-none" href="/user/${response.comment.user.id}">
-                      ${response.comment.user.username}
-                    </a>
-                  </strong>: 
-                  <span class="comment-text">${response.comment.comment_content}</span>
-                </span>
-
-                ${response.comment.can_destroy ? `
-                <div class="post-actions d-flex align-items-center gap-2">
-                  <a href="javascript:void(0)" class="btn btn-custom edit-comment" data-comment-id="${response.comment.id}">
-                    <i class="fa-solid fa-pen"></i>
-                  </a>
-                  <form class="delete-comment-form mb-0" action="/comment/${response.comment.id}" method="POST" style="display: inline;">
-                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-danger d-flex align-items-center gap-2 delete-comment">
-                      <i class="fa-solid fa-trash"></i> 
-                    </button>
-                  </form>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `;
-        commentListContainer.insertAdjacentHTML('beforeend', commentHtml);
+        // Atualizar a lista de comentários após o envio do novo comentário
+        updateCommentList(postId);
 
         alert('The comment has been posted successfully.');
       } else {
@@ -437,74 +407,15 @@ function postComment(e) {
   xhr.send(queryString);
 }
 
-// Função para atualizar a lista de comentários
-function updateCommentList(postId) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', `/post/${postId}/comments`, true);  
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      const response = JSON.parse(xhr.responseText);
-      
-      if (response.comments) {
-        const commentListContainer = document.querySelector('.comment-section .comments-list');
-        
-        if(commentListContainer) {
-        commentListContainer.innerHTML = '';
 
-        response.comments.forEach(comment => {
-          const commentHtml = `
-          <div class="container mt-5">
-            <div class="comments-list mt-2" id="comment-${response.comment.id}">
-              <div class="d-flex justify-content-between align-items-center">
-                <span>
-                  <strong>
-                    <a class="text-custom text-decoration-none" href="/user/${response.comment.user.id}">
-                      ${response.comment.user.username}
-                    </a>
-                  </strong>: 
-                  <span class="comment-text">${response.comment.comment_content}</span>
-                </span>
 
-                ${response.comment.can_destroy ? `
-                <div class="post-actions d-flex align-items-center gap-2">
-                  <a href="javascript:void(0)" class="btn btn-custom edit-comment" data-comment-id="${response.comment.id}">
-                    <i class="fa-solid fa-pen"></i>
-                  </a>
-                  <form class="delete-comment-form mb-0" action="/comment/${response.comment.id}" method="POST" style="display: inline;">
-                    <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="btn btn-danger d-flex align-items-center gap-2 delete-comment">
-                      <i class="fa-solid fa-trash"></i> 
-                    </button>
-                  </form>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `;
-          commentListContainer.insertAdjacentHTML('beforeend', commentHtml);
-        });
-        } else {
-          console.error('Elemento .comments-list não encontrado.');
-        }
-      } else {
-        console.error('Erro ao obter os comentários: resposta não contém a chave "comments".');
-      }
-    } else {
-      console.error('Erro ao carregar os comentários. Status:', xhr.status);
-    }
-  };
-
-  xhr.send();
-}
 
 
 // Exclusão de comentário
 document.addEventListener('click', function(e) {
   if (e.target && e.target.classList.contains('delete-comment')) {
-    e.preventDefault();
+    e.preventDefault(); // Previne o comportamento padrão do botão de submit
     
     var confirmed = confirm('Are you sure you want to delete this comment? This action cannot be undone.');
     if (confirmed) {
@@ -512,6 +423,9 @@ document.addEventListener('click', function(e) {
       var formData = new FormData(form);
       var queryString = new URLSearchParams(formData).toString();
       
+      // Obtendo o postId do campo oculto
+      var postId = form.querySelector('input[name="post_id"]').value;
+
       fetch(form.action, {
         method: form.method,
         headers: {
@@ -527,11 +441,16 @@ document.addEventListener('click', function(e) {
         return response.json();
       })
       .then(data => {
-        var commentElement = form.closest('.comments-list');
-        if (commentElement) {
-          commentElement.remove();
+        if (data.success) {
+          var commentElement = e.target.closest('.comment');
+          if (commentElement) {
+            commentElement.remove();
+          }
+          // Atualizar a lista de comentários após a exclusão
+          updateCommentList(postId);
+        } else {
+          alert('Failed to delete the comment.');
         }
-        alert('The comment has been excluded successfully.');
       })
       .catch(error => {
         alert(error.message);
@@ -539,6 +458,83 @@ document.addEventListener('click', function(e) {
     }
   }
 });
+
+function updateCommentList(postId, newComment = null) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/post/${postId}/comments`, true);
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      const response = JSON.parse(xhr.responseText);
+  
+      // Depuração: logar a resposta para entender sua estrutura
+      console.log('Resposta recebida:', response);
+  
+      if (response.comments && Array.isArray(response.comments)) {
+        const commentListContainer = document.querySelector('.comment-section .comments-list');
+  
+        if (commentListContainer) {
+          // Limpar a lista de comentários antigos antes de adicionar novos
+          commentListContainer.innerHTML = '';
+  
+          // Adicionar os comentários à lista
+          response.comments.forEach(comment => {
+            // Verificação detalhada para garantir que 'comment' e 'comment.id' existam
+            if (comment && typeof comment === 'object' && comment.hasOwnProperty('id')) {
+              const commentHtml = `
+                <div class="container mt-5">
+                  <div class="comments-list mt-2 comment" id="comment-${comment.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span>
+                        <strong>
+                          <a class="text-custom text-decoration-none" href="/user/${comment.user_id.id}">
+                            ${comment.user_id.username}
+                          </a>
+                        </strong>: 
+                        <span class="comment-text">${comment.comment_content}</span>
+                      </span>
+  
+                      ${comment.can_destroy ? `
+                      <div class="post-actions d-flex align-items-center gap-2">
+                        <a href="javascript:void(0)" class="btn btn-custom edit-comment" data-comment-id="${comment.id}">
+                          <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form class="delete-comment-form mb-0" action="/comment/${comment.id}" method="POST" style="display: inline;">
+                          <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
+                          <input type="hidden" name="_method" value="DELETE">
+                          <button type="submit" class="btn btn-danger d-flex align-items-center gap-2 delete-comment">
+                            <i class="fa-solid fa-trash"></i> 
+                          </button>
+                        </form>
+                      </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+              // Adicionar o comentário à lista
+              commentListContainer.insertAdjacentHTML('beforeend', commentHtml);
+            } else {
+              console.error('Comentário inválido ou sem ID:', comment);
+            }
+          });
+        } else {
+          console.error('Elemento .comments-list não encontrado.');
+        }
+      } else {
+        console.error('Resposta inválida ou sem comentários:', response.comments);
+      }
+    } else {
+      console.error('Erro ao carregar os comentários. Status:', xhr.status);
+    }
+  };
+  
+
+  xhr.send();
+}
+
+
+
 
 
 
@@ -644,76 +640,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // FRIENDSHIPS
 document.addEventListener('DOMContentLoaded', function () {
-    const userId = document.querySelector('meta[name="user-id"]').getAttribute('content'); // Obtém o ID do usuário autenticado
-    const friendsList = document.getElementById('friends-list');
+  // Pegue o ID do usuário do perfil a partir do atributo data-user-id
+  const friendsList = document.getElementById('friends-list');
+  const profileUserId = friendsList.dataset.userId;
 
-    // Função para buscar amigos do usuário
-    function fetchFriends() {
-        fetch(`/user/${userId}/friends`)
-            .then(response => {
-                if (!response.ok) throw new Error('Erro ao carregar a lista de amigos.');
-                return response.json();
-            })
-            .then(friends => {
-                
-                friendsList.innerHTML = '';
+  // Função para buscar amigos
+  function fetchFriends() {
+      fetch(`/user/${profileUserId}/friends`) // Use o ID do perfil
+          .then(response => {
+              if (!response.ok) throw new Error('Erro ao carregar a lista de amigos.');
+              return response.json();
+          })
+          .then(friends => {
+              friendsList.innerHTML = '';
 
-                if (friends.length === 0) {
-                    friendsList.innerHTML = '<p>You have no friends yet</p>';
-                    return;
-                }
-                console.log(friends)
-                // Adiciona cada amigo na lista
-                friends.forEach(friend => {
-                    const listItem = document.createElement('li');
-                    listItem.id = `friend-${friend.id}`;
-                    listItem.innerHTML = `
-                        <span>${friend.username}</span>
-                        <button class="btn btn-danger btn-sm remove-btn" data-id="${friend.id}">
-                            Remove
-                        </button>
-                    `;
-                    friendsList.appendChild(listItem);
-                });
+              if (friends.length === 0) {
+                  friendsList.innerHTML = '<p class="text-center">You have no friends yet.</p>';
+                  return;
+              }
 
-                // Adiciona evento aos botões de remover
-                document.querySelectorAll('.remove-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        const friendId = this.dataset.id;
-                        
-                        removeFriend(friendId);
-                    });
-                });
-            })
-            .catch(error => console.error('Erro:', error));
-    }
+              friends.forEach(friend => {
+                  const listItem = document.createElement('li');
+                  listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                  listItem.id = `friend-${friend.id}`;
+                  listItem.innerHTML = `
+                      <a href="/user/${friend.id}" class="text-decoration-none text-custom">
+                          <span>${friend.username}</span>
+                      </a>
+                      <button class="btn btn-danger btn-sm remove-btn" data-id="${friend.id}">
+                          Remove
+                      </button>
+                  `;
+                  friendsList.appendChild(listItem);
+              });
+          })
+          .catch(error => console.error('Erro:', error));
+  }
 
-    // Função para remover um amigo
-    function removeFriend(friendId) {
-        fetch(`/friendship/remove/${friendId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                receiver_id: friendId 
-            })
-        })
-            .then(response => {
-                if (!response.ok) throw new Error('Erro ao remover amigo.');
-                return response.json();
-            })
-            .then(data => {
-                console.log(data.message);
-                const friendItem = document.getElementById(`friend-${friendId}`);
-                if (friendItem) friendItem.remove();
-            })
-            .catch(error => console.error('Erro:', error));
-    }
 
-    // Carrega a lista de amigos ao carregar a página
-    fetchFriends();
+
+
+
+  // Chamada inicial para buscar amigos
+  fetchFriends();
 });
 
 

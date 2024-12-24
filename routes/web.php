@@ -53,12 +53,13 @@ Route::get('/mainfeatures', function () {
     return view('pages/mainfeatures'); 
 })->name('mainfeatures');
 
+
+
 //Show friends 
-Route::middleware('auth')->group(function () {
-    Route::get('/user/{id}/friends/json', [UserController::class, 'getFriends'])->name('user.getfriends');
-    Route::post('/friendship/remove/{id}', [FriendshipController::class, 'removeFriend'])->name('friendship.remove');
-    Route::get('/user/{id}/friendspage', [UserController::class, 'showFriendsPage'])->name('user.friendsPage');
-});
+Route::get('/user/{id}/friends/json', [UserController::class, 'getFriends'])->name('user.getfriends');
+Route::post('/friendship/remove/{id}', [FriendshipController::class, 'remove'])->name('friendship.remove');
+Route::get('/user/{id}/friendspage', [UserController::class, 'showFriendsPage'])->name('user.friendsPage');
+
 
 
 // Authentication 

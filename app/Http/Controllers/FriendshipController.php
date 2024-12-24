@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+use GrahamCampbell\ResultType\Success;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class FriendshipController extends Controller
 {
@@ -86,38 +87,52 @@ class FriendshipController extends Controller
     }
 
     
-
-    public function removeFriend(Request $request, $id)
+    public function remove($friendId)
     {
-        try {
-            $userId1 = auth()->id();
-            $userId2 = $request->input('receiver_id'); 
-    
-            if (!$userId2) {
-                Log::error('Receiver ID não encontrado na requisição.', ['request' => $request->all()]);
-                return response()->json(['message' => 'Receiver ID é obrigatório.'], 400);
-            }
-    
-            $deleted = DB::table('friendship')
-                ->where(function ($query) use ($userId1, $userId2) {
-                    $query->where('user_id1', $userId1)->where('user_id2', $userId2);
-                })
-                ->orWhere(function ($query) use ($userId1, $userId2) {
-                    $query->where('user_id1', $userId2)->where('user_id2', $userId1);
-                })
-                ->delete();
-    
-            if ($deleted) {
-                Log::info('Friendship succesfully removed.', ['userId1' => $userId1, 'userId2' => $userId2]);
-                return response()->json(['message' => 'Friendship removed successfully.']);
-            }
-    
-            Log::warning('Not found', ['userId1' => $userId1, 'userId2' => $userId2]);
-            return response()->json(['message' => 'Friendship not found.'], 404);
-        } catch (\Exception $e) {
-            Log::error('Error to remove friendship', ['error' => $e->getMessage(), 'trace' => $e->getTrace()]);
-            return response()->json(['message' => 'Erro interno no servidor.'], 500);
+        $user = auth()->user();
+        $profileUserId = request('profile_user_id');
+        
+        Log::info('Profile User ID: ' . $profileUserId);
+        
+        // Verifica se o usuário autenticado é o dono do perfil ou se é administrador
+        if ($user->id !== $profileUserId && !$user->isAdmin()) {
+            return response()->json(['message' => 'Você não tem permissão para remover esta amizade.'], 403);
         }
+        
+        // Busca o relacionamento de amizade entre os dois usuários
+        $friendship = DB::table('friendship')
+            ->where(function($query) use ($user, $friendId) {
+                $query->where('user_id1', $user->id)
+                      ->where('user_id2', $friendId);
+            })
+            ->orWhere(function($query) use ($user, $friendId) {
+                $query->where('user_id1', $friendId)
+                      ->where('user_id2', $user->id);
+            })
+            ->first();
+        
+        if (!$friendship) {
+            return response()->json(['message' => 'Amigo não encontrado.'], 404);
+        }
+        
+        // Remove o relacionamento de amizade
+        DB::table('friendship')
+            ->where(function($query) use ($user, $friendId) {
+                $query->where('user_id1', $user->id)
+                      ->where('user_id2', $friendId);
+            })
+            ->orWhere(function($query) use ($user, $friendId) {
+                $query->where('user_id1', $friendId)
+                      ->where('user_id2', $user->id);
+            })
+            ->delete();
+    
+        return redirect()->route('user', ['id' => $user->id])->with('success', 'Amigo removido com sucesso.');
     }
+    
+    
+    
+    
+
     
 }

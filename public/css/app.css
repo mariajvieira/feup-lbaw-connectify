@@ -44,3 +44,32 @@ header {
   max-width: 800px;  
   margin: 0 auto;    
 }
+
+
+.post-actions .btn i {
+  font-size: 10px; 
+}
+
+
+.post-actions .btn {
+  padding: 5px 10px;  
+  font-size: 14px;  
+  height: 30px;     
+  width: 30px;        
+  display: flex;      
+  justify-content: center;
+  align-items: center;
+}
+
+.reaction-count a {
+  font-size: 14px; 
+  padding-left: 1x;
+  padding-right: 1px;
+  align-self: center;
+}
+
+.comment-reactions .reaction-button {
+  font-size: 13px; 
+  padding: 0.50rem;
+}
+
