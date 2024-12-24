@@ -67,10 +67,10 @@ paths:
               schema:
                 type: string
               examples:
-                302Success:
+                Success:
                   description: 'Successful authentication. Redirect to user profile.'
                   value: '/users/{id}'
-                302Error:
+                Error:
                   description: 'Failed authentication. Redirect to login form.'
                   value: '/login'
 
@@ -151,10 +151,10 @@ paths:
                   value: '/login'
 
 
-    /forgot-password:
+  /forgot-password:
     get:
       operationId: R106
-      summary: '107: Forgot Password Form'
+      summary: 'R106: Forgot Password Form'
       description: 'Displays a form to request a password recovery email. Access: GST'
       tags:
         - 'M01: Authentication'
@@ -163,7 +163,7 @@ paths:
           description: 'Ok. Show forgot password form.'
     post:
       operationId: R107
-      summary: '107: Send Password Recovery Email'
+      summary: 'R107: Send Password Recovery Email'
       description: 'Processes the form submission to send a password recovery code. Access: GST'
       tags:
         - 'M01: Authentication'
@@ -188,10 +188,10 @@ paths:
               schema:
                 type: string
               examples:
-                302Success:
+                Success:
                   description: 'Redirect to verify code page.'
                   value: '/verify-code'
-                302Error:
+                Error:
                   description: 'Redirect back with an error message.'
                   value: '/forgot-password'
 
@@ -206,8 +206,8 @@ paths:
         '200':
           description: 'Ok. Show verify code form.'
     post:
-      operationId: R204
-      summary: 'R204: Verify Recovery Code'
+      operationId: R109
+      summary: 'R109: Verify Recovery Code'
       description: 'Processes the submitted recovery code and redirects appropriately. Access: GST'
       tags:
         - 'M01: Authentication'
@@ -297,7 +297,7 @@ paths:
                   description: 'Failed to reset password. Redirect back with error.'
                   value: '/reset-password'
 
-/auth/google:
+  /auth/google:
     get:
       operationId: R112
       summary: R112:Redirect to Google OAuth
@@ -604,17 +604,13 @@ paths:
       description: 'Delete a post. Access: OWN, ADM'
       tags:
         - 'M03: Posts and Comments'
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                postId:
-                  type: integer
-              required:
-                - postId
+      parameters:
+        - name: postId
+          in: query
+          required: true
+          description: 'ID of the post to delete'
+          schema:
+            type: integer
       responses:
         '200':
           description: Post deleted successfully
@@ -626,12 +622,13 @@ paths:
             Location:
               schema:
                 type: string
-              example: '/users/{userId}'  # Redirecionar para o perfil do usuário
+              example: '/users/{userId}'
+  # Redirecionar para o perfil do usuário
 
   /post/edit:
     put:  
       operationId: R304
-      summary: 'R304: Edit post. Acess: OWN, ADM'
+      summary: 'R304: Edit post. Access: OWN, ADM'
       description: 'Edit a post'
       tags:
         - 'M03: Posts and Comments'
@@ -661,8 +658,8 @@ paths:
           description: Post edited successfully
         '403':
           description: Forbidden, user not allowed to edit post
-
-    /post/save/{postId}:
+    
+  /post/save/{postId}:
     post:
       operationId: R305
       summary: 'R305: Save a post'
@@ -1009,7 +1006,7 @@ paths:
 
 #################################### Groups ####################################
 
-/group/create:
+  /group/create:
     get:
       operationId: R501
       summary: R501:Create a new group
